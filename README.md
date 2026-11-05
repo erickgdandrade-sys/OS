@@ -6,7 +6,7 @@ Plataforma de gestão para estúdios criativos: clientes, projetos, tarefas, equ
 
 ## Estado atual — Fases 1, 2 e 3
 
-* Banco de dados completo para todas as fases, com isolamento por estúdio e permissões no próprio banco (RLS), coberto por 125 asserções.
+* Banco de dados completo para todas as fases, com isolamento por estúdio e permissões no próprio banco (RLS), coberto por 136 asserções.
 * Autenticação real com Supabase Auth: login, recuperação e redefinição de senha, convite com criação de senha, primeiro acesso e encerramento de sessão.
 * Dashboard, clientes, projetos (Kanban e lista, a partir de modelos), tarefas e subtarefas, horas, arquivos, comentários, equipe com convites, permissões configuráveis, busca global, notificações, tema claro e escuro.
 * Comercial: CRM com pipeline, serviços e preços, construtor de propostas, PDF gerado no servidor com a identidade do estúdio, link público com aceite, aprovação que gera projeto, contrato e parcelas, contratos com variáveis, versões e assinatura eletrônica (ZapSign).
@@ -14,6 +14,10 @@ Plataforma de gestão para estúdios criativos: clientes, projetos, tarefas, equ
 * Portal do cliente por conta autenticada ou link seguro, com aprovação de materiais, propostas e contratos.
 
 Módulos das próximas fases aparecem no menu desativados, com a fase indicada. Veja [docs/PLANO.md](docs/PLANO.md).
+
+## Primeiro acesso
+
+Não há cadastro público. O administrador inicial (**erickgdandrade@gmail.com**) usa **Criar minha senha** na tela de login, recebe o link por e-mail, cria a senha e configura o estúdio. Os demais usuários são cadastrados por ele em **Equipe**. Detalhes em [docs/IMPLANTACAO.md](docs/IMPLANTACAO.md#3-primeiro-administrador).
 
 ## Começar
 

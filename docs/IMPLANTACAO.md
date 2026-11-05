@@ -13,6 +13,7 @@
    npx supabase secrets set APP_URL=https://SEU-APP APP_ORIGINS=https://SEU-APP
    npx supabase functions deploy invite-member
    npx supabase functions deploy invite-client
+   npx supabase functions deploy first-access --no-verify-jwt
    npx supabase functions deploy portal --no-verify-jwt
    npx supabase functions deploy proposal-public --no-verify-jwt
    npx supabase functions deploy document-pdf
@@ -41,12 +42,21 @@ Produção (Vercel ou Cloudflare Pages): comando `npm run build`, pasta `dist`, 
 
 ## 3. Primeiro administrador
 
-```bash
-SUPABASE_URL=https://SEU_REF.supabase.co SUPABASE_SERVICE_ROLE_KEY=... APP_URL=https://SEU-APP \
-  node scripts/bootstrap-admin.mjs voce@estudio.com.br
+O administrador inicial é definido no banco (`platform_settings.bootstrap_admin_email`), hoje **erickgdandrade@gmail.com**. Para trocar, rode no SQL Editor:
+
+```sql
+update public.platform_settings set value = 'novo@email.com' where key = 'bootstrap_admin_email';
 ```
 
-Abra o e-mail, crie a senha e configure o estúdio no primeiro acesso. A partir daí, convide a equipe em **Equipe → Convidar pessoa**. O script se recusa a rodar se já existir um estúdio.
+Primeiro acesso:
+
+1. Abra o app e clique em **Criar minha senha** (tela de login).
+2. Informe o e-mail do administrador. A Edge Function `first-access` envia um link de criação de senha **somente** para esse e-mail e **somente** enquanto nenhum estúdio existir. Para qualquer outro e-mail, nada acontece e a resposta é a mesma, sem revelar quais e-mails existem.
+3. Abra o link, crie a senha e configure o estúdio. Você passa a ser o administrador.
+
+Não existe cadastro público. Depois disso, novos usuários (equipe e contas de clientes) são cadastrados apenas pelo administrador, em **Equipe → Cadastrar usuário** e na aba **Portal do cliente** de cada projeto. A criação de outros estúdios na mesma instalação fica desligada (`allow_new_organizations = false`).
+
+Alternativa sem passar pelo app: `node scripts/bootstrap-admin.mjs erickgdandrade@gmail.com` com a service role no terminal.
 
 ## 4. Testes
 

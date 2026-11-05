@@ -96,6 +96,10 @@ export function LoginPage({ redirect }: { redirect?: string }) {
         <FormError message={error} />
         <Button type="submit" variant="primary" loading={isSubmitting} disabled={supabaseConfigMissing} className="w-full">Entrar</Button>
       </form>
+      <p className="mt-6 border-t border-border pt-4 text-center text-xs text-fg-3">
+        Primeiro acesso do administrador? <Link to="/criar-senha" className="text-accent hover:underline">Criar minha senha</Link>
+        <span className="mt-1 block">Não há cadastro público. Os demais usuários são convidados pelo administrador.</span>
+      </p>
     </AuthLayout>
   );
 }
@@ -194,6 +198,43 @@ export function SetPasswordPage({ mode }: { mode: "reset" | "invite" }) {
         </Field>
         <FormError message={error} />
         <Button type="submit" variant="primary" loading={isSubmitting} className="w-full">{mode === "invite" ? "Criar senha e entrar" : "Salvar nova senha"}</Button>
+      </form>
+    </AuthLayout>
+  );
+}
+
+/* ------------------------------- Primeiro acesso do administrador (senha) */
+export function CreatePasswordRequestPage() {
+  const [sent, setSent] = useState(false);
+  const schema = z.object({ email: z.string().trim().email("Informe um e-mail válido.") });
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
+  const [error, setError] = useState<string | null>(null);
+  const onSubmit = handleSubmit(async ({ email }) => {
+    setError(null);
+    const { error } = await supabase.functions.invoke("first-access", { body: { email } });
+    if (error) { setError("Não foi possível enviar agora. Tente novamente em instantes."); return; }
+    setSent(true);
+  });
+  if (sent) {
+    return (
+      <AuthLayout title="Verifique seu e-mail" footer={<Link to="/login" className="text-accent hover:underline">Voltar para o login</Link>}>
+        <div className="flex gap-3 rounded-lg border border-border bg-surface-2 p-4 text-sm text-fg-2">
+          <MailCheck className="size-5 shrink-0 text-accent" />
+          Se este e-mail estiver autorizado como administrador, você vai receber um link para criar a senha. Depois de criá-la, você configura o estúdio.
+        </div>
+      </AuthLayout>
+    );
+  }
+  return (
+    <AuthLayout title="Criar minha senha" subtitle="Primeiro acesso do administrador da plataforma."
+      footer={<Link to="/login" className="text-accent hover:underline">Já tenho senha</Link>}>
+      <form onSubmit={onSubmit} noValidate className="grid gap-4">
+        <Field label="E-mail do administrador" htmlFor="email" error={errors.email?.message}>
+          <Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} {...register("email")} />
+        </Field>
+        <FormError message={error} />
+        <Button type="submit" variant="primary" loading={isSubmitting} disabled={supabaseConfigMissing} className="w-full">Enviar link para criar a senha</Button>
+        <p className="text-xs text-fg-3">Por segurança, a senha é criada a partir de um link enviado ao seu e-mail. Isso confirma que o e-mail é seu.</p>
       </form>
     </AuthLayout>
   );

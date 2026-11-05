@@ -42,10 +42,15 @@ insert into auth.users (id, email) values
 set client_min_messages = notice;
 select pg_temp.ok((select count(*) from public.profiles) = 6, 'perfil criado automaticamente para cada usuário');
 
--- ===== Organização A (admin cria) ===========================================
+-- ===== Organização A (admin inicial cria) ===================================
+update public.platform_settings set value = 'admin@a.test' where key = 'bootstrap_admin_email';
 set role authenticated;
+select pg_temp.ok(not exists (select 1 from information_schema.role_table_grants where table_name = 'platform_settings' and grantee in ('anon','authenticated') and privilege_type = 'SELECT') or (select count(*) from public.platform_settings) = 0, 'configurações da instalação são invisíveis pela API');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.ok(pg_temp.fails($$select public.create_organization('Intruso', 'intruso')$$), 'só o e-mail do administrador inicial cria o primeiro estúdio');
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select public.create_organization('Estúdio A', 'estudio-a') as org_a \gset
+select pg_temp.ok((select count(*) from public.contract_templates where name like 'Contrato completo%') = 8, 'modelos completos de contrato criados');
 select pg_temp.ok(public.has_perm(:'org_a', 'finance.read'), 'admin tem todas as permissões');
 select pg_temp.ok(pg_temp.fails($$select public.create_organization('Outro', 'outro')$$), 'quem já é membro não cria outra organização');
 select pg_temp.ok((select count(*) from public.project_templates) = 7, 'modelos de projeto padrão criados');
@@ -53,6 +58,8 @@ select pg_temp.ok((select count(*) from public.pipeline_stages) = 8, 'pipeline p
 
 -- ===== Organização B ========================================================
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000d');
+select pg_temp.ok(pg_temp.fails($$select public.create_organization('Estúdio B', 'estudio-b')$$), 'ninguém cria outro estúdio depois do primeiro');
+reset role; update public.platform_settings set value = 'true' where key = 'allow_new_organizations'; set role authenticated;
 select public.create_organization('Estúdio B', 'estudio-b') as org_b \gset
 insert into public.clients (organization_id, legal_name) values (:'org_b', 'Cliente do B') returning id as client_b \gset
 
@@ -121,7 +128,7 @@ select pg_temp.ok((public.dashboard_summary(:'org_a', current_date - 30, current
 -- ===== Proposta aprovada → projeto + tarefas + contrato + parcelas ==========
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 select id as tpl_branding from public.project_templates where category = 'branding' \gset
-select id as ctpl from public.contract_templates where category = 'branding' \gset
+select id as ctpl from public.contract_templates where organization_id = :'org_a' and name = 'Prestação de serviços — Branding' \gset
 insert into public.services (organization_id, name, category, unit_price) values (:'org_a', 'Identidade visual', 'branding', 12000) returning id as svc1 \gset
 insert into public.proposals (organization_id, client_id, title, template_id, installments, discount_type, discount_value, number)
 values (:'org_a', :'client2', 'Identidade Lume', :'tpl_branding', 3, 'percent', 10, 0) returning id as prop1 \gset
@@ -259,7 +266,7 @@ select public.reject_proposal(:'prop2', 'Orçamento acima do previsto');
 select pg_temp.ok((select status = 'rejected' and notes like '%acima do previsto%' from public.proposals where id = :'prop2'), 'recusa registra motivo');
 
 -- ===== Fase 2: contratos ====================================================
-select id as ctpl_social from public.contract_templates where organization_id = :'org_a' and category = 'social_media' \gset
+select id as ctpl_social from public.contract_templates where organization_id = :'org_a' and name = 'Prestação de serviços recorrentes — Social media' \gset
 select public.create_contract(:'client1', :'ctpl_social', 'Contrato social media Arara') as ctr \gset
 select pg_temp.ok((public.contract_variables(:'ctr') ->> 'nome_cliente') = 'Arara Torrefação Ltda', 'variável nome_cliente preenchida do cadastro');
 select pg_temp.ok((public.contract_variables(:'ctr') ->> 'cpf_cnpj') = '12.345.678/0001-90', 'CNPJ formatado na variável');
@@ -339,6 +346,22 @@ select public.run_daily_alerts();
 reset role;
 select pg_temp.ok((select count(*) from public.notifications where kind = 'deadline_soon' and user_id = '00000000-0000-0000-0000-00000000000b') = 1, 'alerta de prazo é criado uma vez por dia');
 set role authenticated;
+
+-- ===== Cadastro restrito e geração de contrato ==============================
+reset role; set role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-000000000010');
+select pg_temp.ok(not public.has_perm(:'org_a', 'users.manage'), 'gestor não cadastra usuários');
+reset role; insert into public.member_permissions (organization_id, user_id, permission, granted) values (:'org_a', '00000000-0000-0000-0000-000000000010', 'users.manage', true); set role authenticated;
+select pg_temp.ok(not public.has_perm(:'org_a', 'users.manage'), 'cadastro de usuários continua exclusivo do admin mesmo com exceção individual');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select id as ctpl_full from public.contract_templates where organization_id = :'org_a' and name = 'Contrato completo — Branding e identidade visual' \gset
+select pg_temp.ok((select body_html like '%Da propriedade intelectual%' and body_html like '%Do foro%' and body_html like '%LGPD%' and body_html like '%Testemunha%' from public.contract_templates where id = :'ctpl_full'), 'modelo completo tem PI, LGPD, foro e testemunhas');
+select public.generate_contract(:'client2', :'ctpl_full', 'Contrato — Fotos de catálogo', repeat('<p>Cláusula revisada do contrato gerado.</p>', 8), '{"nome_cliente":"Lume Ótica"}') as ctr2 \gset
+select pg_temp.ok((select status = 'draft' and current_version = 1 from public.contracts where id = :'ctr2'), 'contrato gerado em rascunho, versão 1');
+select pg_temp.ok((select variables ->> 'nome_cliente' from public.contract_versions where contract_id = :'ctr2') = 'Lume Ótica', 'variáveis usadas ficam registradas na versão');
+select pg_temp.ok((public.contract_variables(:'ctr2') ->> 'multa_atraso') = '2', 'variáveis padrão de mora disponíveis');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.ok(pg_temp.fails(format($$select public.generate_contract(%L, null, 'x', repeat('<p>texto</p>', 40), '{}')$$, :'client2')), 'colaborador não gera contrato');
 
 -- ===== Anônimo ==============================================================
 reset role; set role anon; select pg_temp.as_user(null);

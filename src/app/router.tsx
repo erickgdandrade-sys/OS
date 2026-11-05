@@ -5,7 +5,7 @@ import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, Spinner } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthProvider";
-import { FirstAccessPage, ForgotPasswordPage, LoginPage, SetPasswordPage, SignedOutPage } from "@/features/auth/AuthPages";
+import { CreatePasswordRequestPage, FirstAccessPage, ForgotPasswordPage, LoginPage, SetPasswordPage, SignedOutPage } from "@/features/auth/AuthPages";
 // Páginas carregadas sob demanda (divisão do bundle por rota).
 const page = <K extends string>(load: () => Promise<Record<K, ComponentType<any>>>, name: K) =>
   lazy(() => load().then((m) => ({ default: m[name] })));
@@ -27,6 +27,7 @@ const ProposalPrintPage = page(() => import("@/features/commercial/ProposalsPage
 const ContractsPage = page(() => import("@/features/commercial/ContractsPages"), "ContractsPage");
 const ContractDetailPage = page(() => import("@/features/commercial/ContractsPages"), "ContractDetailPage");
 const ContractPrintPage = page(() => import("@/features/commercial/ContractsPages"), "ContractPrintPage");
+const ContractWizardPage = page(() => import("@/features/commercial/ContractWizard"), "ContractWizardPage");
 const FinancePage = page(() => import("@/features/finance/FinancePage"), "FinancePage");
 const CalendarPage = page(() => import("@/features/calendar/CalendarPage"), "CalendarPage");
 import type { Permission } from "@/lib/domain";
@@ -85,6 +86,7 @@ const root = createRootRoute({ component: () => <Suspense fallback={<FullScreenL
 const login = createRoute({ getParentRoute: () => root, path: "/login", validateSearch: (s: Record<string, unknown>) => ({ redirect: typeof s.redirect === "string" ? s.redirect : undefined }),
   component: function Login() { const { redirect } = login.useSearch(); return <LoginPage redirect={redirect} />; } });
 const forgot = createRoute({ getParentRoute: () => root, path: "/recuperar-senha", component: ForgotPasswordPage });
+const createPassword = createRoute({ getParentRoute: () => root, path: "/criar-senha", component: CreatePasswordRequestPage });
 const reset = createRoute({ getParentRoute: () => root, path: "/redefinir-senha", component: () => <SetPasswordPage mode="reset" /> });
 const invite = createRoute({ getParentRoute: () => root, path: "/convite", component: () => <SetPasswordPage mode="invite" /> });
 const signout = createRoute({ getParentRoute: () => root, path: "/sair", component: SignedOutPage });
@@ -112,6 +114,9 @@ const proposals = createRoute({ getParentRoute: () => app, path: "/propostas",
 const proposal = createRoute({ getParentRoute: () => app, path: "/propostas/$proposalId",
   component: function P1() { const { proposalId } = proposal.useParams(); return <RequirePerm perm="proposals.read"><ProposalEditorPage key={proposalId} proposalId={proposalId} /></RequirePerm>; } });
 const contracts = createRoute({ getParentRoute: () => app, path: "/contratos", component: () => <RequirePerm perm="contracts.read"><ContractsPage /></RequirePerm> });
+const contractNew = createRoute({ getParentRoute: () => app, path: "/contratos/novo",
+  validateSearch: (s: Record<string, unknown>) => ({ proposta: typeof s.proposta === "string" ? s.proposta : undefined }),
+  component: function CN() { const { proposta } = contractNew.useSearch(); return <RequirePerm perm="contracts.write"><ContractWizardPage proposalId={proposta} /></RequirePerm>; } });
 const contract = createRoute({ getParentRoute: () => app, path: "/contratos/$contractId",
   component: function C1() { const { contractId } = contract.useParams(); return <RequirePerm perm="contracts.read"><ContractDetailPage key={contractId} contractId={contractId} /></RequirePerm>; } });
 const bare = createRoute({ getParentRoute: () => root, id: "bare", component: BareProtected });
@@ -125,8 +130,8 @@ const finance = createRoute({ getParentRoute: () => app, path: "/financeiro", co
 const calendar = createRoute({ getParentRoute: () => app, path: "/calendario", component: CalendarPage });
 
 const routeTree = root.addChildren([
-  login, forgot, reset, invite, signout, firstAccess, portal, portalLink, publicProposal,
-  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contract, finance, calendar]),
+  login, forgot, createPassword, reset, invite, signout, firstAccess, portal, portalLink, publicProposal,
+  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar]),
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 

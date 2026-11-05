@@ -36,6 +36,15 @@ Legenda: ✅ feito e testado · 🟡 banco pronto, telas pendentes · ⏳ penden
 | PDF gerado no servidor (salvo nos arquivos do estúdio) | ✅ | Edge Function `document-pdf` (pdf-lib), testada com Vitest |
 | Link público de proposta com validade, revogação, download do PDF e aceite registrado (nome e data) | ✅ | Edge Function `proposal-public`; o aceite avisa a equipe, que aprova formalmente |
 
+## Ajustes solicitados (pós-Fase 3) ✅
+
+| Item | Estado |
+|---|---|
+| Acesso inicial do administrador (erickgdandrade@gmail.com) com criação de senha por link; sem cadastro público | ✅ |
+| Cadastro de usuários e contas de clientes exclusivo do administrador (garantido no banco e nas Edge Functions) | ✅ |
+| Modelos completos de contrato (8 categorias): partes, objeto, escopo, prazos, obrigações, pagamento, mora e reajuste, revisões, propriedade intelectual, naming/INPI, portfólio, confidencialidade, LGPD, responsabilidade, rescisão, força maior, comunicações, assinatura eletrônica, foro, assinaturas e testemunhas | ✅ |
+| Tela "Gerar contrato": dados do estúdio, cliente cadastrado ou novo (cadastrado ao gerar), dados do serviço, prévia ao vivo com campos em branco destacados | ✅ |
+
 ## Fase 3 — Operação ✅
 
 | Item | Estado | Observação |

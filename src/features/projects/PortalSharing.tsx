@@ -69,8 +69,8 @@ export function PortalSharing({ projectId, clientId }: { projectId: string; clie
       </Card>
       <Card>
         <CardHeader title="Contas do cliente" description="Contatos com e-mail e senha veem todos os projetos deste cliente no portal." />
-        <div className="flex gap-2"><Input aria-label="E-mail do contato" type="email" placeholder="contato@cliente.com.br" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Button icon={<MailPlus className="size-4" />} loading={inviting} disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())} onClick={invite}>Convidar</Button></div>
+        {!can("users.manage") ? <p className="text-sm text-fg-3">Somente o administrador cadastra contas de cliente.</p> : <div className="flex gap-2"><Input aria-label="E-mail do contato" type="email" placeholder="contato@cliente.com.br" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Button icon={<MailPlus className="size-4" />} loading={inviting} disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())} onClick={invite}>Convidar</Button></div>}
         <p className="mt-3 text-xs text-fg-3">{accounts.data?.length ? `${accounts.data.length} conta(s) com acesso.` : "Nenhuma conta com acesso ainda."}</p>
       </Card>
 

@@ -15,12 +15,10 @@ Deno.serve(handler(async (req) => {
   const caller = userClient(req);
   const { data: me } = await caller.auth.getUser();
   if (!me.user) throw new HttpError(401, "not_authenticated");
+  // Cadastro de usuários é exclusivo do administrador.
   await requirePerm(caller, organization_id, "users.manage");
-  // Só admin cria outro admin.
-  if (role === "admin") {
-    const { data: r } = await caller.rpc("current_member_role", { p_org: organization_id });
-    if (r !== "admin") throw new HttpError(403, "only_admin_invites_admin");
-  }
+  const { data: r } = await caller.rpc("current_member_role", { p_org: organization_id });
+  if (r !== "admin") throw new HttpError(403, "only_admin_creates_users");
 
   const admin = adminClient();
   const normalized = (email as string).trim().toLowerCase();

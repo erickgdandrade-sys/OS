@@ -46,8 +46,8 @@ export function TeamPage() {
 
   return (
     <>
-      <PageHeader title="Equipe" description="Pessoas do estúdio, funções, acesso e carga de trabalho."
-        actions={manage && <Button variant="primary" icon={<MailPlus className="size-4" />} onClick={() => setInviting(true)}>Convidar pessoa</Button>} />
+      <PageHeader title="Equipe" description={manage ? "Pessoas do estúdio, funções, acesso e carga de trabalho. Somente você, como administrador, cadastra usuários." : "Pessoas do estúdio e carga de trabalho. Novos usuários são cadastrados pelo administrador."}
+        actions={manage && <Button variant="primary" icon={<MailPlus className="size-4" />} onClick={() => setInviting(true)}>Cadastrar usuário</Button>} />
       <div className="mb-4"><Tabs value={tab} onChange={setTab} items={[{ value: "people", label: "Pessoas" }, { value: "load", label: "Distribuição de trabalho" }]} /></div>
       {tab === "load" ? <Workload /> : error ? <ErrorState error={error} onRetry={refetch} /> : isLoading ? <Spinner /> : (
         <Card padded={false} className="overflow-hidden">
@@ -107,8 +107,8 @@ function InviteModal({ open, onClose, orgId, isAdmin, onDone }: { open: boolean;
     } catch (e) { toast({ tone: "error", message: errorMessage(e) }); } finally { setBusy(false); }
   };
   return (
-    <Modal open={open} onClose={onClose} title="Convidar pessoa" description="A pessoa recebe um e-mail para criar a senha. O acesso só vale depois do aceite."
-      footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button variant="primary" loading={busy} disabled={!validEmail} onClick={send}>Enviar convite</Button></>}>
+    <Modal open={open} onClose={onClose} title="Cadastrar usuário" description="A pessoa recebe um e-mail para criar a senha no primeiro acesso. O acesso só vale depois disso."
+      footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button variant="primary" loading={busy} disabled={!validEmail} onClick={send}>Cadastrar e enviar acesso</Button></>}>
       <div className="grid gap-4">
         <Field label="E-mail" required htmlFor="i-email" error={f.email && !validEmail ? "E-mail inválido." : undefined}><Input id="i-email" type="email" value={f.email} onChange={(e) => setF((s) => ({ ...s, email: e.target.value }))} /></Field>
         <Field label="Nível de acesso" htmlFor="i-role" hint="Define o que a pessoa vê. Ajuste as permissões de cada nível em Configurações.">

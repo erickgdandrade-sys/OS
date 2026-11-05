@@ -65,7 +65,7 @@ Documento vivo. Cada decisão aqui tem o motivo ao lado; quando uma decisão mud
 
 ## 3. Modelo de dados
 
-62 tabelas e 11 views em `public`, em 13 migrations. Convenções:
+63 tabelas e 11 views em `public`, em 14 migrations. Convenções:
 
 * `id uuid` (gen_random_uuid), `created_at/updated_at timestamptz`, trigger `set_updated_at`.
 * `organization_id` em todas as tabelas de negócio + `unique (organization_id, id)` nas tabelas referenciadas.
@@ -119,7 +119,7 @@ organizations ─┬─< organization_members >── auth.users ──1:1──
 2. **Receita contratada → faturada → recebida.** `scheduled` (contratado) → `open`/`overdue` (faturado) → `paid` (recebido). Só a baixa (`paid`) cria `transactions`; dashboard e caixa usam apenas `transactions`.
 3. **Despesa de projeto.** `accounts_payable.project_id` + `cost_type` (terceirizado/adicional) entram em `project_profitability`; horas entram como custo interno (minutos × custo/hora congelado no lançamento).
 4. **Convite de colaborador.** Admin → Edge Function `invite-member` (checa `users.manage`, só admin convida admin) → e-mail do Supabase Auth → `/convite` (nome + senha) → `accept_invitation()` ativa a associação. Antes do aceite, o convidado não lê nada.
-5. **Login.** `session_context()` devolve organizações, papel e permissões efetivas. Membro → painel; conta de cliente → `/portal`; conta sem vínculo → `/primeiro-acesso` (só o administrador inicial chega aqui).
+5. **Login.** `session_context()` devolve organizações, papel e permissões efetivas. Membro → painel; conta de cliente → `/portal`; conta sem vínculo → `/primeiro-acesso`, onde só o e-mail do administrador inicial consegue criar o estúdio (`create_organization` confere `platform_settings`).
 6. **Portal do cliente.** Conta autenticada lê só as views `portal_*` (colunas seguras, filtradas por `is_client_user`). Link seguro: token de 256 bits mostrado uma vez, guardado como SHA-256, com escopos, expiração e revogação; validado pela Edge Function `portal`. O token vai no fragmento `#` da URL e no header `x-portal-token`, nunca em query string.
 7. **Aprovação.** Equipe cria `approvals` (versão, arquivo); cliente responde (conta ou link) → `approval_events` (data, usuário ou nome informado) → status atualizado e notificação para quem pediu e para o responsável.
 
@@ -136,7 +136,7 @@ organizations ─┬─< organization_members >── auth.users ──1:1──
 
 | Camada | Como | Estado |
 |---|---|---|
-| Banco (RLS, constraints, fluxos) | `scripts/test-db.sh` aplica as 10 migrations num Postgres 16 descartável (com stub de `auth`/`storage`) e roda `supabase/tests/rls_test.sql`: isolamento entre estúdios, permissões por papel, portal, financeiro, automação de proposta, CRM, propostas, contratos, convites, links seguros, anônimo | **125 asserções passando** |
+| Banco (RLS, constraints, fluxos) | `scripts/test-db.sh` aplica as 10 migrations num Postgres 16 descartável (com stub de `auth`/`storage`) e roda `supabase/tests/rls_test.sql`: isolamento entre estúdios, permissões por papel, portal, financeiro, automação de proposta, CRM, propostas, contratos, convites, links seguros, anônimo | **136 asserções passando** |
 | Regras puras do frontend | Vitest (`npm test`): BRL, datas DD/MM/AAAA, fuso SP, CPF/CNPJ, modelos `{{variáveis}}` com escape, sanitização do HTML de contratos, CSV, gerador de PDF das Edge Functions, mensagens de erro | **16 testes passando** |
 | Tipos e build | `npm run typecheck` e `npm run build` | Passando |
 | Edge Functions | `deno check` de todas as funções (passando); gerador de PDF testado em Node. Integração real (convite, portal, ZapSign) com `supabase functions serve` | Checagem de tipos ok; integração a fazer com um projeto Supabase |

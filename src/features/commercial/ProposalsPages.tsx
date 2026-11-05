@@ -144,6 +144,7 @@ export function ProposalEditorPage({ proposalId }: { proposalId: string }) {
         actions={<>
           <a href={`/propostas/${proposalId}/imprimir`} target="_blank" rel="noopener"><Button variant="ghost" icon={<FileDown className="size-4" />}>Imprimir</Button></a>
           <ServerPdfButton kind="proposal" id={proposalId} />
+          {can("contracts.write") && data.p.status === "approved" && <Button onClick={() => nav({ to: "/contratos/novo", search: { proposta: proposalId } })}>Gerar contrato</Button>}
           {can("proposals.write") && <ProposalLinksButton proposalId={proposalId} disabled={["draft", "rejected", "expired"].includes(data.p.status)} />}
           {can("proposals.write") && data.p.status === "draft" && <Button variant="primary" icon={<Send className="size-4" />} disabled={dirty} title={dirty ? "Salve as alterações antes" : undefined}
             onClick={() => rpc("send_proposal", { p_proposal: proposalId }, "Proposta marcada como enviada. O cliente a vê no portal.")}>Enviar</Button>}

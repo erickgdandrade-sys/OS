@@ -39,6 +39,8 @@ token_verifications = 30
 verify_jwt = true
 [functions.invite-client]
 verify_jwt = true
+[functions.first-access]
+verify_jwt = false                     # chamada antes do login; só age para o e-mail do admin inicial
 [functions.portal]
 verify_jwt = false                     # acesso por token de link; a função valida o token
 [functions.proposal-public]

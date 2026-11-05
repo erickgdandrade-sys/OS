@@ -11,7 +11,8 @@ Deno.serve(handler(async (req) => {
   if (!me.user) throw new HttpError(401, "not_authenticated");
   const { data: client, error } = await caller.from("clients").select("id, organization_id").eq("id", client_id).single();
   if (error || !client) throw new HttpError(404, "client_not_found");
-  await requirePerm(caller, client.organization_id, "portal.share");
+  // Contas de cliente também só são criadas pelo administrador.
+  await requirePerm(caller, client.organization_id, "users.manage");
 
   const admin = adminClient();
   const normalized = (email as string).trim().toLowerCase();

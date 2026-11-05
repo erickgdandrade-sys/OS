@@ -11,6 +11,7 @@
 * **Auditoria:** `activity_logs` registra criação, alteração (campo a campo) e exclusão de entidades principais, além de login, logout e troca de senha.
 * **Validação dupla:** Zod no formulário e constraints no banco (CPF/CNPJ, valores não negativos, datas coerentes, status válidos).
 * **Senhas:** só no Supabase Auth (bcrypt); cadastro público desligado; recuperação com resposta neutra.
+* **Cadastro restrito:** só o administrador inicial (e-mail configurado no servidor) cria o estúdio, e só uma vez. Depois disso, apenas administradores cadastram usuários e contas de clientes; a permissão `users.manage` não pode ser concedida a outros papéis, nem por exceção individual (garantido no banco).
 
 ## LGPD
 

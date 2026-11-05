@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Eye, FileDown, FileSignature, History, PenLine, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useBreadcrumbs } from "@/components/layout/AppShell";
-import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, Field, Input, Modal, PageHeader, Select, Spinner, Textarea, useToast } from "@/components/ui";
+import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, Input, Modal, PageHeader, Spinner, Textarea, useToast } from "@/components/ui";
 import { useOrg } from "@/features/auth/AuthProvider";
 import { clientName } from "@/features/clients/ClientsPages";
 import { errorMessage, type Tone } from "@/lib/domain";
@@ -37,26 +37,17 @@ export function ContractsPage() {
   useBreadcrumbs([{ label: "Contratos" }]);
   const { orgId, can } = useOrg();
   const nav = useNavigate();
-  const toast = useToast();
-  const [creating, setCreating] = useState(false);
-  const [f, setF] = useState({ client: "", template: "", title: "" });
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["contracts", orgId],
     queryFn: async () => { const { data, error } = await supabase.from("contracts").select("*, clients(legal_name, trade_name)").eq("organization_id", orgId).order("number", { ascending: false }); if (error) throw error; return data as Contract[]; },
   });
-  const clients = useQuery({ queryKey: ["clients", orgId], enabled: creating, queryFn: async () => (await supabase.from("clients").select("id, legal_name, trade_name").eq("organization_id", orgId).order("legal_name")).data ?? [] });
-  const templates = useQuery({ queryKey: ["contract-templates", orgId], enabled: creating, queryFn: async () => (await supabase.from("contract_templates").select("id, name").eq("organization_id", orgId).eq("is_archived", false).order("name")).data ?? [] });
-  const create = async () => {
-    const { data: id, error } = await supabase.rpc("create_contract", { p_client: f.client, p_template: f.template, p_title: f.title });
-    if (error) return toast({ tone: "error", message: errorMessage(error) });
-    nav({ to: `/contratos/${id}` });
-  };
   return (
     <>
       <PageHeader title="Contratos" description="Gerados a partir de modelos, com variáveis preenchidas e histórico de versões."
-        actions={can("contracts.write") && <Button variant="primary" icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>Novo contrato</Button>} />
+        actions={can("contracts.write") && <Button variant="primary" icon={<Plus className="size-4" />} onClick={() => nav({ to: "/contratos/novo" })}>Gerar contrato</Button>} />
       {error ? <ErrorState error={error} /> : isLoading ? <Spinner /> : !data?.length ? (
-        <EmptyState icon={<FileSignature className="size-5" />} title="Nenhum contrato" description="Contratos também são gerados automaticamente ao aprovar uma proposta." />
+        <EmptyState icon={<FileSignature className="size-5" />} title="Nenhum contrato" description="Use “Gerar contrato” para preencher seus dados e os do cliente. Contratos também são gerados ao aprovar uma proposta." />
       ) : (
         <Card padded={false} className="overflow-hidden"><table className="w-full text-sm">
           <thead className="bg-surface-2 text-left text-xs text-fg-3"><tr><th className="px-4 py-2.5 font-medium">Nº</th><th className="px-4 py-2.5 font-medium">Contrato</th><th className="px-4 py-2.5 font-medium">Status</th><th className="hidden px-4 py-2.5 font-medium sm:table-cell">Versão</th></tr></thead>
@@ -68,14 +59,6 @@ export function ContractsPage() {
               <td className="hidden px-4 py-3 tabular sm:table-cell">v{c.current_version}</td>
             </tr>))}</tbody></table></Card>
       )}
-      <Modal open={creating} onClose={() => setCreating(false)} title="Novo contrato" size="sm"
-        footer={<><Button variant="ghost" onClick={() => setCreating(false)}>Cancelar</Button><Button variant="primary" disabled={!f.client || !f.template} onClick={create}>Criar</Button></>}>
-        <div className="grid gap-4">
-          <Field label="Cliente" required htmlFor="nc-client"><Select id="nc-client" value={f.client} onChange={(e) => setF((s) => ({ ...s, client: e.target.value }))}><option value="">Selecione…</option>{clients.data?.map((c) => <option key={c.id} value={c.id}>{clientName(c)}</option>)}</Select></Field>
-          <Field label="Modelo" required htmlFor="nc-tpl"><Select id="nc-tpl" value={f.template} onChange={(e) => setF((s) => ({ ...s, template: e.target.value }))}><option value="">Selecione…</option>{templates.data?.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</Select></Field>
-          <Field label="Título" htmlFor="nc-title"><Input id="nc-title" value={f.title} onChange={(e) => setF((s) => ({ ...s, title: e.target.value }))} /></Field>
-        </div>
-      </Modal>
     </>
   );
 }
