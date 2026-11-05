@@ -9,6 +9,7 @@ import { clientName } from "@/features/clients/ClientsPages";
 import { errorMessage, type Tone } from "@/lib/domain";
 import { addDaysISO, date, money, todayISO } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
+import { ProposalLinksButton, ServerPdfButton } from "./DocumentActions";
 
 export type ProposalStatus = "draft" | "sent" | "viewed" | "negotiation" | "approved" | "rejected" | "expired";
 export const proposalStatusLabel: Record<ProposalStatus, string> = { draft: "Rascunho", sent: "Enviada", viewed: "Visualizada", negotiation: "Em negociação", approved: "Aprovada", rejected: "Recusada", expired: "Expirada" };
@@ -19,6 +20,7 @@ export interface Proposal {
   intro: string | null; scope: string | null; deliverables: string | null; terms: string | null; notes: string | null; revisions: number;
   discount_type: "none" | "percent" | "amount"; discount_value: number; installments: number; first_due_date: string | null; valid_until: string | null;
   template_id: string | null; subtotal: number; total: number; sent_at: string | null; viewed_at: string | null; decided_at: string | null; created_at: string;
+  client_accepted_at?: string | null; client_accepted_name?: string | null; client_accept_note?: string | null;
   clients?: { legal_name: string; trade_name: string | null } | null;
 }
 export interface ProposalItem { id: string; proposal_id: string; service_id: string | null; position: number; description: string; details: string | null; quantity: number; unit_price: number; is_package: boolean; line_total: number }
@@ -140,7 +142,9 @@ export function ProposalEditorPage({ proposalId }: { proposalId: string }) {
         meta={<><Badge tone={proposalStatusTone[data.p.status]} dot>{proposalStatusLabel[data.p.status]}</Badge>
           {data.p.sent_at && <span className="text-xs text-fg-3">Enviada em {date(data.p.sent_at)}</span>}{data.p.viewed_at && <span className="text-xs text-fg-3">· Vista em {date(data.p.viewed_at)}</span>}</>}
         actions={<>
-          <a href={`/propostas/${proposalId}/imprimir`} target="_blank" rel="noopener"><Button icon={<FileDown className="size-4" />}>PDF</Button></a>
+          <a href={`/propostas/${proposalId}/imprimir`} target="_blank" rel="noopener"><Button variant="ghost" icon={<FileDown className="size-4" />}>Imprimir</Button></a>
+          <ServerPdfButton kind="proposal" id={proposalId} />
+          {can("proposals.write") && <ProposalLinksButton proposalId={proposalId} disabled={["draft", "rejected", "expired"].includes(data.p.status)} />}
           {can("proposals.write") && data.p.status === "draft" && <Button variant="primary" icon={<Send className="size-4" />} disabled={dirty} title={dirty ? "Salve as alterações antes" : undefined}
             onClick={() => rpc("send_proposal", { p_proposal: proposalId }, "Proposta marcada como enviada. O cliente a vê no portal.")}>Enviar</Button>}
           {can("proposals.write") && ["sent", "viewed"].includes(data.p.status) && <Button onClick={() => saveHeader.mutate({ status: "negotiation" })}>Em negociação</Button>}
@@ -149,6 +153,13 @@ export function ProposalEditorPage({ proposalId }: { proposalId: string }) {
             <Button variant="primary" icon={<Check className="size-4" />} disabled={dirty} onClick={() => setApproving(true)}>Aprovar</Button></>}
         </>} />
 
+      {data.p.client_accepted_at && (
+        <div role="status" className="mb-5 rounded-lg border border-success/30 bg-success-soft p-4 text-sm">
+          <p className="font-medium text-success">Aceita pelo cliente: {data.p.client_accepted_name} em {date(data.p.client_accepted_at)}</p>
+          {data.p.client_accept_note && <p className="mt-1 text-fg-2">“{data.p.client_accept_note}”</p>}
+          {data.p.status !== "approved" && <p className="mt-1 text-fg-3">Clique em Aprovar para gerar o projeto, o contrato e as parcelas.</p>}
+        </div>
+      )}
       <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
         <div className="grid content-start gap-5">
           <Items proposal={data.p} items={data.items} services={services.data ?? []} editable={editable} onChange={refresh} />
@@ -295,22 +306,24 @@ export function ProposalPrintPage({ proposalId }: { proposalId: string }) {
     queryKey: ["proposal-print", proposalId],
     queryFn: async () => {
       const [p, items] = await Promise.all([
-        supabase.from("proposals").select("*, clients(legal_name, trade_name, document), organizations(name, legal_name, document, email, phone)").eq("id", proposalId).single(),
+        supabase.from("proposals").select("*, clients(legal_name, trade_name, document), organizations(name, legal_name, document, email, phone, branding)").eq("id", proposalId).single(),
         supabase.from("proposal_items").select("*").eq("proposal_id", proposalId).order("position"),
       ]);
       if (p.error) throw p.error;
-      return { p: p.data as Proposal & { organizations: { name: string; legal_name: string | null; email: string | null; phone: string | null } }, items: (items.data ?? []) as ProposalItem[] };
+      const org = p.data.organizations as { name: string; legal_name: string | null; email: string | null; phone: string | null; branding: { primary_color?: string; logo_path?: string } | null };
+      const logo = org.branding?.logo_path ? (await supabase.storage.from("org-files").createSignedUrl(org.branding.logo_path, 600)).data?.signedUrl ?? null : null;
+      return { p: p.data as Proposal & { organizations: typeof org }, items: (items.data ?? []) as ProposalItem[], logo, accent: org.branding?.primary_color ?? "#0B2239" };
     },
   });
   useEffect(() => { if (data) { document.title = `Proposta ${String(data.p.number).padStart(4, "0")} — ${data.p.title}`; setTimeout(() => window.print(), 400); } }, [data]);
   if (isLoading || !data) return <Spinner />;
-  const { p, items } = data;
-  const Section = ({ t, v }: { t: string; v: string | null }) => v ? <section className="mt-6"><h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-[#0B2239]">{t}</h2><p className="whitespace-pre-wrap text-[13px] leading-relaxed">{v}</p></section> : null;
+  const { p, items, logo, accent } = data;
+  const Section = ({ t, v }: { t: string; v: string | null }) => v ? <section className="mt-6"><h2 className="mb-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: accent }}>{t}</h2><p className="whitespace-pre-wrap text-[13px] leading-relaxed">{v}</p></section> : null;
   return (
     <div className="min-h-dvh bg-white text-[#0E1726] print:min-h-0">
       <div className="mx-auto max-w-[780px] px-10 py-12 print:p-0">
-        <header className="flex items-start justify-between border-b-2 border-[#0B2239] pb-5">
-          <div><p className="text-lg font-semibold">{p.organizations.name}</p><p className="text-xs text-[#4A5565]">{[p.organizations.email, p.organizations.phone].filter(Boolean).join(" · ")}</p></div>
+        <header className="flex items-start justify-between border-b-2 pb-5" style={{ borderColor: accent }}>
+          <div>{logo ? <img src={logo} alt={p.organizations.name} className="mb-1 max-h-10 max-w-[180px] object-contain" /> : <p className="text-lg font-semibold">{p.organizations.name}</p>}<p className="text-xs text-[#4A5565]">{[p.organizations.email, p.organizations.phone].filter(Boolean).join(" · ")}</p></div>
           <div className="text-right"><p className="text-xs uppercase tracking-wider text-[#4A5565]">Proposta comercial</p><p className="text-lg font-semibold tabular">Nº {String(p.number).padStart(4, "0")}</p></div>
         </header>
         <h1 className="mt-8 text-2xl font-semibold">{p.title}</h1>

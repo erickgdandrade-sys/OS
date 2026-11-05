@@ -49,7 +49,8 @@ Documento vivo. Cada decisão aqui tem o motivo ao lado; quando uma decisão mud
 ├── supabase/
 │   ├── config.toml            Auth sem cadastro público, senha mínima, rotação de tokens
 │   ├── migrations/            0001 fundação → 0010 (ordem = dependência)
-│   ├── functions/             Edge Functions (Deno) + _shared/http.ts
+│   ├── functions/             Edge Functions (Deno): invite-member, invite-client, portal, proposal-public,
+│   │                          document-pdf, signature-send, signature-webhook; _shared/ (http, pdf, documents)
 │   └── tests/                 stub local do Supabase + rls_test.sql (77 asserções)
 └── src/
     ├── app/router.tsx         rotas, guards (sessão, papel, portal, primeiro acesso)
@@ -64,7 +65,7 @@ Documento vivo. Cada decisão aqui tem o motivo ao lado; quando uma decisão mud
 
 ## 3. Modelo de dados
 
-61 tabelas e 11 views em `public`, em 11 migrations. Convenções:
+62 tabelas e 11 views em `public`, em 13 migrations. Convenções:
 
 * `id uuid` (gen_random_uuid), `created_at/updated_at timestamptz`, trigger `set_updated_at`.
 * `organization_id` em todas as tabelas de negócio + `unique (organization_id, id)` nas tabelas referenciadas.
@@ -135,10 +136,10 @@ organizations ─┬─< organization_members >── auth.users ──1:1──
 
 | Camada | Como | Estado |
 |---|---|---|
-| Banco (RLS, constraints, fluxos) | `scripts/test-db.sh` aplica as 10 migrations num Postgres 16 descartável (com stub de `auth`/`storage`) e roda `supabase/tests/rls_test.sql`: isolamento entre estúdios, permissões por papel, portal, financeiro, automação de proposta, CRM, propostas, contratos, convites, links seguros, anônimo | **99 asserções passando** |
-| Regras puras do frontend | Vitest (`npm test`): BRL, datas DD/MM/AAAA, fuso SP, CPF/CNPJ, modelos `{{variáveis}}` com escape, sanitização do HTML de contratos, mensagens de erro | **11 testes passando** |
+| Banco (RLS, constraints, fluxos) | `scripts/test-db.sh` aplica as 10 migrations num Postgres 16 descartável (com stub de `auth`/`storage`) e roda `supabase/tests/rls_test.sql`: isolamento entre estúdios, permissões por papel, portal, financeiro, automação de proposta, CRM, propostas, contratos, convites, links seguros, anônimo | **125 asserções passando** |
+| Regras puras do frontend | Vitest (`npm test`): BRL, datas DD/MM/AAAA, fuso SP, CPF/CNPJ, modelos `{{variáveis}}` com escape, sanitização do HTML de contratos, CSV, gerador de PDF das Edge Functions, mensagens de erro | **16 testes passando** |
 | Tipos e build | `npm run typecheck` e `npm run build` | Passando |
-| Edge Functions | Testes de integração com `supabase start` + `supabase functions serve` (convite, portal por token: expirado, revogado, escopo) | A fazer com um projeto Supabase de desenvolvimento |
+| Edge Functions | `deno check` de todas as funções (passando); gerador de PDF testado em Node. Integração real (convite, portal, ZapSign) com `supabase functions serve` | Checagem de tipos ok; integração a fazer com um projeto Supabase |
 | Ponta a ponta | Playwright: login → criar cliente → projeto por modelo → tarefa → horas → portal aprova | A fazer após conectar o Supabase |
 | Acessibilidade | Foco visível, labels em todos os campos, `aria-*` em diálogos, contraste AA dos tokens; revisão com axe na Fase 3 | Parcial |
 

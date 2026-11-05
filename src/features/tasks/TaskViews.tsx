@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Circle, Clock, Eye, EyeOff, KanbanSquare, List, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Eye, EyeOff, GanttChart, KanbanSquare, List, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { TaskDependencies, Timeline } from "./Timeline";
 import { useMemo, useState } from "react";
 import { Avatar, Badge, Button, ConfirmDialog, EmptyState, Field, Input, Modal, Segmented, Select, Spinner, Textarea, useToast, cn } from "@/components/ui";
 import { useOrg } from "@/features/auth/AuthProvider";
@@ -44,7 +45,7 @@ export function ProjectTasks({ projectId, members, canEdit }: { projectId: strin
   const { orgId, userId } = useOrg();
   const qc = useQueryClient();
   const toast = useToast();
-  const [view, setView] = useState<"list" | "kanban">("list");
+  const [view, setView] = useState<"list" | "kanban" | "timeline">("list");
   const [title, setTitle] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const { update } = useTaskMutations(projectId);
@@ -57,6 +58,8 @@ export function ProjectTasks({ projectId, members, canEdit }: { projectId: strin
     },
   });
   const roots = useMemo(() => (tasks ?? []).filter((t) => !t.parent_id), [tasks]);
+  const deps = useQuery({ queryKey: ["project-deps", projectId], enabled: view === "timeline",
+    queryFn: async () => (await supabase.from("task_dependencies").select("task_id, depends_on_id").in("task_id", (tasks ?? []).map((t) => t.id))).data ?? [] });
   const subsOf = (id: string) => (tasks ?? []).filter((t) => t.parent_id === id);
   const memberName = (id: string | null) => members.find((m) => m.user_id === id)?.profiles?.full_name || null;
 
@@ -79,10 +82,12 @@ export function ProjectTasks({ projectId, members, canEdit }: { projectId: strin
           <Input aria-label="Nova tarefa" placeholder="Adicionar tarefa e pressionar Enter" value={title} onChange={(e) => setTitle(e.target.value)} />
           <Button type="submit" icon={<Plus className="size-4" />} disabled={!title.trim()}>Adicionar</Button>
         </form>
-        <Segmented value={view} onChange={setView} items={[{ value: "list", label: "Lista", icon: <List className="size-3.5" /> }, { value: "kanban", label: "Kanban", icon: <KanbanSquare className="size-3.5" /> }]} />
+        <Segmented value={view} onChange={setView} items={[{ value: "list", label: "Lista", icon: <List className="size-3.5" /> }, { value: "kanban", label: "Kanban", icon: <KanbanSquare className="size-3.5" /> }, { value: "timeline", label: "Linha do tempo", icon: <GanttChart className="size-3.5" /> }]} />
       </div>
 
-      {roots.length === 0 ? <EmptyState title="Nenhuma tarefa" description="Adicione tarefas acima ou aplique um modelo ao projeto." /> : view === "list" ? (
+      {roots.length === 0 ? <EmptyState title="Nenhuma tarefa" description="Adicione tarefas acima ou aplique um modelo ao projeto." /> : view === "timeline" ? (
+        <Timeline tasks={tasks ?? []} deps={deps.data ?? []} onOpen={setOpenId} />
+      ) : view === "list" ? (
         <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface">
           {roots.map((t) => {
             const subs = subsOf(t.id);
@@ -227,6 +232,8 @@ export function TaskModal({ taskId, projectId, members, canEdit, onClose }: { ta
           </ul>
           <form onSubmit={(e) => { e.preventDefault(); addSub(); }} className="flex gap-2"><Input aria-label="Nova subtarefa" placeholder="Nova subtarefa" value={sub} onChange={(e) => setSub(e.target.value)} /><Button type="submit" disabled={!sub.trim()}>Adicionar</Button></form>
         </section>
+
+        <TaskDependencies task={task} tasks={all} canEdit={canEdit} />
 
         <section>
           <h3 className="mb-2 text-xs font-medium text-fg-2">Registrar horas</h3>

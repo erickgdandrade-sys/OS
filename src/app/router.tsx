@@ -1,21 +1,34 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createRootRoute, createRoute, createRouter, Navigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, Spinner } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { FirstAccessPage, ForgotPasswordPage, LoginPage, SetPasswordPage, SignedOutPage } from "@/features/auth/AuthPages";
-import { ClientDetailPage, ClientsPage } from "@/features/clients/ClientsPages";
-import { DashboardPage } from "@/features/dashboard/DashboardPage";
-import { PortalHome, PortalLinkPage } from "@/features/portal/PortalPages";
-import { ProjectDetailPage } from "@/features/projects/ProjectDetailPage";
-import { ProjectsPage } from "@/features/projects/ProjectsPages";
-import { SettingsPage } from "@/features/settings/SettingsPage";
-import { MyTasksPage } from "@/features/tasks/MyTasksPage";
-import { TeamPage } from "@/features/team/TeamPage";
-import { CrmPage } from "@/features/crm/CrmPage";
-import { ProposalEditorPage, ProposalPrintPage, ProposalsPage } from "@/features/commercial/ProposalsPages";
-import { ContractDetailPage, ContractPrintPage, ContractsPage } from "@/features/commercial/ContractsPages";
+// Páginas carregadas sob demanda (divisão do bundle por rota).
+const page = <K extends string>(load: () => Promise<Record<K, ComponentType<any>>>, name: K) =>
+  lazy(() => load().then((m) => ({ default: m[name] })));
+const ClientsPage = page(() => import("@/features/clients/ClientsPages"), "ClientsPage");
+const ClientDetailPage = page(() => import("@/features/clients/ClientsPages"), "ClientDetailPage");
+const DashboardPage = page(() => import("@/features/dashboard/DashboardPage"), "DashboardPage");
+const PortalHome = page(() => import("@/features/portal/PortalPages"), "PortalHome");
+const PortalLinkPage = page(() => import("@/features/portal/PortalPages"), "PortalLinkPage");
+const ProjectDetailPage = page(() => import("@/features/projects/ProjectDetailPage"), "ProjectDetailPage");
+const ProjectsPage = page(() => import("@/features/projects/ProjectsPages"), "ProjectsPage");
+const SettingsPage = page(() => import("@/features/settings/SettingsPage"), "SettingsPage");
+const MyTasksPage = page(() => import("@/features/tasks/MyTasksPage"), "MyTasksPage");
+const TeamPage = page(() => import("@/features/team/TeamPage"), "TeamPage");
+const PublicProposalPage = page(() => import("@/features/commercial/PublicProposalPage"), "PublicProposalPage");
+const CrmPage = page(() => import("@/features/crm/CrmPage"), "CrmPage");
+const ProposalsPage = page(() => import("@/features/commercial/ProposalsPages"), "ProposalsPage");
+const ProposalEditorPage = page(() => import("@/features/commercial/ProposalsPages"), "ProposalEditorPage");
+const ProposalPrintPage = page(() => import("@/features/commercial/ProposalsPages"), "ProposalPrintPage");
+const ContractsPage = page(() => import("@/features/commercial/ContractsPages"), "ContractsPage");
+const ContractDetailPage = page(() => import("@/features/commercial/ContractsPages"), "ContractDetailPage");
+const ContractPrintPage = page(() => import("@/features/commercial/ContractsPages"), "ContractPrintPage");
+const FinancePage = page(() => import("@/features/finance/FinancePage"), "FinancePage");
+const CalendarPage = page(() => import("@/features/calendar/CalendarPage"), "CalendarPage");
 import type { Permission } from "@/lib/domain";
 
 function FullScreenLoading() {
@@ -31,7 +44,7 @@ function ProtectedLayout() {
   if (!session) return <Navigate to="/login" search={{ redirect: path === "/" || path.startsWith("/login") ? undefined : path }} replace />;
   if (isClient) return <Navigate to="/portal" replace />;
   if (!membership) return <Navigate to="/primeiro-acesso" replace />;
-  return <AppShell><Outlet /></AppShell>;
+  return <AppShell><Suspense fallback={<Spinner />}><Outlet /></Suspense></AppShell>;
 }
 
 /** Bloqueio por permissão (a proteção real está no banco; isto evita telas vazias). */
@@ -46,7 +59,7 @@ function BareProtected() {
   const { status, session, membership } = useAuth();
   if (status === "loading") return <FullScreenLoading />;
   if (!session || !membership) return <Navigate to="/login" replace />;
-  return <Outlet />;
+  return <Suspense fallback={<Spinner />}><Outlet /></Suspense>;
 }
 
 function PortalGuard() {
@@ -66,7 +79,7 @@ function FirstAccessGuard() {
   return <FirstAccessPage />;
 }
 
-const root = createRootRoute({ component: () => <Outlet />, notFoundComponent: () => (
+const root = createRootRoute({ component: () => <Suspense fallback={<FullScreenLoading />}><Outlet /></Suspense>, notFoundComponent: () => (
   <div className="flex h-dvh items-center justify-center p-6"><EmptyState title="Página não encontrada" description="O endereço não existe ou foi movido." /></div>) });
 
 const login = createRoute({ getParentRoute: () => root, path: "/login", validateSearch: (s: Record<string, unknown>) => ({ redirect: typeof s.redirect === "string" ? s.redirect : undefined }),
@@ -78,6 +91,7 @@ const signout = createRoute({ getParentRoute: () => root, path: "/sair", compone
 const firstAccess = createRoute({ getParentRoute: () => root, path: "/primeiro-acesso", component: FirstAccessGuard });
 const portal = createRoute({ getParentRoute: () => root, path: "/portal", component: PortalGuard });
 const portalLink = createRoute({ getParentRoute: () => root, path: "/p", component: PortalLinkPage });
+const publicProposal = createRoute({ getParentRoute: () => root, path: "/proposta", component: PublicProposalPage });
 
 const app = createRoute({ getParentRoute: () => root, id: "app", component: ProtectedLayout });
 const dashboard = createRoute({ getParentRoute: () => app, path: "/", component: () => <RequirePerm perm="dashboard.view"><DashboardPage /></RequirePerm> });
@@ -107,9 +121,12 @@ const contractPrint = createRoute({ getParentRoute: () => bare, path: "/contrato
   validateSearch: (s: Record<string, unknown>) => ({ v: s.v ? Number(s.v) : undefined }),
   component: function CP() { const { contractId } = contractPrint.useParams(); const { v } = contractPrint.useSearch(); return <ContractPrintPage contractId={contractId} version={v} />; } });
 
+const finance = createRoute({ getParentRoute: () => app, path: "/financeiro", component: () => <RequirePerm perm="finance.read"><FinancePage /></RequirePerm> });
+const calendar = createRoute({ getParentRoute: () => app, path: "/calendario", component: CalendarPage });
+
 const routeTree = root.addChildren([
-  login, forgot, reset, invite, signout, firstAccess, portal, portalLink,
-  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contract]),
+  login, forgot, reset, invite, signout, firstAccess, portal, portalLink, publicProposal,
+  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contract, finance, calendar]),
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 

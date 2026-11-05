@@ -273,6 +273,73 @@ set role authenticated;
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.ok(pg_temp.fails(format($$select public.save_contract_version(%L, '<p>tentativa de alteração indevida</p>')$$, :'ctr')), 'colaborador não altera contrato');
 
+-- ===== Fase 2 (complemento): link público e assinatura =======================
+reset role; set role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+insert into public.proposals (organization_id, client_id, title, number, valid_until) values (:'org_a', :'client2', 'Fotos de catálogo', 0, current_date + 20) returning id as prop3 \gset
+insert into public.proposal_items (organization_id, proposal_id, description, unit_price) values (:'org_a', :'prop3', 'Diária de estúdio', 3500);
+select pg_temp.ok(pg_temp.fails(format($$select public.create_proposal_link(%L)$$, :'prop3')), 'rascunho não gera link público');
+select public.send_proposal(:'prop3');
+select public.create_proposal_link(:'prop3', 30) as ptoken \gset
+select id as plink from public.proposal_links where token_hash = digest(:'ptoken', 'sha256') \gset
+select pg_temp.ok((select expires_at::date <= current_date + 21 from public.proposal_links where id = :'plink'), 'link expira até o fim da validade da proposta');
+select pg_temp.ok(pg_temp.fails(format($$select public.record_proposal_acceptance(%L, 'Ana', null)$$, :'plink')), 'aceite só pela Edge Function (service role)');
+reset role; set role service_role; select pg_temp.as_user(null);
+select public.record_proposal_acceptance(:'plink', 'Ana Ribeiro', 'Pode seguir');
+select pg_temp.ok((select client_accepted_name = 'Ana Ribeiro' and status = 'negotiation' from public.proposals where id = :'prop3'), 'aceite do cliente registrado com nome e data');
+select pg_temp.ok(pg_temp.fails(format($$select public.record_proposal_acceptance(%L, 'Outra pessoa', null)$$, :'plink')), 'aceite não é registrado duas vezes');
+select pg_temp.ok((select count(*) from public.notifications where kind = 'proposal_accepted') = 1, 'equipe é avisada do aceite');
+reset role; set role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+update public.contracts set status = 'in_review' where id = :'ctr';
+select public.mark_contract_sent_for_signature(:'ctr', 'zapsign', 'doc-123');
+select pg_temp.ok((select status from public.contracts where id = :'ctr') = 'sent_for_signature', 'contrato enviado para assinatura');
+select pg_temp.ok(pg_temp.fails(format($$select public.mark_contract_signature(%L, 'signed')$$, :'ctr')), 'usuário não marca contrato como assinado');
+reset role; set role service_role; select pg_temp.as_user(null);
+select public.mark_contract_signature(:'ctr', 'signed', 'Assinado por todas as partes');
+select pg_temp.ok((select status = 'signed' and signed_at is not null from public.contracts where id = :'ctr'), 'retorno do provedor marca como assinado');
+reset role; set role authenticated;
+
+-- ===== Fase 3: financeiro ===================================================
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select id as ar2 from public.accounts_receivable where project_id = :'proj3' and installment_no = 2 \gset
+select public.invoice_receivable(:'ar2');
+select pg_temp.ok((select status from public.accounts_receivable where id = :'ar2') = 'open', 'parcela prevista passa a faturada');
+select pg_temp.ok(pg_temp.fails(format($$select public.settle('receivable', %L, current_date + 1, 100)$$, :'ar2')), 'baixa com data futura é recusada');
+select public.settle('receivable', :'ar2', current_date, 4500, 'pix');
+select pg_temp.ok((select sum(amount) from public.transactions where direction = 'in') = 9000, 'baixa soma no caixa');
+select public.reopen('receivable', :'ar2');
+select pg_temp.ok((select sum(amount) from public.transactions where direction = 'in') = 4500, 'estorno remove a entrada do caixa');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.ok((select count(*) from public.notifications where kind = 'payment_received') >= 1, 'responsável pelo projeto é avisado do pagamento');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select id as cat_sw from public.financial_categories where organization_id = :'org_a' and name = 'Softwares e assinaturas' \gset
+insert into public.accounts_payable (organization_id, category_id, description, amount, due_date, recurrence) values (:'org_a', :'cat_sw', 'Adobe CC', 290, current_date, 'monthly') returning id as ap1 \gset
+select public.settle('payable', :'ap1', current_date, 290);
+select pg_temp.ok((select due_date = (current_date + interval '1 month')::date and status = 'open' from public.accounts_payable where recurrence_parent_id = :'ap1'), 'conta recorrente gera a próxima ao ser paga');
+select public.reopen('payable', :'ap1'); select public.settle('payable', :'ap1', current_date, 290);
+select pg_temp.ok((select count(*) from public.accounts_payable where recurrence_parent_id = :'ap1') = 1, 'recorrência não duplica ao pagar de novo');
+select pg_temp.ok((public.finance_report(:'org_a', current_date - 30, current_date) ->> 'income')::numeric = 4500, 'relatório usa só o recebido no período');
+select pg_temp.ok(jsonb_array_length(public.finance_report(:'org_a', current_date - 30, current_date) -> 'forecast') = 6, 'previsão de caixa para 6 meses');
+select pg_temp.ok((public.finance_report(:'org_a', current_date - 30, current_date) ->> 'contracted_not_billed')::numeric = 4500, 'previsto separado do faturado');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.ok(pg_temp.fails(format($$select public.finance_report(%L, current_date - 30, current_date)$$, :'org_a')), 'colaborador não acessa relatório financeiro');
+select pg_temp.ok(pg_temp.fails(format($$select public.settle('payable', %L, current_date, 1)$$, :'ap1')), 'colaborador não dá baixa');
+select pg_temp.ok(pg_temp.fails(format($$select * from public.team_workload(%L, current_date, current_date + 7)$$, :'org_a')), 'colaborador sem team.read não vê carga da equipe');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.ok((select count(*) from public.team_workload(:'org_a', current_date - 7, current_date + 7)) >= 3, 'gestor vê carga de trabalho da equipe');
+select pg_temp.ok((select logged_hours from public.team_workload(:'org_a', current_date - 7, current_date + 7) where user_id = '00000000-0000-0000-0000-00000000000b') = 2.5, 'horas lançadas entram na carga');
+
+-- ===== Fase 3: alertas diários ==============================================
+update public.tasks set due_date = current_date + 1, status = 'todo', assignee_id = '00000000-0000-0000-0000-00000000000b' where id = :'task1';
+select pg_temp.ok(pg_temp.fails('select public.run_daily_alerts()'), 'usuário não executa a rotina diária');
+reset role; set role service_role; select pg_temp.as_user(null);
+select public.run_daily_alerts() as alerts \gset
+select public.run_daily_alerts();
+reset role;
+select pg_temp.ok((select count(*) from public.notifications where kind = 'deadline_soon' and user_id = '00000000-0000-0000-0000-00000000000b') = 1, 'alerta de prazo é criado uma vez por dia');
+set role authenticated;
+
 -- ===== Anônimo ==============================================================
 reset role; set role anon; select pg_temp.as_user(null);
 select pg_temp.ok(pg_temp.empty_or_denied('select * from public.clients'), 'anônimo não lê clientes');

@@ -9,12 +9,13 @@ import { clientName } from "@/features/clients/ClientsPages";
 import { errorMessage, type Tone } from "@/lib/domain";
 import { date, dateTime, fillTemplate } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
+import { ServerPdfButton, SignatureButton } from "./DocumentActions";
 
 type CStatus = "draft" | "in_review" | "sent_for_signature" | "signed" | "cancelled" | "expired";
 const statusLabel: Record<CStatus, string> = { draft: "Rascunho", in_review: "Revisado", sent_for_signature: "Aguardando assinatura", signed: "Assinado", cancelled: "Cancelado", expired: "Expirado" };
 const statusTone: Record<CStatus, Tone> = { draft: "neutral", in_review: "info", sent_for_signature: "warning", signed: "success", cancelled: "neutral", expired: "neutral" };
 type Contract = { id: string; organization_id: string; number: number; client_id: string; proposal_id: string | null; title: string; status: CStatus; current_version: number; client_visible: boolean;
-  signed_at: string | null; created_at: string; clients: { legal_name: string; trade_name: string | null } | null };
+  signed_at: string | null; created_at: string; clients: { legal_name: string; trade_name: string | null; email?: string | null } | null; signature_status_detail?: string | null };
 type Version = { id: string; version: number; body_html: string; note: string | null; created_at: string; variables: Record<string, string> };
 
 /** HTML do contrato é sanitizado por lista de tags permitidas antes de ser exibido. */
@@ -89,7 +90,7 @@ export function ContractDetailPage({ contractId }: { contractId: string }) {
     queryKey: ["contract", contractId],
     queryFn: async () => {
       const [c, v, vars] = await Promise.all([
-        supabase.from("contracts").select("*, clients(legal_name, trade_name)").eq("id", contractId).single(),
+        supabase.from("contracts").select("*, clients(legal_name, trade_name, email)").eq("id", contractId).single(),
         supabase.from("contract_versions").select("*").eq("contract_id", contractId).order("version", { ascending: false }),
         supabase.rpc("contract_variables", { p_contract: contractId }),
       ]);
@@ -116,10 +117,11 @@ export function ContractDetailPage({ contractId }: { contractId: string }) {
       <PageHeader title={c.title} description={<>Contrato Nº {String(c.number).padStart(4, "0")} · <Link to={`/clientes/${c.client_id}`} className="hover:text-accent">{clientName(c.clients)}</Link></>}
         meta={<><Badge tone={statusTone[c.status]} dot>{statusLabel[c.status]}</Badge>{c.client_visible && <Badge tone="info">Visível no portal</Badge>}{c.proposal_id && <Link to={`/propostas/${c.proposal_id}`} className="text-xs text-accent hover:underline">Ver proposta</Link>}</>}
         actions={<>
-          <a href={`/contratos/${c.id}/imprimir${viewVersion ? `?v=${viewVersion}` : ""}`} target="_blank" rel="noopener"><Button icon={<FileDown className="size-4" />}>PDF</Button></a>
+          <a href={`/contratos/${c.id}/imprimir${viewVersion ? `?v=${viewVersion}` : ""}`} target="_blank" rel="noopener"><Button variant="ghost" icon={<FileDown className="size-4" />}>Imprimir</Button></a>
+          <ServerPdfButton kind="contract" id={c.id} version={viewVersion ?? undefined} />
           {write && !locked && <Button icon={<PenLine className="size-4" />} onClick={() => setEditing(true)}>Revisar cláusulas</Button>}
           {write && c.status === "draft" && <Button variant="primary" disabled={filled.missing.length > 0} title={filled.missing.length ? "Preencha os campos pendentes" : undefined} onClick={() => patch({ status: "in_review" }, "Contrato marcado como revisado.")}>Marcar como revisado</Button>}
-          {write && c.status === "in_review" && <Button variant="primary" disabled title="Requer integração com um provedor de assinatura eletrônica (Clicksign, ZapSign ou DocuSign), prevista nesta fase.">Enviar para assinatura</Button>}
+          {write && c.status === "in_review" && <SignatureButton contractId={c.id} ready={filled.missing.length === 0} defaultSigner={c.clients?.email ? { name: c.clients.legal_name, email: c.clients.email } : undefined} />}
         </>} />
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         <Card className="min-w-0">
@@ -147,7 +149,7 @@ export function ContractDetailPage({ contractId }: { contractId: string }) {
               {c.status !== "cancelled" && c.status !== "signed" && <Button variant="ghost" size="sm" className="mt-4" onClick={() => patch({ status: "cancelled" }, "Contrato cancelado.")}>Cancelar contrato</Button>}
             </Card>
           )}
-          <Card><CardHeader title="Assinatura" /><p className="text-xs text-fg-3">A assinatura com validade jurídica será feita por um provedor especializado. O status “Assinado” só é registrado pelo retorno do provedor, nunca por um botão de aceite.{c.signed_at && ` Assinado em ${date(c.signed_at)}.`}</p></Card>
+          <Card><CardHeader title="Assinatura" /><p className="text-xs text-fg-3">A assinatura com validade jurídica será feita por um provedor especializado. O status “Assinado” só é registrado pelo retorno do provedor, nunca por um botão de aceite.{c.signed_at && ` Assinado em ${date(c.signed_at)}.`}</p>{c.signature_status_detail && <p className="mt-2 text-xs font-medium text-fg-2">{c.signature_status_detail}</p>}</Card>
         </div>
       </div>
       {editing && current && <EditClauses contractId={c.id} base={current.body_html} vars={vars} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); setViewVersion(null); qc.invalidateQueries({ queryKey: ["contract", contractId] }); }} />}

@@ -7,6 +7,8 @@ import { useOrg } from "@/features/auth/AuthProvider";
 import { errorMessage, jobTitles, roleLabel, type OrgRole } from "@/lib/domain";
 import { dateTime } from "@/lib/format";
 import { invokeFunction, supabase } from "@/lib/supabase";
+import { Tabs } from "@/components/ui";
+import { Workload } from "./Workload";
 
 type Person = { user_id: string; full_name: string; email: string; role: OrgRole; job_title: string | null; status: "invited" | "active" | "disabled";
   weekly_capacity_hours: number; last_seen_at: string | null; joined_at: string | null };
@@ -17,6 +19,7 @@ export function TeamPage() {
   const qc = useQueryClient();
   const toast = useToast();
   const [inviting, setInviting] = useState(false);
+  const [tab, setTab] = useState<"people" | "load">("people");
   const [confirm, setConfirm] = useState<Person | null>(null);
   const manage = can("users.manage");
   const { data, isLoading, error, refetch } = useQuery({
@@ -45,7 +48,8 @@ export function TeamPage() {
     <>
       <PageHeader title="Equipe" description="Pessoas do estúdio, funções, acesso e carga de trabalho."
         actions={manage && <Button variant="primary" icon={<MailPlus className="size-4" />} onClick={() => setInviting(true)}>Convidar pessoa</Button>} />
-      {error ? <ErrorState error={error} onRetry={refetch} /> : isLoading ? <Spinner /> : (
+      <div className="mb-4"><Tabs value={tab} onChange={setTab} items={[{ value: "people", label: "Pessoas" }, { value: "load", label: "Distribuição de trabalho" }]} /></div>
+      {tab === "load" ? <Workload /> : error ? <ErrorState error={error} onRetry={refetch} /> : isLoading ? <Spinner /> : (
         <Card padded={false} className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

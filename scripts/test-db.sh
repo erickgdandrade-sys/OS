@@ -8,5 +8,5 @@ P="psql -U ${PGUSER:-postgres} -v ON_ERROR_STOP=1 -q"
 $P -d postgres -c "drop database if exists $DB" -c "create database $DB"
 $P -d "$DB" -f tests/local_supabase_stub.sql
 for f in migrations/*.sql; do $P -d "$DB" -f "$f"; done
-$P -d "$DB" -c "grant select, insert, update, delete on all tables in schema public to anon, authenticated; grant select, insert, delete on storage.objects to authenticated;"
+$P -d "$DB" -c "grant select, insert, update, delete on all tables in schema public to anon, authenticated; grant select, insert, delete on storage.objects to authenticated; grant all on all tables in schema public to service_role; grant all on all sequences in schema public to service_role;"
 $P -d "$DB" -f tests/rls_test.sql

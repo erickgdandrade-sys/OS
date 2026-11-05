@@ -41,3 +41,14 @@ verify_jwt = true
 verify_jwt = true
 [functions.portal]
 verify_jwt = false                     # acesso por token de link; a função valida o token
+[functions.proposal-public]
+verify_jwt = false                     # link público de proposta; a função valida o token
+import_map = "./functions/deno.json"
+[functions.document-pdf]
+verify_jwt = true
+import_map = "./functions/deno.json"
+[functions.signature-send]
+verify_jwt = true
+import_map = "./functions/deno.json"
+[functions.signature-webhook]
+verify_jwt = false                     # chamada pela ZapSign; autenticada pelo header x-webhook-secret

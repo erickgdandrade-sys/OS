@@ -46,16 +46,18 @@ export function IconButton({ label, children, className, ...rest }: ButtonHTMLAt
 }
 
 /* ---------------------------------------------------------- Formulários */
-const fieldBase = "w-full min-w-0 rounded-md border border-border bg-surface px-3 text-sm text-fg placeholder:text-fg-3 shadow-sm transition-colors hover:border-border-strong focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/15 disabled:opacity-60 aria-[invalid=true]:border-danger";
+// Largura: w-full por padrão; uma classe w-* sem prefixo passada pelo chamador substitui.
+const widthOf = (className?: string) => (/(^|\s)w-/.test(className ?? "") ? "" : "w-full");
+const fieldBase = "min-w-0 rounded-md border border-border bg-surface px-3 text-sm text-fg placeholder:text-fg-3 shadow-sm transition-colors hover:border-border-strong focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/15 disabled:opacity-60 aria-[invalid=true]:border-danger";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...rest }, ref) {
-  return <input ref={ref} className={cn(fieldBase, "h-9", className)} {...rest} />;
+  return <input ref={ref} className={cn(fieldBase, widthOf(className), "h-9", className)} {...rest} />;
 });
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea({ className, rows = 3, ...rest }, ref) {
-  return <textarea ref={ref} rows={rows} className={cn(fieldBase, "py-2 leading-relaxed", className)} {...rest} />;
+  return <textarea ref={ref} rows={rows} className={cn(fieldBase, widthOf(className), "py-2 leading-relaxed", className)} {...rest} />;
 });
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select({ className, children, ...rest }, ref) {
-  return <select ref={ref} className={cn(fieldBase, "h-9 pr-8 appearance-none bg-[length:16px] bg-[right_8px_center] bg-no-repeat", className)}
+  return <select ref={ref} className={cn(fieldBase, widthOf(className), "h-9 pr-8 appearance-none bg-[length:16px] bg-[right_8px_center] bg-no-repeat", className)}
     style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237A8596' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")" }} {...rest}>{children}</select>;
 });
 

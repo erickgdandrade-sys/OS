@@ -17,7 +17,7 @@ Legenda: ✅ feito e testado · 🟡 banco pronto, telas pendentes · ⏳ penden
 | Busca global (Ctrl/⌘ K), breadcrumbs, tema claro/escuro, notificações | ✅ | |
 | Portal do cliente (conta autenticada e link seguro) | ✅ | Antecipado da Fase 2 porque o redirecionamento de login depende dele |
 
-## Fase 2 — Comercial (atual)
+## Fase 2 — Comercial ✅
 
 | Item | Estado | Observação |
 |---|---|---|
@@ -30,18 +30,29 @@ Legenda: ✅ feito e testado · 🟡 banco pronto, telas pendentes · ⏳ penden
 | PDF da proposta (versão de impressão com a identidade do estúdio) | ✅ | Impressão do navegador → "Salvar como PDF" |
 | Aprovar proposta → contrato + projeto + tarefas + parcelas | ✅ | Tela mostra o que será gerado antes de confirmar |
 | Contratos: criar de modelo, variáveis preenchidas pelo servidor, aviso de campos sem dado, revisão de cláusulas, versões imutáveis, PDF, disponibilizar no portal, cancelar | ✅ | `contract_variables`, `save_contract_version`, `create_contract` |
-| Assinatura eletrônica | 🔌 | Botão desabilitado até integrar Clicksign/ZapSign/DocuSign (webhook `signature-webhook`) |
+| Assinatura eletrônica (ZapSign): envio do PDF com signatários e webhook que marca como assinado | ✅ 🔌 | Edge Functions `signature-send` e `signature-webhook`; precisa do token ZapSign. Sem ele, o botão fica desabilitado com a instrução |
 | Portal: propostas e contratos do cliente; links seguros com escopo, validade, revogação e contador de acessos; convite de contas do cliente | ✅ | Edge Functions `portal` e `invite-client` 🔌 a publicar |
-| Modelos visuais de proposta personalizáveis (cores/logo do estúdio) | ⏳ | Hoje usa o nome e contatos do estúdio; logo e cores entram com `organizations.branding` |
-| PDF gerado no servidor e link público de proposta | ⏳ | Junto da integração de assinatura |
+| Identidade do estúdio (logo e cor) nos PDFs, na impressão e na página pública | ✅ | Configurações → Identidade |
+| PDF gerado no servidor (salvo nos arquivos do estúdio) | ✅ | Edge Function `document-pdf` (pdf-lib), testada com Vitest |
+| Link público de proposta com validade, revogação, download do PDF e aceite registrado (nome e data) | ✅ | Edge Function `proposal-public`; o aceite avisa a equipe, que aprova formalmente |
 
-## Fase 3 — Operação
+## Fase 3 — Operação ✅
 
-* Financeiro: contas a receber/pagar, baixas, recorrências, categorias, fornecedores, relatórios, exportação CSV/PDF, previsão de caixa (contratado × faturado × recebido) 🟡.
-* Calendário geral (view `calendar_feed` ✅) com filtros; Google Calendar 🔌 (OAuth, token no Vault).
-* Equipe: painel de distribuição de trabalho e disponibilidade; Gantt/timeline com dependências.
-* Notificações: prazos próximos, projetos atrasados e contas vencidas por rotina diária (`mark_overdue` + Edge Function agendada); e-mail transacional 🔌 (Resend).
-* Divisão do bundle por rota (`React.lazy`) — hoje o JS tem ~350 kB gzip.
+| Item | Estado | Observação |
+|---|---|---|
+| Contas a receber: previstas (das propostas), faturar, baixa com data/valor/forma, estorno, cancelamento, parcelamento manual | ✅ | `invoice_receivable`, `settle`, `reopen` |
+| Contas a pagar: categorias, fornecedores, projeto vinculado (terceirizado/adicional), recorrência que gera a próxima ao pagar | ✅ | Impacta a rentabilidade do projeto |
+| Fornecedores | ✅ | |
+| Relatórios: receita por cliente, projeto e serviço; despesas por grupo; receita recorrente; caixa mensal; previsão de 6 meses (faturado × previsto × a pagar) | ✅ | `finance_report` |
+| Exportação CSV (relatório, a receber, a pagar) | ✅ | Formato Excel pt-BR (`;`, vírgula decimal) |
+| Calendário geral (mês e agenda) com filtros por tipo, projeto e "só os meus"; criação de reuniões e compromissos | ✅ | View `calendar_feed` |
+| Google Calendar | 🔌 | Fase 5 (OAuth) |
+| Distribuição de trabalho: horas previstas × capacidade, abertas, atrasadas, horas lançadas | ✅ | `team_workload` |
+| Linha do tempo (Gantt) do projeto e dependências entre tarefas | ✅ | Alerta quando a tarefa depende de outra não concluída |
+| Alertas diários: prazo amanhã, projeto atrasado, conta vencida, além de vencidos e propostas expiradas | ✅ | `run_daily_alerts()` via pg_cron |
+| Notificações de pagamento recebido, proposta aceita e contrato assinado | ✅ | |
+| Divisão do bundle por rota | ✅ | JS inicial de ~350 kB para ~217 kB (gzip) |
+| Exportação de dados do cliente (LGPD) e campo do encarregado | ⏳ | Próxima etapa |
 
 ## Fase 4 — Criatividade
 

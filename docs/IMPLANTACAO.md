@@ -14,9 +14,19 @@
    npx supabase functions deploy invite-member
    npx supabase functions deploy invite-client
    npx supabase functions deploy portal --no-verify-jwt
+   npx supabase functions deploy proposal-public --no-verify-jwt
+   npx supabase functions deploy document-pdf
+   npx supabase functions deploy signature-send
+   npx supabase functions deploy signature-webhook --no-verify-jwt
    ```
+   Assinatura eletrônica (opcional): crie uma conta na ZapSign, gere o token de API e rode
+   `npx supabase secrets set ZAPSIGN_API_TOKEN=… ZAPSIGN_WEBHOOK_SECRET=<texto aleatório longo>`
+   (para testar, adicione `ZAPSIGN_API_URL=https://sandbox.api.zapsign.com.br/api/v1`). No painel da ZapSign,
+   cadastre o webhook para `https://SEU_REF.supabase.co/functions/v1/signature-webhook` com o header
+   `x-webhook-secret` igual ao segredo. Confira os nomes dos eventos na documentação atual da ZapSign:
+   a função trata `doc_signed`, `doc_refused` e `signer_signed`.
    `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` já são injetadas pelo Supabase.
-8. Rotina diária de vencidos: em **Database → Cron**, agende `select public.mark_overdue(); select public.expire_proposals();` às 03:00.
+8. Rotina diária de vencidos: em **Database → Cron**, agende `select public.run_daily_alerts();` às 03:00 (marca vencidos, expira propostas e cria os alertas do dia).
 9. Backups: plano Pro tem backup diário e PITR; no gratuito, agende `supabase db dump` num CI.
 
 ## 2. Frontend

@@ -6,5 +6,5 @@ import { fileURLToPath } from "node:url";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
-  test: { environment: "jsdom", include: ["src/**/*.test.ts", "src/**/*.test.tsx"] },
+  test: { environment: "jsdom", include: ["src/**/*.test.ts", "src/**/*.test.tsx", "supabase/functions/_shared/*.test.ts"] },
 });

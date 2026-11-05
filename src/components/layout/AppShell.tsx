@@ -42,7 +42,7 @@ const nav: { section: string; items: NavItem[] }[] = [
   { section: "Geral", items: [
     { label: "Dashboard", to: "/", icon: LayoutDashboard, perm: "dashboard.view" },
     { label: "Minhas tarefas", to: "/tarefas", icon: ListChecks },
-    { label: "Calendário", icon: CalendarDays, phase: 3 },
+    { label: "Calendário", to: "/calendario", icon: CalendarDays },
   ] },
   { section: "Operação", items: [
     { label: "Clientes", to: "/clientes", icon: Building2, perm: "clients.read" },
@@ -50,7 +50,7 @@ const nav: { section: string; items: NavItem[] }[] = [
     { label: "CRM", to: "/crm", icon: BriefcaseBusiness, perm: "crm.read" },
     { label: "Propostas", to: "/propostas", icon: FileText, perm: "proposals.read" },
     { label: "Contratos", to: "/contratos", icon: FileSignature, perm: "contracts.read" },
-    { label: "Financeiro", icon: CircleDollarSign, perm: "finance.read", phase: 3 },
+    { label: "Financeiro", to: "/financeiro", icon: CircleDollarSign, perm: "finance.read" },
   ] },
   { section: "Criação", items: [
     { label: "Branding e naming", icon: Palette, phase: 4 },

@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
-    "test:db": "scripts/test-db.sh"
+    "test:db": "scripts/test-db.sh",
+    "check:functions": "cd supabase/functions && npx -y deno@2.5.6 check --config deno.json */index.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.3",
@@ -31,6 +32,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
     "jsdom": "^31.0.0",
+    "pdf-lib": "^1.17.1",
     "tailwindcss": "^4.3.4",
     "typescript": "^5.9.3",
     "vite": "^8.3.6",
