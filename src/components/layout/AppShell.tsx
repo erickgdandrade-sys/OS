@@ -247,8 +247,8 @@ export function AppShell({ children }: { children?: ReactNode }) {
             </nav>
             <div className="ml-auto flex items-center gap-1">
               <button onClick={() => setPaletteOpen(true)}
-                className="hidden h-8 w-64 items-center gap-2 rounded-md border border-border bg-surface-2 px-2.5 text-xs text-fg-3 hover:border-border-strong md:flex">
-                <Search className="size-3.5" />Buscar clientes, projetos, tarefas…
+                className="hidden h-8 w-72 items-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface-2 px-2.5 text-xs text-fg-3 hover:border-border-strong md:flex">
+                <Search className="size-3.5 shrink-0" /><span className="truncate">Buscar clientes, projetos, tarefas…</span>
                 <kbd className="ml-auto rounded border border-border bg-surface px-1 font-mono text-[10px]">{isMac ? "⌘" : "Ctrl"} K</kbd>
               </button>
               <IconButton label="Buscar" className="md:hidden" onClick={() => setPaletteOpen(true)}><Search className="size-4" /></IconButton>
