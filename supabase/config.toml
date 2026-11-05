@@ -1,0 +1,43 @@
+# Configuração do Supabase CLI (desenvolvimento local e referência para produção).
+# Em produção, replique os itens de [auth] no painel do Supabase.
+project_id = "nexo-studio-os"
+
+[api]
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+major_version = 15
+
+[storage]
+file_size_limit = "500MiB"
+
+[auth]
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173/convite", "http://localhost:5173/redefinir-senha"]
+jwt_expiry = 3600                      # sessão de 1 h, renovada automaticamente pelo refresh token
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = false                  # ninguém cria conta sozinho: só convite
+minimum_password_length = 10
+password_requirements = "letters_digits"
+
+[auth.email]
+enable_signup = false
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = true
+max_frequency = "60s"
+
+[auth.rate_limit]
+email_sent = 30
+sign_in_sign_ups = 30
+token_verifications = 30
+
+[functions.invite-member]
+verify_jwt = true
+[functions.invite-client]
+verify_jwt = true
+[functions.portal]
+verify_jwt = false                     # acesso por token de link; a função valida o token
