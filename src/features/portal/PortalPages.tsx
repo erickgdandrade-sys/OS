@@ -5,7 +5,7 @@ import { useState, type ReactNode } from "react";
 import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, Field, Input, Progress, Spinner, Textarea, useToast } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { categoryLabel, errorMessage, projectStatusLabel, projectStatusTone, taskStatusLabel, type ProjectCategory, type ProjectStatus, type TaskStatus } from "@/lib/domain";
-import { date, dateTime } from "@/lib/format";
+import { date, dateTime, money } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 
 /* Portal externo: layout próprio, sem nada do painel interno.
@@ -68,6 +68,43 @@ function Steps({ tasks }: { tasks: { id: string; title: string; status: string; 
   );
 }
 
+/* Propostas e contratos disponibilizados ao cliente (views portal_*). */
+function PortalCommercial() {
+  const toast = useToast();
+  const [open, setOpen] = useState<string | null>(null);
+  const proposals = useQuery({ queryKey: ["portal-proposals"], queryFn: async () => (await supabase.from("portal_proposals").select("*").order("sent_at", { ascending: false })).data ?? [] });
+  const contracts = useQuery({ queryKey: ["portal-contracts"], queryFn: async () => (await supabase.from("portal_contracts").select("*").order("created_at", { ascending: false })).data ?? [] });
+  const items = useQuery({ queryKey: ["portal-proposal-items", open], enabled: !!open, queryFn: async () => (await supabase.from("proposal_items").select("id, description, details, quantity, line_total").eq("proposal_id", open!).order("position")).data ?? [] });
+  const expand = async (id: string, status: string) => {
+    setOpen(open === id ? null : id);
+    if (status === "sent") { const { error } = await supabase.rpc("portal_view_proposal", { p_proposal: id }); if (error) toast({ tone: "error", message: errorMessage(error) }); }
+  };
+  if (!proposals.data?.length && !contracts.data?.length) return null;
+  const pLabel: Record<string, string> = { sent: "Nova", viewed: "Recebida", negotiation: "Em negociação", approved: "Aprovada", rejected: "Recusada", expired: "Expirada" };
+  return (
+    <div className="mt-8 grid gap-4 lg:grid-cols-2">
+      {!!proposals.data?.length && <Card><CardHeader title="Propostas" /><ul className="grid gap-2">{proposals.data.map((p) => (
+        <li key={p.id} className="rounded-md border border-border">
+          <button onClick={() => expand(p.id, p.status)} className="flex w-full items-center justify-between gap-3 p-3 text-left">
+            <span><span className="block text-sm font-medium">{p.title}</span><span className="text-xs text-fg-3">Nº {String(p.number).padStart(4, "0")} · válida até {date(p.valid_until)}</span></span>
+            <span className="text-right"><span className="block text-sm font-semibold tabular">{money(p.total)}</span><Badge tone={p.status === "approved" ? "success" : "info"}>{pLabel[p.status] ?? p.status}</Badge></span>
+          </button>
+          {open === p.id && <div className="grid gap-3 border-t border-border p-3 text-sm">
+            {p.scope && <div><p className="text-xs font-medium text-fg-2">Escopo</p><p className="whitespace-pre-wrap text-fg-2">{p.scope}</p></div>}
+            <ul className="grid gap-1">{(items.data ?? []).map((i) => <li key={i.id} className="flex justify-between gap-3"><span>{i.description}{Number(i.quantity) !== 1 && ` × ${Number(i.quantity)}`}</span><span className="tabular">{money(i.line_total)}</span></li>)}</ul>
+            {p.installments > 1 && <p className="text-xs text-fg-3">Em {p.installments}x de {money(Number(p.total) / p.installments)}</p>}
+            <p className="text-xs text-fg-3">Para aprovar ou negociar, responda ao estúdio pelo canal combinado. A aprovação formal acontece no contrato.</p>
+          </div>}
+        </li>))}</ul></Card>}
+      {!!contracts.data?.length && <Card><CardHeader title="Contratos" /><ul className="grid gap-2">{contracts.data.map((c) => (
+        <li key={c.id} className="flex items-center justify-between gap-3 rounded-md border border-border p-3 text-sm">
+          <span><span className="block font-medium">{c.title}</span><span className="text-xs text-fg-3">Nº {String(c.number).padStart(4, "0")}{c.signed_at ? ` · assinado em ${date(c.signed_at)}` : ""}</span></span>
+          <Badge tone={c.status === "signed" ? "success" : "neutral"}>{c.status === "signed" ? "Assinado" : c.status === "sent_for_signature" ? "Aguardando assinatura" : "Em preparação"}</Badge>
+        </li>))}</ul></Card>}
+    </div>
+  );
+}
+
 /* ---------------------------------------------- Cliente autenticado */
 export function PortalHome() {
   const { context, signOut, session } = useAuth();
@@ -110,6 +147,7 @@ export function PortalHome() {
     <PortalLayout studio={account?.studio_name} onSignOut={signOut}>
       <h1 className="text-2xl font-semibold">Olá{account ? `, ${account.client_name}` : ""}</h1>
       <p className="mt-1 text-sm text-fg-3">Acompanhe seus projetos, baixe arquivos e aprove entregas.</p>
+      <PortalCommercial />
       {projects.error ? <div className="mt-6"><ErrorState error={projects.error} /></div> : projects.isLoading ? <Spinner /> : !projects.data?.length ? (
         <div className="mt-6"><EmptyState title="Nenhum projeto compartilhado ainda" description="Quando o estúdio liberar um projeto, ele aparece aqui." /></div>
       ) : (

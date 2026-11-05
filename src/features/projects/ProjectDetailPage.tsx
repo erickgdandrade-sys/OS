@@ -11,8 +11,9 @@ import { categoryLabel, errorMessage, priorityLabel, projectStatusLabel, project
 import { date, dateTime, hours, money } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 import { DueLabel, progressOf } from "./ProjectsPages";
+import { PortalSharing } from "./PortalSharing";
 
-type Tab = "tasks" | "overview" | "team" | "files" | "comments" | "time" | "history";
+type Tab = "tasks" | "overview" | "team" | "files" | "comments" | "time" | "portal" | "history";
 
 export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const { orgId, userId, can } = useOrg();
@@ -79,7 +80,8 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       <Tabs value={tab} onChange={setTab} items={[
         { value: "tasks", label: "Tarefas", count: project.tasks.filter((t) => !t.parent_id).length },
         { value: "overview", label: "Visão geral" }, { value: "team", label: "Equipe", count: members.data?.length },
-        { value: "files", label: "Arquivos" }, { value: "comments", label: "Comentários" }, { value: "time", label: "Horas" }, { value: "history", label: "Histórico" },
+        { value: "files", label: "Arquivos" }, { value: "comments", label: "Comentários" }, { value: "time", label: "Horas" },
+        ...(can("portal.share") ? [{ value: "portal" as const, label: "Portal do cliente" }] : []), { value: "history", label: "Histórico" },
       ]} />
       <div className="pt-4">
         {tab === "tasks" && <ProjectTasks projectId={projectId} members={members.data ?? []} canEdit={!!canEdit} />}
@@ -88,6 +90,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         {tab === "files" && <Files projectId={projectId} orgId={orgId} />}
         {tab === "comments" && <Comments projectId={projectId} orgId={orgId} />}
         {tab === "time" && <TimeLog projectId={projectId} />}
+        {tab === "portal" && <PortalSharing projectId={projectId} clientId={project.client_id} />}
         {tab === "history" && <History projectId={projectId} />}
       </div>
 

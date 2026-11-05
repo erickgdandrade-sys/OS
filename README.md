@@ -4,12 +4,13 @@ Plataforma de gestão para estúdios criativos: clientes, projetos, tarefas, equ
 
 **Stack:** React 19 · TypeScript · Vite · Tailwind CSS 4 · TanStack Router/Query · React Hook Form + Zod · Recharts · Supabase (Postgres + RLS, Auth, Storage, Edge Functions).
 
-## Estado atual — Fase 1 (fundação)
+## Estado atual — Fases 1 e 2
 
-* Banco de dados completo para todas as fases, com isolamento por estúdio e permissões no próprio banco (RLS), coberto por 77 asserções.
+* Banco de dados completo para todas as fases, com isolamento por estúdio e permissões no próprio banco (RLS), coberto por 99 asserções.
 * Autenticação real com Supabase Auth: login, recuperação e redefinição de senha, convite com criação de senha, primeiro acesso e encerramento de sessão.
 * Dashboard, clientes, projetos (Kanban e lista, a partir de modelos), tarefas e subtarefas, horas, arquivos, comentários, equipe com convites, permissões configuráveis, busca global, notificações, tema claro e escuro.
-* Portal do cliente por conta autenticada ou link seguro, com aprovação de materiais.
+* Comercial: CRM com pipeline, serviços e preços, construtor de propostas com PDF, aprovação que gera projeto, contrato e parcelas, contratos com variáveis e versões.
+* Portal do cliente por conta autenticada ou link seguro, com aprovação de materiais, propostas e contratos.
 
 Módulos das próximas fases aparecem no menu desativados, com a fase indicada. Veja [docs/PLANO.md](docs/PLANO.md).
 

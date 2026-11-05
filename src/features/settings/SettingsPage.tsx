@@ -6,15 +6,16 @@ import { useAuth, useOrg } from "@/features/auth/AuthProvider";
 import { errorMessage, roleLabel, type OrgRole } from "@/lib/domain";
 import { onlyDigits, isValidDocument } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
+import { ServicesPanel } from "./ServicesPanel";
 
 export function SettingsPage() {
   useBreadcrumbs([{ label: "Configurações" }]);
-  const [tab, setTab] = useState<"studio" | "permissions">("studio");
+  const [tab, setTab] = useState<"studio" | "services" | "permissions">("studio");
   return (
     <>
-      <PageHeader title="Configurações" description="Dados do estúdio e permissões por nível de acesso." />
-      <Tabs value={tab} onChange={setTab} items={[{ value: "studio", label: "Estúdio" }, { value: "permissions", label: "Permissões" }]} />
-      <div className="pt-5">{tab === "studio" ? <StudioForm /> : <PermissionsMatrix />}</div>
+      <PageHeader title="Configurações" description="Dados do estúdio, serviços e permissões por nível de acesso." />
+      <Tabs value={tab} onChange={setTab} items={[{ value: "studio", label: "Estúdio" }, { value: "services", label: "Serviços e preços" }, { value: "permissions", label: "Permissões" }]} />
+      <div className="pt-5">{tab === "studio" ? <StudioForm /> : tab === "services" ? <ServicesPanel /> : <PermissionsMatrix />}</div>
     </>
   );
 }

@@ -17,14 +17,23 @@ Legenda: ✅ feito e testado · 🟡 banco pronto, telas pendentes · ⏳ penden
 | Busca global (Ctrl/⌘ K), breadcrumbs, tema claro/escuro, notificações | ✅ | |
 | Portal do cliente (conta autenticada e link seguro) | ✅ | Antecipado da Fase 2 porque o redirecionamento de login depende dele |
 
-## Fase 2 — Comercial
+## Fase 2 — Comercial (atual)
 
-* CRM: pipeline Kanban com etapas configuráveis 🟡, leads, conversão em cliente (`convert_lead_to_client` ✅ no banco), atividades e follow-ups, reuniões.
-* Serviços e precificação 🟡.
-* Construtor de propostas (itens, pacotes, desconto, parcelas, validade, revisões) 🟡 — totais já calculados no servidor; PDF e link de compartilhamento.
-* Contratos: modelos com variáveis (3 modelos padrão ✅, `fillTemplate` ✅), revisão antes do envio, versões imutáveis ✅, PDF, assinatura 🔌 (Clicksign/ZapSign/DocuSign — webhook `signature-webhook` define `nexo.signature_webhook` antes de marcar como assinado).
-* Aprovar proposta → contrato + projeto + tarefas + parcelas: `approve_proposal` ✅ (botão na tela de propostas).
-* Gestão de links do portal (criar, escopos, expiração, revogar) na tela do projeto.
+| Item | Estado | Observação |
+|---|---|---|
+| CRM: pipeline Kanban com etapas, valores por etapa, arrastar, motivo obrigatório ao perder, histórico automático de mudança de etapa | ✅ | `move_opportunity` |
+| Leads, oportunidades para cliente existente, atividades e follow-ups | ✅ | |
+| Converter lead em cliente mantendo histórico, contato e oportunidades | ✅ | `convert_lead_to_client` |
+| Serviços e preços (Configurações → Serviços e preços) | ✅ | |
+| Construtor de propostas: itens do catálogo ou livres, pacotes, quantidades, desconto (% ou R$), parcelas, validade, revisões, escopo, entregáveis, condições, observações internas | ✅ | Totais calculados no servidor |
+| Status: rascunho → enviada → visualizada (pelo portal) → negociação → aprovada/recusada/expirada | ✅ | `send_proposal`, `portal_view_proposal`, `reject_proposal`, `expire_proposals` (rotina diária) |
+| PDF da proposta (versão de impressão com a identidade do estúdio) | ✅ | Impressão do navegador → "Salvar como PDF" |
+| Aprovar proposta → contrato + projeto + tarefas + parcelas | ✅ | Tela mostra o que será gerado antes de confirmar |
+| Contratos: criar de modelo, variáveis preenchidas pelo servidor, aviso de campos sem dado, revisão de cláusulas, versões imutáveis, PDF, disponibilizar no portal, cancelar | ✅ | `contract_variables`, `save_contract_version`, `create_contract` |
+| Assinatura eletrônica | 🔌 | Botão desabilitado até integrar Clicksign/ZapSign/DocuSign (webhook `signature-webhook`) |
+| Portal: propostas e contratos do cliente; links seguros com escopo, validade, revogação e contador de acessos; convite de contas do cliente | ✅ | Edge Functions `portal` e `invite-client` 🔌 a publicar |
+| Modelos visuais de proposta personalizáveis (cores/logo do estúdio) | ⏳ | Hoje usa o nome e contatos do estúdio; logo e cores entram com `organizations.branding` |
+| PDF gerado no servidor e link público de proposta | ⏳ | Junto da integração de assinatura |
 
 ## Fase 3 — Operação
 

@@ -46,7 +46,7 @@ export function IconButton({ label, children, className, ...rest }: ButtonHTMLAt
 }
 
 /* ---------------------------------------------------------- Formulários */
-const fieldBase = "w-full rounded-md border border-border bg-surface px-3 text-sm text-fg placeholder:text-fg-3 shadow-sm transition-colors hover:border-border-strong focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/15 disabled:opacity-60 aria-[invalid=true]:border-danger";
+const fieldBase = "w-full min-w-0 rounded-md border border-border bg-surface px-3 text-sm text-fg placeholder:text-fg-3 shadow-sm transition-colors hover:border-border-strong focus:border-accent focus:outline-none focus:ring-3 focus:ring-accent/15 disabled:opacity-60 aria-[invalid=true]:border-danger";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...rest }, ref) {
   return <input ref={ref} className={cn(fieldBase, "h-9", className)} {...rest} />;

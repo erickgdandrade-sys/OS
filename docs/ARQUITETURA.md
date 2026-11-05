@@ -64,7 +64,7 @@ Documento vivo. Cada decisão aqui tem o motivo ao lado; quando uma decisão mud
 
 ## 3. Modelo de dados
 
-61 tabelas e 11 views em `public`, em 10 migrations. Convenções:
+61 tabelas e 11 views em `public`, em 11 migrations. Convenções:
 
 * `id uuid` (gen_random_uuid), `created_at/updated_at timestamptz`, trigger `set_updated_at`.
 * `organization_id` em todas as tabelas de negócio + `unique (organization_id, id)` nas tabelas referenciadas.
@@ -135,8 +135,8 @@ organizations ─┬─< organization_members >── auth.users ──1:1──
 
 | Camada | Como | Estado |
 |---|---|---|
-| Banco (RLS, constraints, fluxos) | `scripts/test-db.sh` aplica as 10 migrations num Postgres 16 descartável (com stub de `auth`/`storage`) e roda `supabase/tests/rls_test.sql`: isolamento entre estúdios, permissões por papel, portal, financeiro, automação de proposta, convites, links seguros, anônimo | **77 asserções passando** |
-| Regras puras do frontend | Vitest (`npm test`): BRL, datas DD/MM/AAAA, fuso SP, CPF/CNPJ, modelos `{{variáveis}}` com escape, mensagens de erro | **9 testes passando** |
+| Banco (RLS, constraints, fluxos) | `scripts/test-db.sh` aplica as 10 migrations num Postgres 16 descartável (com stub de `auth`/`storage`) e roda `supabase/tests/rls_test.sql`: isolamento entre estúdios, permissões por papel, portal, financeiro, automação de proposta, CRM, propostas, contratos, convites, links seguros, anônimo | **99 asserções passando** |
+| Regras puras do frontend | Vitest (`npm test`): BRL, datas DD/MM/AAAA, fuso SP, CPF/CNPJ, modelos `{{variáveis}}` com escape, sanitização do HTML de contratos, mensagens de erro | **11 testes passando** |
 | Tipos e build | `npm run typecheck` e `npm run build` | Passando |
 | Edge Functions | Testes de integração com `supabase start` + `supabase functions serve` (convite, portal por token: expirado, revogado, escopo) | A fazer com um projeto Supabase de desenvolvimento |
 | Ponta a ponta | Playwright: login → criar cliente → projeto por modelo → tarefa → horas → portal aprova | A fazer após conectar o Supabase |

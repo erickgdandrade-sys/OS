@@ -16,7 +16,7 @@
    npx supabase functions deploy portal --no-verify-jwt
    ```
    `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` já são injetadas pelo Supabase.
-8. Rotina diária de vencidos: em **Database → Cron**, agende `select public.mark_overdue();` às 03:00.
+8. Rotina diária de vencidos: em **Database → Cron**, agende `select public.mark_overdue(); select public.expire_proposals();` às 03:00.
 9. Backups: plano Pro tem backup diário e PITR; no gratuito, agende `supabase db dump` num CI.
 
 ## 2. Frontend

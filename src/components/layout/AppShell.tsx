@@ -47,9 +47,9 @@ const nav: { section: string; items: NavItem[] }[] = [
   { section: "Operação", items: [
     { label: "Clientes", to: "/clientes", icon: Building2, perm: "clients.read" },
     { label: "Projetos", to: "/projetos", icon: FolderKanban },
-    { label: "CRM", icon: BriefcaseBusiness, perm: "crm.read", phase: 2 },
-    { label: "Propostas", icon: FileText, perm: "proposals.read", phase: 2 },
-    { label: "Contratos", icon: FileSignature, perm: "contracts.read", phase: 2 },
+    { label: "CRM", to: "/crm", icon: BriefcaseBusiness, perm: "crm.read" },
+    { label: "Propostas", to: "/propostas", icon: FileText, perm: "proposals.read" },
+    { label: "Contratos", to: "/contratos", icon: FileSignature, perm: "contracts.read" },
     { label: "Financeiro", icon: CircleDollarSign, perm: "finance.read", phase: 3 },
   ] },
   { section: "Criação", items: [

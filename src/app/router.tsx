@@ -13,6 +13,9 @@ import { ProjectsPage } from "@/features/projects/ProjectsPages";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { MyTasksPage } from "@/features/tasks/MyTasksPage";
 import { TeamPage } from "@/features/team/TeamPage";
+import { CrmPage } from "@/features/crm/CrmPage";
+import { ProposalEditorPage, ProposalPrintPage, ProposalsPage } from "@/features/commercial/ProposalsPages";
+import { ContractDetailPage, ContractPrintPage, ContractsPage } from "@/features/commercial/ContractsPages";
 import type { Permission } from "@/lib/domain";
 
 function FullScreenLoading() {
@@ -36,6 +39,14 @@ function RequirePerm({ perm, children }: { perm: Permission; children: ReactNode
   const { can } = useAuth();
   if (!can(perm)) return <EmptyState icon={<Lock className="size-5" />} title="Sem acesso a este módulo" description="Peça a um administrador para liberar esta permissão." />;
   return <>{children}</>;
+}
+
+/** Páginas internas sem o shell (impressão/PDF). */
+function BareProtected() {
+  const { status, session, membership } = useAuth();
+  if (status === "loading") return <FullScreenLoading />;
+  if (!session || !membership) return <Navigate to="/login" replace />;
+  return <Outlet />;
 }
 
 function PortalGuard() {
@@ -80,9 +91,26 @@ const project = createRoute({ getParentRoute: () => app, path: "/projetos/$proje
 const team = createRoute({ getParentRoute: () => app, path: "/equipe", component: () => <RequirePerm perm="team.read"><TeamPage /></RequirePerm> });
 const settings = createRoute({ getParentRoute: () => app, path: "/configuracoes", component: () => <RequirePerm perm="settings.manage"><SettingsPage /></RequirePerm> });
 
+const crm = createRoute({ getParentRoute: () => app, path: "/crm", component: () => <RequirePerm perm="crm.read"><CrmPage /></RequirePerm> });
+const proposals = createRoute({ getParentRoute: () => app, path: "/propostas",
+  validateSearch: (s: Record<string, unknown>) => ({ nova: typeof s.nova === "string" ? s.nova : undefined, oportunidade: typeof s.oportunidade === "string" ? s.oportunidade : undefined }),
+  component: function Pr() { const s = proposals.useSearch(); return <RequirePerm perm="proposals.read"><ProposalsPage newFor={s.nova} opportunity={s.oportunidade} /></RequirePerm>; } });
+const proposal = createRoute({ getParentRoute: () => app, path: "/propostas/$proposalId",
+  component: function P1() { const { proposalId } = proposal.useParams(); return <RequirePerm perm="proposals.read"><ProposalEditorPage key={proposalId} proposalId={proposalId} /></RequirePerm>; } });
+const contracts = createRoute({ getParentRoute: () => app, path: "/contratos", component: () => <RequirePerm perm="contracts.read"><ContractsPage /></RequirePerm> });
+const contract = createRoute({ getParentRoute: () => app, path: "/contratos/$contractId",
+  component: function C1() { const { contractId } = contract.useParams(); return <RequirePerm perm="contracts.read"><ContractDetailPage key={contractId} contractId={contractId} /></RequirePerm>; } });
+const bare = createRoute({ getParentRoute: () => root, id: "bare", component: BareProtected });
+const proposalPrint = createRoute({ getParentRoute: () => bare, path: "/propostas/$proposalId/imprimir",
+  component: function PP() { const { proposalId } = proposalPrint.useParams(); return <ProposalPrintPage proposalId={proposalId} />; } });
+const contractPrint = createRoute({ getParentRoute: () => bare, path: "/contratos/$contractId/imprimir",
+  validateSearch: (s: Record<string, unknown>) => ({ v: s.v ? Number(s.v) : undefined }),
+  component: function CP() { const { contractId } = contractPrint.useParams(); const { v } = contractPrint.useSearch(); return <ContractPrintPage contractId={contractId} version={v} />; } });
+
 const routeTree = root.addChildren([
   login, forgot, reset, invite, signout, firstAccess, portal, portalLink,
-  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings]),
+  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contract]),
+  bare.addChildren([proposalPrint, contractPrint]),
 ]);
 
 export const router = createRouter({ routeTree, defaultPreload: "intent" });

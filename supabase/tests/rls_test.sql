@@ -220,6 +220,59 @@ select pg_temp.ok(jsonb_array_length(public.session_context() -> 'client_account
 select pg_temp.ok(pg_temp.fails($$select public.create_organization('Cliente cria', 'cliente-cria')$$), 'conta de cliente não cria organização');
 select pg_temp.ok((select count(*) from public.team_directory((select organization_id from public.client_users limit 1))) = 0, 'cliente não lista a equipe');
 
+-- ===== Fase 2: CRM =========================================================
+reset role; set role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+insert into public.leads (organization_id, name, company, email) values (:'org_a', 'Ana Ribeiro', 'Bodega 81', 'ana@bodega.test') returning id as lead1 \gset
+select id as st_new from public.pipeline_stages where organization_id = :'org_a' and position = 1 \gset
+select id as st_prop from public.pipeline_stages where organization_id = :'org_a' and position = 5 \gset
+select id as st_lost from public.pipeline_stages where organization_id = :'org_a' and kind = 'lost' \gset
+insert into public.opportunities (organization_id, title, lead_id, stage_id, estimated_value) values (:'org_a', 'Cardápio Bodega', :'lead1', :'st_new', 8000) returning id as opp1 \gset
+select pg_temp.ok(pg_temp.fails(format($$select public.move_opportunity(%L, %L)$$, :'opp1', :'st_lost')), 'marcar como perdida exige motivo');
+select public.move_opportunity(:'opp1', :'st_prop');
+select pg_temp.ok((select stage_id from public.opportunities where id = :'opp1') = :'st_prop', 'oportunidade muda de etapa');
+select pg_temp.ok((select count(*) from public.crm_activities where opportunity_id = :'opp1') = 1, 'mudança de etapa fica no histórico');
+select public.convert_lead_to_client(:'lead1') as client3 \gset
+select pg_temp.ok((select legal_name from public.clients where id = :'client3') = 'Bodega 81', 'lead convertido vira cliente');
+select pg_temp.ok((select client_id from public.opportunities where id = :'opp1') = :'client3' and (select client_id from public.crm_activities where opportunity_id = :'opp1') = :'client3', 'histórico do lead acompanha o novo cliente');
+select pg_temp.ok((select count(*) from public.client_contacts where client_id = :'client3' and is_primary) = 1, 'contato principal criado na conversão');
+select pg_temp.ok(public.convert_lead_to_client(:'lead1') = :'client3', 'conversão repetida não duplica cliente');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.ok((select count(*) from public.leads) = 0, 'colaborador sem crm.read não vê leads');
+
+-- ===== Fase 2: propostas ====================================================
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+insert into public.proposals (organization_id, client_id, title, number, valid_until) values (:'org_a', :'client1', 'Manual de marca Arara', 0, current_date + 15) returning id as prop2 \gset
+select pg_temp.ok(pg_temp.fails(format($$select public.send_proposal(%L)$$, :'prop2')), 'proposta sem itens não é enviada');
+insert into public.proposal_items (organization_id, proposal_id, description, unit_price) values (:'org_a', :'prop2', 'Manual de marca', 6000);
+select public.send_proposal(:'prop2');
+select pg_temp.ok((select status = 'sent' and sent_at is not null from public.proposals where id = :'prop2'), 'proposta enviada');
+select pg_temp.ok((select number from public.proposals where id = :'prop2') = 2, 'numeração sequencial por estúdio');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000f');
+select pg_temp.ok(pg_temp.fails(format($$select public.portal_view_proposal(%L)$$, :'prop2')), 'cliente de outra conta não abre a proposta');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+select public.portal_view_proposal(:'prop2');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.ok((select status from public.proposals where id = :'prop2') = 'viewed', 'proposta marcada como visualizada pelo cliente');
+select pg_temp.ok((select count(*) from public.notifications where kind = 'proposal_viewed') = 1, 'equipe é avisada da visualização');
+select public.reject_proposal(:'prop2', 'Orçamento acima do previsto');
+select pg_temp.ok((select status = 'rejected' and notes like '%acima do previsto%' from public.proposals where id = :'prop2'), 'recusa registra motivo');
+
+-- ===== Fase 2: contratos ====================================================
+select id as ctpl_social from public.contract_templates where organization_id = :'org_a' and category = 'social_media' \gset
+select public.create_contract(:'client1', :'ctpl_social', 'Contrato social media Arara') as ctr \gset
+select pg_temp.ok((public.contract_variables(:'ctr') ->> 'nome_cliente') = 'Arara Torrefação Ltda', 'variável nome_cliente preenchida do cadastro');
+select pg_temp.ok((public.contract_variables(:'ctr') ->> 'cpf_cnpj') = '12.345.678/0001-90', 'CNPJ formatado na variável');
+select pg_temp.ok(public.save_contract_version(:'ctr', '<p>Texto revisado do contrato de social media.</p>', 'Revisão jurídica') = 2, 'nova versão salva');
+select pg_temp.ok((select current_version from public.contracts where id = :'ctr') = 2, 'contrato aponta para a versão atual');
+update public.contract_versions set body_html = 'x' where contract_id = :'ctr';
+select pg_temp.ok(not exists (select 1 from public.contract_versions where contract_id = :'ctr' and body_html = 'x'), 'versões anteriores não podem ser alteradas');
+reset role;
+select pg_temp.ok(pg_temp.fails(format($$update public.contract_versions set body_html = 'x' where contract_id = %L$$, :'ctr')), 'nem o dono do banco altera versão (trigger de imutabilidade)');
+set role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.ok(pg_temp.fails(format($$select public.save_contract_version(%L, '<p>tentativa de alteração indevida</p>')$$, :'ctr')), 'colaborador não altera contrato');
+
 -- ===== Anônimo ==============================================================
 reset role; set role anon; select pg_temp.as_user(null);
 select pg_temp.ok(pg_temp.empty_or_denied('select * from public.clients'), 'anônimo não lê clientes');
