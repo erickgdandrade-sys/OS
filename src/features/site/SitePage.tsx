@@ -42,7 +42,11 @@ export function SitePage() {
       return (data?.content ?? null) as Partial<SiteContent> | null;
     },
   });
-  useEffect(() => { if (q.isSuccess && !dirty) setC({ ...(defaults as SiteContent), ...(q.data ?? {}) }); }, [q.isSuccess, q.data, dirty]);
+  useEffect(() => {
+    if (!q.isSuccess || dirty) return;
+    const base = defaults as SiteContent;
+    setC({ ...base, ...(q.data ?? {}), contato: { ...base.contato, ...(q.data?.contato ?? {}) } });
+  }, [q.isSuccess, q.data, dirty]);
   useEffect(() => {
     if (!dirty) return;
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
@@ -101,9 +105,10 @@ function General({ c, change }: PanelProps) {
   return (
     <div className="grid max-w-3xl gap-4">
       <Card>
-        <CardHeader title="Contato e empresa" description="O e-mail aparece no site. Razão social, CNPJ e cidade entram nas políticas." />
+        <CardHeader title="Contato e empresa" description="O formulário do site gera um link para este WhatsApp. E-mail, razão social, CNPJ e cidade entram nas políticas." />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="E-mail de contato" required htmlFor="st-email" className="sm:col-span-2"><Input id="st-email" type="email" value={c.contato.email} onChange={(e) => change({ contato: { ...c.contato, email: e.target.value } })} /></Field>
+          <Field label="WhatsApp" required htmlFor="st-whats" hint="Com 55 e DDD, como 5548991903121."><Input id="st-whats" inputMode="tel" value={c.contato.whatsapp} onChange={(e) => change({ contato: { ...c.contato, whatsapp: e.target.value } })} /></Field>
+          <Field label="E-mail de contato" required htmlFor="st-email"><Input id="st-email" type="email" value={c.contato.email} onChange={(e) => change({ contato: { ...c.contato, email: e.target.value } })} /></Field>
           <Field label="Razão social" htmlFor="st-legal"><Input id="st-legal" value={c.empresa.razaoSocial} onChange={(e) => emp("razaoSocial", e.target.value)} /></Field>
           <Field label="CNPJ" htmlFor="st-cnpj"><Input id="st-cnpj" value={c.empresa.cnpj} onChange={(e) => emp("cnpj", e.target.value)} /></Field>
           <Field label="Cidade" htmlFor="st-city"><Input id="st-city" value={c.empresa.cidade} onChange={(e) => emp("cidade", e.target.value)} /></Field>

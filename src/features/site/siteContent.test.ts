@@ -21,8 +21,14 @@ describe("conteúdo do site", () => {
     expect(siteProblems(base)).toEqual([]);
   });
   it("bloqueia e-mail e links inválidos", () => {
-    const c = { ...base, contato: { email: "sem-arroba" }, redes: [{ nome: "Behance", url: "javascript:alert(1)" }] };
+    const c = { ...base, contato: { ...base.contato, email: "sem-arroba" }, redes: [{ nome: "Behance", url: "javascript:alert(1)" }] };
     expect(siteProblems(c)).toHaveLength(2);
+  });
+  it("exige WhatsApp com 55 e DDD", () => {
+    const whats = (whatsapp: string) => siteProblems({ ...base, contato: { ...base.contato, whatsapp } });
+    expect(whats("48991903121")).toHaveLength(1);
+    expect(whats("")).toHaveLength(1);
+    expect(whats("55 48 99190-3121")).toEqual([]);
   });
   it("aceita rede sem endereço, que fica oculta no site", () => {
     expect(siteProblems({ ...base, redes: [{ nome: "Behance", url: "" }] })).toEqual([]);

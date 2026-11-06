@@ -7,7 +7,7 @@ export type Project = {
 export type Policy = { titulo: string; atualizadaEm: string; secoes: { titulo: string; paragrafos: string[] }[] };
 export type SiteContent = {
   empresa: { nome: string; razaoSocial: string; cnpj: string; cidade: string };
-  contato: { email: string };
+  contato: { email: string; whatsapp: string };
   redes: { nome: string; url: string }[];
   textura: { intensidade: number; velocidade: number };
   frases: string[];
@@ -36,10 +36,13 @@ export function moveItem<T>(list: T[], index: number, delta: number): T[] {
 }
 export const isHttpUrl = (u: string) => /^https?:\/\/\S+$/i.test(u.trim());
 export const isEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+/** Formato do wa.me: 55 + DDD + número, só dígitos (fixo tem 10 dígitos depois do 55; celular, 11). */
+export const isWhatsapp = (n: string) => /^55\d{10,11}$/.test(n.replace(/\D/g, ""));
 
 /** Impede publicar um site que não funcionaria (o site ignora links inválidos sem avisar). */
 export function siteProblems(c: SiteContent): string[] {
   const out: string[] = [];
+  if (!isWhatsapp(c.contato.whatsapp)) out.push("Geral: informe o WhatsApp com 55 e DDD, como 5548991903121.");
   if (!isEmail(c.contato.email)) out.push("Geral: informe um e-mail de contato válido.");
   c.redes.forEach((r) => {
     if (r.url.trim() && !isHttpUrl(r.url)) out.push(`Redes: o endereço de ${r.nome || "um link"} precisa começar com https://.`);

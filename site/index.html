@@ -140,8 +140,6 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
 .contact-copy { grid-column: 1 / span 6; display: grid; gap: 24px; min-width: 0; }
 .contact h2 { font-size: clamp(2.8rem, 7vw, 7.4rem); }
 .contact h2 em { display: block; font-size: .72em; line-height: 1.08; letter-spacing: -0.015em; margin-top: .14em; }
-.contact .addr { font-size: 18px; }
-.contact .addr b { display: block; font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 500; user-select: all; overflow-wrap: anywhere; }
 .form { grid-column: 8 / -1; background: var(--paper); color: var(--ink); padding: clamp(20px, 2.6vw, 36px); display: grid; gap: 16px; min-width: 0; }
 .form label { display: grid; gap: 6px; font-size: 16px; font-weight: 500; }
 .form input, .form textarea { font: inherit; font-weight: 400; color: var(--ink); background: var(--white); border: 1px solid var(--rule); border-radius: 0; padding: 12px; width: 100%; }
@@ -149,8 +147,6 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
 .form .btn { justify-self: start; }
 .form .hint { font-size: 15px; color: var(--mut); }
 .out { display: grid; gap: 12px; border-top: 1px solid var(--rule); padding-top: 16px; }
-.out .acts { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.out a { font-weight: 600; }
 
 /* Rodapé */
 .foot { padding-block: clamp(48px, 6vw, 88px) 56px; }
@@ -367,20 +363,15 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
     <div class="wrap">
       <div class="contact-copy">
         <h2 class="display">Tem uma ideia? <em>Vamos descobrir até onde ela pode chegar.</em></h2>
-        <p class="addr">Escreva para a gente<b id="addr">contato@example.com</b></p>
       </div>
       <form class="form" id="form" novalidate>
         <label for="f-nome">Seu nome<input id="f-nome" name="nome" autocomplete="name" required></label>
         <label for="f-empresa">Empresa<input id="f-empresa" name="empresa" autocomplete="organization"></label>
         <label for="f-ideia">O que você quer construir?<textarea id="f-ideia" name="ideia" required></textarea></label>
-        <button class="btn" type="submit">Montar mensagem</button>
-        <p class="hint" id="hint">Vamos montar a mensagem para você enviar pelo seu e-mail.</p>
+        <button class="btn" type="submit">Gerar link do WhatsApp</button>
+        <p class="hint" id="hint">Geramos um link direto para o nosso WhatsApp, com a sua mensagem pronta.</p>
         <div class="out" id="out" hidden>
-          <label for="f-msg">Sua mensagem<textarea id="f-msg" readonly></textarea></label>
-          <div class="acts">
-            <button class="btn" type="button" id="copy">Copiar mensagem</button>
-            <a id="mail" href="#contato">Abrir no e-mail</a>
-          </div>
+          <a class="btn" id="wa" href="#contato" target="_blank" rel="noopener">Abrir conversa no WhatsApp</a>
         </div>
       </form>
     </div>
@@ -417,7 +408,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
   </div>
 </footer>
 
-<script type="application/json" id="cfg">{"empresa":{"nome":"ANDRA & GO","razaoSocial":"[Razão social]","cnpj":"[CNPJ]","cidade":"Criciúma, SC"},"contato":{"email":"contato@example.com"},"redes":[{"nome":"Instagram","url":"https://www.instagram.com/"},{"nome":"Behance","url":"https://www.behance.net/"},{"nome":"LinkedIn","url":"https://www.linkedin.com/"}],"textura":{"intensidade":1,"velocidade":1},"frases":["Criatividade precisa de intenção","Ideias boas merecem ser bem construídas","Pensar diferente é apenas o começo","Toda identidade começa com uma ideia","O próximo passo começa com uma boa pergunta"],"portfolio":[{"slug":"exemplo-identidade","exemplo":true,"titulo":"Projeto de exemplo 1","cliente":"Nome do cliente","ano":"2026","categorias":["Branding"],"resumo":"Exemplo de como um projeto de identidade aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/capa.jpg","imagens":["assets/post.jpg","assets/assinatura.jpg"],"link":""},{"slug":"exemplo-design","exemplo":true,"titulo":"Projeto de exemplo 2","cliente":"Nome do cliente","ano":"2026","categorias":["Design"],"resumo":"Exemplo de como um projeto de design aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/post.jpg","imagens":["assets/assinatura.jpg"],"link":""},{"slug":"exemplo-estrategia","exemplo":true,"titulo":"Projeto de exemplo 3","cliente":"Nome do cliente","ano":"2026","categorias":["Estratégia"],"resumo":"Exemplo de como um projeto de estratégia aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/assinatura.jpg","imagens":["assets/capa.jpg"],"link":""}],"politicas":{"privacidade":{"titulo":"Política de Privacidade","atualizadaEm":"6 de novembro de 2026","secoes":[{"titulo":"Quem somos","paragrafos":["Este site é mantido por {{razaoSocial}}, inscrita no CNPJ {{cnpj}}, com sede em {{cidade}} (ANDRA & GO). Tratamos dados pessoais de acordo com a Lei Geral de Proteção de Dados (Lei 13.709/2018)."]},{"titulo":"Quais dados tratamos","paragrafos":["Dados que você nos envia por e-mail ou outro canal de contato: nome, empresa, endereço de e-mail e o conteúdo da mensagem.","O formulário deste site não envia nem guarda nada em nossos servidores. Ele apenas monta um texto no seu navegador, e o envio acontece pelo seu próprio e-mail, se você decidir enviar.","Dados técnicos, como endereço IP e informações do navegador, podem ser registrados pelo serviço de hospedagem e pelo Google Fonts, usado para carregar as fontes do site."]},{"titulo":"Para que usamos","paragrafos":["Usamos seus dados para responder ao seu contato, preparar propostas e manter a relação comercial com você. A base legal é o legítimo interesse ou a execução de procedimentos preliminares a um contrato, conforme o caso."]},{"titulo":"Com quem compartilhamos","paragrafos":["Não vendemos dados pessoais. Podemos compartilhá-los com fornecedores necessários à operação, como serviços de e-mail e hospedagem, e com autoridades quando a lei exigir."]},{"titulo":"Por quanto tempo guardamos","paragrafos":["Guardamos os dados pelo tempo necessário para atender à finalidade do contato e cumprir obrigações legais. Depois disso, eles são eliminados ou anonimizados."]},{"titulo":"Seus direitos","paragrafos":["Você pode pedir confirmação do tratamento, acesso, correção, anonimização, portabilidade ou eliminação dos seus dados, além de informações sobre compartilhamento. Para isso, escreva para {{email}}."]},{"titulo":"Alterações","paragrafos":["Podemos atualizar esta política. A data da última atualização fica sempre no topo desta página."]}]},"cookies":{"titulo":"Política de Cookies","atualizadaEm":"6 de novembro de 2026","secoes":[{"titulo":"O que são cookies","paragrafos":["Cookies são pequenos arquivos que um site guarda no seu navegador para lembrar informações entre uma visita e outra."]},{"titulo":"Como este site usa cookies","paragrafos":["Hoje este site não usa cookies próprios, nem cookies de publicidade ou de análise de audiência."]},{"titulo":"Serviços de terceiros","paragrafos":["As fontes do site são carregadas pelo Google Fonts, que recebe dados técnicos da sua conexão, como o endereço IP. Links para Instagram, Behance e LinkedIn levam a sites externos, que têm políticas próprias."]},{"titulo":"Como controlar","paragrafos":["Você pode bloquear ou apagar cookies nas configurações do seu navegador a qualquer momento."]},{"titulo":"Alterações","paragrafos":["Se passarmos a usar cookies de análise ou publicidade, atualizaremos esta política e pediremos seu consentimento antes de ativá-los. Dúvidas podem ser enviadas para {{email}}."]}]}}}</script>
+<script type="application/json" id="cfg">{"empresa":{"nome":"ANDRA & GO","razaoSocial":"[Razão social]","cnpj":"[CNPJ]","cidade":"Criciúma, SC"},"contato":{"email":"contato@example.com","whatsapp":"5548991903121"},"redes":[{"nome":"Instagram","url":"https://www.instagram.com/"},{"nome":"Behance","url":"https://www.behance.net/"},{"nome":"LinkedIn","url":"https://www.linkedin.com/"}],"textura":{"intensidade":1,"velocidade":1},"frases":["Criatividade precisa de intenção","Ideias boas merecem ser bem construídas","Pensar diferente é apenas o começo","Toda identidade começa com uma ideia","O próximo passo começa com uma boa pergunta"],"portfolio":[{"slug":"exemplo-identidade","exemplo":true,"titulo":"Projeto de exemplo 1","cliente":"Nome do cliente","ano":"2026","categorias":["Branding"],"resumo":"Exemplo de como um projeto de identidade aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/capa.jpg","imagens":["assets/post.jpg","assets/assinatura.jpg"],"link":""},{"slug":"exemplo-design","exemplo":true,"titulo":"Projeto de exemplo 2","cliente":"Nome do cliente","ano":"2026","categorias":["Design"],"resumo":"Exemplo de como um projeto de design aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/post.jpg","imagens":["assets/assinatura.jpg"],"link":""},{"slug":"exemplo-estrategia","exemplo":true,"titulo":"Projeto de exemplo 3","cliente":"Nome do cliente","ano":"2026","categorias":["Estratégia"],"resumo":"Exemplo de como um projeto de estratégia aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/assinatura.jpg","imagens":["assets/capa.jpg"],"link":""}],"politicas":{"privacidade":{"titulo":"Política de Privacidade","atualizadaEm":"6 de novembro de 2026","secoes":[{"titulo":"Quem somos","paragrafos":["Este site é mantido por {{razaoSocial}}, inscrita no CNPJ {{cnpj}}, com sede em {{cidade}} (ANDRA & GO). Tratamos dados pessoais de acordo com a Lei Geral de Proteção de Dados (Lei 13.709/2018)."]},{"titulo":"Quais dados tratamos","paragrafos":["Dados que você nos envia por WhatsApp, e-mail ou outro canal de contato: nome, empresa, número de telefone, endereço de e-mail e o conteúdo da mensagem.","O formulário deste site não envia nem guarda nada em nossos servidores. Ele apenas monta um texto no seu navegador e gera um link para o WhatsApp. O envio acontece pelo seu próprio WhatsApp, se você decidir enviar, e passa a seguir também a política de privacidade do WhatsApp.","Dados técnicos, como endereço IP e informações do navegador, podem ser registrados pelo serviço de hospedagem e pelo Google Fonts, usado para carregar as fontes do site."]},{"titulo":"Para que usamos","paragrafos":["Usamos seus dados para responder ao seu contato, preparar propostas e manter a relação comercial com você. A base legal é o legítimo interesse ou a execução de procedimentos preliminares a um contrato, conforme o caso."]},{"titulo":"Com quem compartilhamos","paragrafos":["Não vendemos dados pessoais. Podemos compartilhá-los com fornecedores necessários à operação, como serviços de mensagens, e-mail e hospedagem, e com autoridades quando a lei exigir."]},{"titulo":"Por quanto tempo guardamos","paragrafos":["Guardamos os dados pelo tempo necessário para atender à finalidade do contato e cumprir obrigações legais. Depois disso, eles são eliminados ou anonimizados."]},{"titulo":"Seus direitos","paragrafos":["Você pode pedir confirmação do tratamento, acesso, correção, anonimização, portabilidade ou eliminação dos seus dados, além de informações sobre compartilhamento. Para isso, escreva para {{email}}."]},{"titulo":"Alterações","paragrafos":["Podemos atualizar esta política. A data da última atualização fica sempre no topo desta página."]}]},"cookies":{"titulo":"Política de Cookies","atualizadaEm":"6 de novembro de 2026","secoes":[{"titulo":"O que são cookies","paragrafos":["Cookies são pequenos arquivos que um site guarda no seu navegador para lembrar informações entre uma visita e outra."]},{"titulo":"Como este site usa cookies","paragrafos":["Hoje este site não usa cookies próprios, nem cookies de publicidade ou de análise de audiência."]},{"titulo":"Serviços de terceiros","paragrafos":["As fontes do site são carregadas pelo Google Fonts, que recebe dados técnicos da sua conexão, como o endereço IP. Links para WhatsApp, Instagram, Behance e LinkedIn levam a serviços externos, que têm políticas próprias."]},{"titulo":"Como controlar","paragrafos":["Você pode bloquear ou apagar cookies nas configurações do seu navegador a qualquer momento."]},{"titulo":"Alterações","paragrafos":["Se passarmos a usar cookies de análise ou publicidade, atualizaremos esta política e pediremos seu consentimento antes de ativá-los. Dúvidas podem ser enviadas para {{email}}."]}]}}}</script>
 <script>window.SITE = JSON.parse(document.getElementById('cfg').textContent);</script>
 <script>
 (function () {
@@ -479,7 +470,6 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
     d.secoes.forEach(function (s) { var x = el('section'); x.appendChild(el('h2', '', s.titulo)); s.paragrafos.forEach(function (p) { x.appendChild(el('p', '', fill(p))); }); b.appendChild(x); });
   }
   function renderCommon() {
-    $('addr').textContent = SITE.contato.email;
     var r = $('redes'); r.textContent = '';
     (SITE.redes || []).forEach(function (n) { var u = safeUrl(n.url); if (!u) return; var a = el('a', '', n.nome); a.href = u; a.target = '_blank'; a.rel = 'noopener'; r.appendChild(a); });
     var tr = $('track'); tr.textContent = '';
@@ -594,7 +584,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
   }
   load().then(function (d) {
     if (!d || !Object.keys(d).length) return;
-    window.SITE = Object.assign({}, SITE, d); renderCommon(); route();
+    window.SITE = Object.assign({}, SITE, d, { contato: Object.assign({}, SITE.contato, d.contato) }); renderCommon(); route();
   }).catch(function () {});
 })();
 </script>
@@ -633,23 +623,22 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
   }
 
   // Mensagem de contato: nada é enviado por esta página
-  var form = document.getElementById('form'), out = document.getElementById('out'), msg = document.getElementById('f-msg'), hint = document.getElementById('hint');
+  var form = document.getElementById('form'), out = document.getElementById('out'), wa = document.getElementById('wa'), hint = document.getElementById('hint');
+  var HINT = hint.textContent;
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var nome = form.nome.value.trim(), emp = form.empresa.value.trim(), ideia = form.ideia.value.trim();
     if (!nome || !ideia) { hint.textContent = 'Preencha seu nome e conte um pouco da sua ideia.'; (nome ? form.ideia : form.nome).focus(); return; }
+    var numero = String(SITE.contato.whatsapp || '').replace(/\D/g, '');
+    if (!numero) { hint.textContent = 'O WhatsApp está indisponível no momento.'; return; }
     var body = 'Olá, ANDRA & GO.\n\nMeu nome é ' + nome + '.' + (emp ? '\nEmpresa: ' + emp + '.' : '') + '\n\n' + ideia;
-    msg.value = body;
-    document.getElementById('mail').href = 'mailto:' + SITE.contato.email + '?subject=' + encodeURIComponent('Tenho uma ideia') + '&body=' + encodeURIComponent(body);
+    wa.href = 'https://wa.me/' + numero + '?text=' + encodeURIComponent(body);
     out.hidden = false;
-    hint.textContent = 'Mensagem pronta. Copie e envie para ' + SITE.contato.email + '.';
+    hint.textContent = 'Link pronto. Toque no botão para abrir a conversa e enviar.';
+    wa.focus();
   });
-  var copy = document.getElementById('copy');
-  copy.addEventListener('click', function () {
-    function done() { copy.textContent = 'Copiada'; setTimeout(function () { copy.textContent = 'Copiar mensagem'; }, 1800); }
-    function fallback() { msg.focus(); msg.select(); hint.textContent = 'Texto selecionado. Use Ctrl+C para copiar.'; }
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg.value).then(done, fallback); else fallback();
-  });
+  // Se a pessoa mudar o texto, o link antigo deixa de valer.
+  form.addEventListener('input', function () { out.hidden = true; hint.textContent = HINT; });
 })();
 </script>
 
