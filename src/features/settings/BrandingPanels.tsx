@@ -19,7 +19,7 @@ export function BrandingPanel() {
   const logo = useQuery({ queryKey: ["org-logo", org.data?.logo_path], enabled: !!org.data?.logo_path,
     queryFn: async () => (await supabase.storage.from("org-files").createSignedUrl(org.data!.logo_path!, 3600)).data?.signedUrl ?? null });
   const [color, setColor] = useState<string | null>(null);
-  const current = color ?? org.data?.primary_color ?? "#0B2239";
+  const current = color ?? org.data?.primary_color ?? "#0B0C12";
   const save = async (patch: Branding) => {
     const { error } = await supabase.from("organizations").update({ branding: { ...org.data, ...patch } }).eq("id", orgId);
     if (error) { toast({ tone: "error", message: errorMessage(error) }); return false; }

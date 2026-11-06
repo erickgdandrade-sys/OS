@@ -57,9 +57,9 @@ export function MoodboardsPanel({ projectId, orgId, canEdit }: { projectId: stri
 }
 
 const defaults: Record<ElType, { w: number; h: number; data: Record<string, unknown> }> = {
-  text: { w: 320, h: 80, data: { text: "Título", size: 28, color: "#0B2239", weight: 600 } },
+  text: { w: 320, h: 80, data: { text: "Título", size: 28, color: "#0B0C12", weight: 600 } },
   note: { w: 220, h: 160, data: { text: "Nota", color: "#FEF3C7" } },
-  palette: { w: 360, h: 120, data: { colors: ["#0B2239", "#1E9BF0", "#F5F5F4", "#F59E0B"] } },
+  palette: { w: 360, h: 120, data: { colors: ["#0B0C12", "#1F4FE0", "#ECECEA", "#8A8D96"] } },
   link: { w: 300, h: 90, data: { url: "", title: "" } },
   section: { w: 600, h: 400, data: { title: "Seção", color: "#E2E8F0" } },
   image: { w: 320, h: 240, data: {} },

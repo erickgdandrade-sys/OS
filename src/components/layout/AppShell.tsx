@@ -1,3 +1,4 @@
+import { Wordmark } from "@/components/brand/Wordmark";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { FolderOpen, ClipboardList,
@@ -70,8 +71,8 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-fg">
-      <div className="flex h-14 items-center px-4">
-        <Link to="/" onClick={onNavigate} className="text-[15px] font-semibold tracking-tight text-white">NEXO <span className="font-normal text-white/50">Studio OS</span></Link>
+      <div className="flex h-14 items-center px-4 pt-1">
+        <Link to="/" onClick={onNavigate} aria-label="ANDRA&GO OS — início"><Wordmark className="text-[17px]" /></Link>
       </div>
       {(context?.memberships.length ?? 0) > 1 ? (
         <select aria-label="Estúdio" value={membership?.organization_id} onChange={(e) => switchOrg(e.target.value)}
@@ -87,7 +88,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           if (!items.length) return null;
           return (
             <div key={g.section}>
-              <p className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-white/35">{g.section}</p>
+              <p className="px-2 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-white/30">{g.section}</p>
               <ul className="space-y-0.5">
                 {items.map((i) => {
                   const active = i.to && (i.to === "/" ? path === "/" : path.startsWith(i.to));
@@ -105,9 +106,9 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   return (
                     <li key={i.label}>
                       <Link to={i.to} onClick={onNavigate}
-                        className={cn("flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors",
-                          active ? "bg-[var(--sidebar-active)] text-white" : "hover:bg-[var(--sidebar-hover)] hover:text-white")}>
-                        <Icon className={cn("size-4", active && "text-brand")} />{i.label}
+                        className={cn("relative flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors",
+                          active ? "bg-[var(--sidebar-active)] font-medium text-white before:absolute before:-left-2 before:top-1.5 before:h-5 before:w-0.5 before:rounded-full before:bg-amp" : "hover:bg-[var(--sidebar-hover)] hover:text-white")}>
+                        <Icon className={cn("size-4", active && "text-amp")} />{i.label}
                       </Link>
                     </li>
                   );

@@ -58,7 +58,7 @@ function wrap(text: string, font: PDFFont, size: number, width: number): string[
 export async function renderDocument(spec: DocSpec): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
   pdf.setTitle(pdfSafe(`${spec.docLabel} ${spec.docNumber}`));
-  pdf.setProducer("NEXO Studio OS");
+  pdf.setProducer("ANDRA&GO OS");
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const accent = hexToRgb(spec.accent);

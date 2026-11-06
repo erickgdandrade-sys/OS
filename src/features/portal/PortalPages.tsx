@@ -17,11 +17,12 @@ function PortalLayout({ studio, children, onSignOut }: { studio?: string; childr
     <div className="min-h-dvh bg-bg">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <p className="text-sm font-semibold">{studio ?? "Portal do cliente"} <span className="font-normal text-fg-3">· Portal do cliente</span></p>
+          <p className="text-sm font-semibold tracking-tight">{studio ?? "Portal do cliente"} <span className="font-normal text-fg-3">· <span className="voice text-[15px]">Portal do cliente</span></span></p>
           {onSignOut && <Button size="sm" variant="ghost" icon={<LogOut className="size-3.5" />} onClick={onSignOut}>Sair</Button>}
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
+      <footer className="mx-auto flex max-w-5xl items-center justify-between px-4 pb-8 text-[11px] text-fg-3 sm:px-6"><span>Feito com intenção.</span><span>ANDRA&amp;GO OS</span></footer>
     </div>
   );
 }

@@ -4,29 +4,38 @@ import { Eye, EyeOff, LogOut, MailCheck } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Wordmark } from "@/components/brand/Wordmark";
 import { Button, Field, Input } from "@/components/ui";
 import { errorMessage } from "@/lib/domain";
 import { appUrl, supabase, supabaseConfigMissing } from "@/lib/supabase";
 import { useAuth } from "./AuthProvider";
 
-/* Layout das telas de acesso: nome em texto, sem logotipo (identidade provisória). */
+/* Layout das telas de acesso, na linguagem da identidade ANDRA&GO:
+   capa em Azul Intenção com granulação, o nome em grande e a voz itálica. */
 export function AuthLayout({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: ReactNode; footer?: ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(420px,520px)]">
-      <aside className="relative hidden overflow-hidden bg-navy p-10 text-white lg:flex lg:flex-col lg:justify-between">
-        <div className="text-sm font-semibold tracking-tight">NEXO <span className="font-normal text-white/60">Studio OS</span></div>
-        <div className="max-w-md">
-          <p className="text-3xl font-semibold leading-tight tracking-tight">Clientes, projetos, propostas e financeiro do estúdio num só lugar.</p>
-          <p className="mt-4 text-sm text-white/60">Acesso restrito à equipe e aos clientes convidados.</p>
+      <aside className="bg-intent relative hidden overflow-hidden p-10 text-paper lg:flex lg:flex-col lg:justify-between">
+        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70"><Wordmark className="text-[13px]" os={false} /><span>Sistema do estúdio</span></div>
+        <div aria-hidden className="select-none font-extrabold leading-[0.82] tracking-[-0.06em] text-paper">
+          <p className="text-[clamp(88px,11vw,180px)]">ANDRA</p>
+          <p className="pl-[18%] text-[clamp(88px,11vw,180px)]"><span className="voice text-amp">&amp;</span>GO</p>
         </div>
-        <p className="text-xs text-white/40">© {new Date().getFullYear()} NEXO Studio OS</p>
-        <div aria-hidden className="pointer-events-none absolute -right-24 -bottom-24 size-96 rounded-full border border-white/10" />
-        <div aria-hidden className="pointer-events-none absolute -right-8 -bottom-8 size-64 rounded-full border border-brand/30" />
+        <div>
+          <div aria-hidden className="relative mb-6 h-px bg-white/30"><span className="absolute left-0 -top-px h-[3px] w-6 bg-white" /></div>
+          <div className="flex items-end justify-between gap-6">
+          <div>
+            <p className="text-sm text-white/80">Estúdio Criativo</p>
+            <p className="voice mt-3 text-2xl leading-snug text-amp">Ideias com intenção.<br />Marcas com identidade.</p>
+          </div>
+          <p className="text-[11px] text-white/60">© {new Date().getFullYear()} ANDRA&amp;GO OS</p>
+          </div>
+        </div>
       </aside>
       <main className="flex items-center justify-center bg-surface px-5 py-10 sm:px-10">
         <div className="w-full max-w-sm animate-in">
-          <div className="mb-8 text-sm font-semibold tracking-tight lg:hidden">NEXO <span className="font-normal text-fg-3">Studio OS</span></div>
-          <h1 className="text-2xl font-semibold">{title}</h1>
+          <div className="mb-10 lg:hidden"><Wordmark tone="light" className="text-xl" /></div>
+          <h1 className="text-[28px] font-semibold leading-tight">{title}</h1>
           {subtitle && <p className="mt-1.5 text-sm text-fg-3">{subtitle}</p>}
           {supabaseConfigMissing && (
             <p role="alert" className="mt-4 rounded-md border border-warning/30 bg-warning-soft p-3 text-xs text-fg-2">

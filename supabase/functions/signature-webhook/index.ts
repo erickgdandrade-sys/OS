@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const ev = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const contractId = ev.external_id;
     const type = String(ev.event_type ?? "");
-    if (!isUuid(contractId)) return json(req, 200, { ignored: "no_external_id" }); // documento não criado pelo NEXO
+    if (!isUuid(contractId)) return json(req, 200, { ignored: "no_external_id" }); // documento não criado pelo ANDRA&GO OS
 
     const admin = adminClient();
     const { data: c } = await admin.from("contracts").select("id, signature_envelope_id").eq("id", contractId).maybeSingle();

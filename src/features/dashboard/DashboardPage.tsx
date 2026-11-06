@@ -27,7 +27,7 @@ interface Summary {
 
 const periods = { "30": "Últimos 30 dias", "90": "Últimos 90 dias", "180": "Últimos 6 meses", "365": "Últimos 12 meses" } as const;
 // Paleta de séries: tons de azul da identidade + neutros (legíveis nos dois temas).
-const series = ["#0EA5E9", "#0B2239", "#1E9BF0", "#7DD3FC", "#64748B", "#38BDF8", "#94A3B8", "#0369A1"];
+const series = ["#1F4FE0", "#0B0C12", "#2E8CDC", "#0C1A82", "#8A8D96", "#9DB4F5", "#C9A97A", "#F2562B"];
 
 function Stat({ label, value, icon: Icon, tone, to, hint }: { label: string; value: string | number; icon: typeof Clock; tone?: "danger" | "warning"; to?: string; hint?: string }) {
   const body = (
@@ -117,7 +117,7 @@ export function DashboardPage() {
                           <XAxis dataKey="label" tick={{ fill: "var(--text-3)", fontSize: 12 }} axisLine={false} tickLine={false} />
                           <YAxis tickFormatter={(v) => moneyCompact(v)} tick={{ fill: "var(--text-3)", fontSize: 12 }} axisLine={false} tickLine={false} width={72} />
                           <Tooltip formatter={(v) => money(Number(v))} contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)" }} cursor={{ fill: "var(--surface-2)" }} />
-                          <Bar dataKey="income" name="Receitas" fill="#0EA5E9" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="income" name="Receitas" fill="#1F4FE0" radius={[4, 4, 0, 0]} />
                           <Bar dataKey="expense" name="Despesas" fill="var(--text-3)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
@@ -175,7 +175,7 @@ export function DashboardPage() {
                 <div className="h-40"><ResponsiveContainer><BarChart data={productivity} layout="vertical" margin={{ left: 8, right: 16 }}>
                   <XAxis type="number" hide allowDecimals={false} /><YAxis type="category" dataKey="name" width={80} tick={{ fill: "var(--text-2)", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <Tooltip cursor={{ fill: "var(--surface-2)" }} contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8 }} />
-                  <Bar dataKey="done" name="Concluídas" fill="#0EA5E9" radius={[0, 4, 4, 0]} barSize={14} /></BarChart></ResponsiveContainer></div>
+                  <Bar dataKey="done" name="Concluídas" fill="#1F4FE0" radius={[0, 4, 4, 0]} barSize={14} /></BarChart></ResponsiveContainer></div>
               )}
             </Card>
           </div>

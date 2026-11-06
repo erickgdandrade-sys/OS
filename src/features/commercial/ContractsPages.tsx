@@ -186,7 +186,7 @@ export function ContractPrintPage({ contractId, version }: { contractId: string;
     <div className="min-h-dvh bg-white text-[#0E1726]">
       <article className="mx-auto max-w-[760px] px-10 py-12 text-[13px] leading-relaxed print:p-0 [&_h1]:mb-5 [&_h1]:text-center [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mt-5 [&_h2]:mb-1 [&_h2]:font-semibold [&_p]:mb-2 [&_p]:text-justify"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(fillTemplate(data.v.body_html, data.vars).html) }} />
-      <p className="mx-auto max-w-[760px] px-10 pb-10 text-[11px] text-[#7A8596] print:px-0">Versão {data.v.version} · gerado pelo NEXO Studio OS</p>
+      <p className="mx-auto max-w-[760px] px-10 pb-10 text-[11px] text-[#7A8596] print:px-0">Versão {data.v.version} · gerado pelo ANDRA&amp;GO OS</p>
       <div className="flex justify-center pb-10 print:hidden"><Button variant="primary" onClick={() => window.print()}>Imprimir ou salvar em PDF</Button></div>
     </div>
   );

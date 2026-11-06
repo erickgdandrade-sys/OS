@@ -11,9 +11,9 @@ import { supabase } from "@/lib/supabase";
 
 type Ev = { uid: string; source: string; title: string; starts_at: string; ends_at: string | null; all_day: boolean; project_id: string | null; owner_id: string | null };
 const sources: Record<string, { label: string; color: string }> = {
-  task: { label: "Tarefas", color: "#64748B" }, delivery: { label: "Entregas", color: "#0B2239" }, meeting: { label: "Reuniões", color: "#0EA5E9" },
+  task: { label: "Tarefas", color: "#64748B" }, delivery: { label: "Entregas", color: "#0B0C12" }, meeting: { label: "Reuniões", color: "#1F4FE0" },
   shoot: { label: "Sessões de foto", color: "#E06C4C" }, recording: { label: "Gravações", color: "#B45309" }, publication: { label: "Publicações", color: "#7C3AED" },
-  approval: { label: "Aprovações", color: "#15803D" }, internal: { label: "Internos", color: "#1E9BF0" }, other: { label: "Outros", color: "#94A3B8" },
+  approval: { label: "Aprovações", color: "#15803D" }, internal: { label: "Internos", color: "#2E8CDC" }, other: { label: "Outros", color: "#94A3B8" },
 };
 const dayKey = (iso: string, allDay: boolean) => allDay ? iso.slice(0, 10) : new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date(iso));
 const timeOf = (iso: string) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }).format(new Date(iso));

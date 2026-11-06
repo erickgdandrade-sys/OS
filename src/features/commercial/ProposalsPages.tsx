@@ -313,7 +313,7 @@ export function ProposalPrintPage({ proposalId }: { proposalId: string }) {
       if (p.error) throw p.error;
       const org = p.data.organizations as { name: string; legal_name: string | null; email: string | null; phone: string | null; branding: { primary_color?: string; logo_path?: string } | null };
       const logo = org.branding?.logo_path ? (await supabase.storage.from("org-files").createSignedUrl(org.branding.logo_path, 600)).data?.signedUrl ?? null : null;
-      return { p: p.data as Proposal & { organizations: typeof org }, items: (items.data ?? []) as ProposalItem[], logo, accent: org.branding?.primary_color ?? "#0B2239" };
+      return { p: p.data as Proposal & { organizations: typeof org }, items: (items.data ?? []) as ProposalItem[], logo, accent: org.branding?.primary_color ?? "#0B0C12" };
     },
   });
   useEffect(() => { if (data) { document.title = `Proposta ${String(data.p.number).padStart(4, "0")} — ${data.p.title}`; setTimeout(() => window.print(), 400); } }, [data]);
@@ -333,7 +333,7 @@ export function ProposalPrintPage({ proposalId }: { proposalId: string }) {
         <Section t="Escopo" v={p.scope} />
         <Section t="Entregáveis" v={p.deliverables} />
         <section className="mt-6">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#0B2239]">Investimento</h2>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#0B0C12]">Investimento</h2>
           <table className="w-full text-[13px]">
             <thead><tr className="border-b border-[#CDD4DE] text-left text-[11px] uppercase text-[#4A5565]"><th className="py-1.5">Item</th><th className="w-14 py-1.5 text-right">Qtd.</th><th className="w-28 py-1.5 text-right">Unitário</th><th className="w-28 py-1.5 text-right">Total</th></tr></thead>
             <tbody>{items.map((i) => <tr key={i.id} className="border-b border-[#E3E7ED] align-top"><td className="py-2"><p className="font-medium">{i.description}{i.is_package && " (pacote)"}</p>{i.details && <p className="text-[12px] text-[#4A5565]">{i.details}</p>}</td>
@@ -342,7 +342,7 @@ export function ProposalPrintPage({ proposalId }: { proposalId: string }) {
           <div className="mt-3 ml-auto w-64 text-[13px]">
             <div className="flex justify-between py-0.5"><span>Subtotal</span><span className="tabular">{money(p.subtotal)}</span></div>
             {p.discount_type !== "none" && <div className="flex justify-between py-0.5"><span>Desconto</span><span className="tabular">− {money(Number(p.subtotal) - Number(p.total))}</span></div>}
-            <div className="mt-1 flex justify-between border-t-2 border-[#0B2239] pt-1.5 text-base font-semibold"><span>Total</span><span className="tabular">{money(p.total)}</span></div>
+            <div className="mt-1 flex justify-between border-t-2 border-[#0B0C12] pt-1.5 text-base font-semibold"><span>Total</span><span className="tabular">{money(p.total)}</span></div>
             {p.installments > 1 && <p className="mt-1 text-right text-[12px] text-[#4A5565]">em {p.installments}x de {money(Number(p.total) / p.installments)}{p.first_due_date && `, a partir de ${date(p.first_due_date)}`}</p>}
           </div>
         </section>

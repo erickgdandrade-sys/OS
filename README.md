@@ -1,4 +1,4 @@
-# NEXO Studio OS
+# ANDRA&GO OS
 
 Plataforma de gestão para estúdios criativos: clientes, projetos, tarefas, equipe, propostas, contratos, financeiro, portal do cliente e módulos criativos (branding, naming, moodboards, social media, audiovisual). Nome e identidade visual provisórios.
 

@@ -1,4 +1,4 @@
-# NEXO Studio OS — Arquitetura e planejamento técnico
+# ANDRA&GO OS — Arquitetura e planejamento técnico
 
 Documento vivo. Cada decisão aqui tem o motivo ao lado; quando uma decisão mudar, atualize este arquivo no mesmo commit.
 

@@ -7,7 +7,7 @@ import { errorMessage, taskStatusLabel, type Task } from "@/lib/domain";
 import { addDaysISO, daysUntil, todayISO } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 
-const statusColor: Record<string, string> = { todo: "#94A3B8", in_progress: "#0EA5E9", review: "#1E9BF0", blocked: "#C2283A", done: "#15803D" };
+const statusColor: Record<string, string> = { todo: "#94A3B8", in_progress: "#1F4FE0", review: "#2E8CDC", blocked: "#C2283A", done: "#15803D" };
 
 /** Linha do tempo (Gantt simples) das tarefas com datas. Dependências mostradas como alerta. */
 export function Timeline({ tasks, deps, onOpen }: { tasks: Task[]; deps: { task_id: string; depends_on_id: string }[]; onOpen: (id: string) => void }) {

@@ -39,7 +39,7 @@ export function PublicProposalPage() {
   if (q.isLoading) return <Shell><Spinner /></Shell>;
   if (q.error || !q.data) return <Shell><ErrorState error={q.error} /></Shell>;
   const { proposal: p, items, logo } = q.data;
-  const accent = p.organizations?.branding?.primary_color ?? "#0B2239";
+  const accent = p.organizations?.branding?.primary_color ?? "#0B0C12";
   const open = ["sent", "viewed", "negotiation"].includes(p.status) && !p.client_accepted_at;
 
   const pdf = async () => {
@@ -103,5 +103,5 @@ export function PublicProposalPage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return <div className="min-h-dvh bg-[#EEF1F5] px-4 py-8 sm:py-12"><div className="mx-auto max-w-3xl">{children}</div>
-    <p className="mt-6 text-center text-xs text-[#7A8596]">Enviado pelo NEXO Studio OS</p></div>;
+    <p className="mt-6 text-center text-xs text-[#7A8596]">Enviado pelo ANDRA&amp;GO OS</p></div>;
 }

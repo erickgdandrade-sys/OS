@@ -85,14 +85,14 @@ function Overview() {
             <CartesianGrid vertical={false} stroke="var(--border)" /><XAxis dataKey="label" tick={{ fill: "var(--text-3)", fontSize: 12 }} axisLine={false} tickLine={false} />
             <YAxis tickFormatter={(v) => moneyCompact(v)} tick={{ fill: "var(--text-3)", fontSize: 12 }} axisLine={false} tickLine={false} width={72} />
             <Tooltip formatter={(v) => money(Number(v))} {...tip} /><Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="billed" stackId="in" name="A receber (faturado)" fill="#0EA5E9" /><Bar dataKey="scheduled" stackId="in" name="Previsto" fill="#7DD3FC" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="billed" stackId="in" name="A receber (faturado)" fill="#1F4FE0" /><Bar dataKey="scheduled" stackId="in" name="Previsto" fill="#9DB4F5" radius={[4, 4, 0, 0]} />
             <Bar dataKey="payable" name="A pagar" fill="var(--text-3)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></Card>
         <Card><CardHeader title="Caixa realizado por mês" />
           {monthly.length === 0 ? <EmptyState title="Sem movimentação no período" /> : <div className="h-64"><ResponsiveContainer><BarChart data={monthly} margin={{ left: 0, right: 8, top: 8 }}>
             <CartesianGrid vertical={false} stroke="var(--border)" /><XAxis dataKey="label" tick={{ fill: "var(--text-3)", fontSize: 12 }} axisLine={false} tickLine={false} />
             <YAxis tickFormatter={(v) => moneyCompact(v)} tick={{ fill: "var(--text-3)", fontSize: 12 }} axisLine={false} tickLine={false} width={72} />
             <Tooltip formatter={(v) => money(Number(v))} {...tip} /><Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar dataKey="income" name="Entradas" fill="#0EA5E9" radius={[4, 4, 0, 0]} /><Bar dataKey="expense" name="Saídas" fill="var(--text-3)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>}</Card>
+            <Bar dataKey="income" name="Entradas" fill="#1F4FE0" radius={[4, 4, 0, 0]} /><Bar dataKey="expense" name="Saídas" fill="var(--text-3)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>}</Card>
       </div>
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
         <Rank title="Receita por cliente" rows={r.by_client} />

@@ -18,7 +18,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant; size?: Size; loading?: boolean; icon?: ReactNode;
 }
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-accent-fg hover:brightness-110 shadow-sm",
+  primary: "bg-accent text-accent-fg hover:brightness-110",
   secondary: "bg-surface text-fg border border-border hover:bg-surface-2 hover:border-border-strong shadow-sm",
   ghost: "text-fg-2 hover:bg-surface-2 hover:text-fg",
   danger: "bg-danger text-white hover:brightness-110 shadow-sm",
@@ -244,7 +244,7 @@ export function PageHeader({ title, description, actions, meta }: { title: strin
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between animate-in">
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold sm:text-2xl">{title}</h1>
+        <h1 className="text-2xl font-semibold leading-tight sm:text-[30px]">{title}</h1>
         {description && <p className="mt-1 text-sm text-fg-3">{description}</p>}
         {meta && <div className="mt-2 flex flex-wrap items-center gap-2">{meta}</div>}
       </div>
