@@ -2,10 +2,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { router } from "@/app/router";
+import { reloadForNewVersion, router } from "@/app/router";
 import { ToastProvider } from "@/components/ui";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import "./styles.css";
+
+// Pré-carregamento de arquivo de uma versão antiga (deploy novo com a aba aberta): recarrega uma vez.
+window.addEventListener("vite:preloadError", (e) => { if (reloadForNewVersion()) e.preventDefault(); });
 
 const queryClient = new QueryClient({
   defaultOptions: {

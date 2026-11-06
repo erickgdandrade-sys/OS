@@ -62,6 +62,10 @@ export function ProjectFormModal({ open, onClose, defaultClientId }: { open: boo
     if (v.template_id) {
       const r = await supabase.rpc("apply_project_template", { p_project: data.id, p_template: v.template_id, p_include_optional: v.include_naming ? ["naming"] : [] });
       if (r.error) toast({ tone: "error", message: `Projeto criado, mas o modelo não foi aplicado: ${errorMessage(r.error)}` });
+      else if (v.due_date) {
+        const last = (await supabase.from("tasks").select("due_date").eq("project_id", data.id).order("due_date", { ascending: false, nullsFirst: false }).limit(1).maybeSingle()).data?.due_date;
+        if (last && last > v.due_date) toast({ tone: "info", message: `Atenção: as etapas do modelo vão até ${date(last)}, depois do prazo final (${date(v.due_date)}). Ajuste as datas das tarefas ou o prazo.` });
+      }
     }
     qc.invalidateQueries({ queryKey: ["projects"] });
     toast({ tone: "success", message: "Projeto criado." });
@@ -74,7 +78,7 @@ export function ProjectFormModal({ open, onClose, defaultClientId }: { open: boo
       footer={<><Button variant="ghost" onClick={onClose}>Cancelar</Button><Button variant="primary" loading={isSubmitting} onClick={onSubmit}>Criar projeto</Button></>}>
       <form onSubmit={onSubmit} noValidate className="grid gap-4 sm:grid-cols-2">
         <Field label="Nome do projeto" required htmlFor="name" error={errors.name?.message} className="sm:col-span-2"><Input id="name" aria-invalid={!!errors.name} {...register("name")} /></Field>
-        <Field label="Cliente" required htmlFor="client_id" error={errors.client_id?.message}>
+        <Field label="Cliente" required htmlFor="client_id" error={errors.client_id?.message} hint={clients.data && clients.data.length === 0 ? "Nenhum cliente cadastrado ainda. Cadastre o cliente em Clientes e volte aqui." : undefined}>
           <Select id="client_id" aria-invalid={!!errors.client_id} {...register("client_id")}>
             <option value="">Selecione…</option>
             {clients.data?.filter((c) => c.status !== "inactive").map((c) => <option key={c.id} value={c.id}>{clientName(c)}</option>)}

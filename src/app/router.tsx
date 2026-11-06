@@ -3,12 +3,43 @@ import { createRootRoute, createRoute, createRouter, Navigate, Outlet, useRouter
 import { Lock } from "lucide-react";
 import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 import { AppShell } from "@/components/layout/AppShell";
-import { EmptyState, Spinner } from "@/components/ui";
+import { Button, EmptyState, Spinner } from "@/components/ui";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { CreatePasswordRequestPage, FirstAccessPage, ForgotPasswordPage, LoginPage, SetPasswordPage, SignedOutPage } from "@/features/auth/AuthPages";
 // Páginas carregadas sob demanda (divisão do bundle por rota).
+// Se uma nova versão foi publicada com a aba aberta, os arquivos antigos deixam de existir:
+// recarrega a página uma vez para buscar a versão atual em vez de mostrar erro.
+const RELOAD_KEY = "nexo-chunk-reload";
+export function isChunkError(e: unknown) {
+  return /dynamically imported module|Importing a module script failed|error loading dynamically|Failed to fetch dynamically/i.test(String((e as Error)?.message ?? e));
+}
+export function reloadForNewVersion(): boolean {
+  let last = 0;
+  try { last = Number(sessionStorage.getItem(RELOAD_KEY) ?? 0); } catch { /* sem storage */ }
+  if (Date.now() - last < 30_000) return false;
+  try { sessionStorage.setItem(RELOAD_KEY, String(Date.now())); } catch { /* sem storage */ }
+  window.location.reload();
+  return true;
+}
 const page = <K extends string>(load: () => Promise<Record<K, ComponentType<any>>>, name: K) =>
-  lazy(() => load().then((m) => ({ default: m[name] })));
+  lazy(() => load().then((m) => ({ default: m[name] })).catch((e) => {
+    if (isChunkError(e) && reloadForNewVersion()) return new Promise<never>(() => {});
+    throw e;
+  }));
+
+function RouteError({ error, reset }: { error: unknown; reset: () => void }) {
+  const chunk = isChunkError(error);
+  return (
+    <div className="mx-auto max-w-lg p-8">
+      <EmptyState title={chunk ? "Há uma nova versão do sistema" : "Não foi possível abrir esta tela"}
+        description={chunk ? "Recarregue a página para continuar. Nada do que você salvou foi perdido." : String((error as Error)?.message ?? "Erro inesperado.")}
+        action={<div className="flex gap-2">
+          <Button variant="primary" onClick={() => window.location.reload()}>Recarregar página</Button>
+          {!chunk && <Button onClick={reset}>Tentar de novo</Button>}
+        </div>} />
+    </div>
+  );
+}
 const ClientsPage = page(() => import("@/features/clients/ClientsPages"), "ClientsPage");
 const ClientDetailPage = page(() => import("@/features/clients/ClientsPages"), "ClientDetailPage");
 const DashboardPage = page(() => import("@/features/dashboard/DashboardPage"), "DashboardPage");
@@ -135,4 +166,4 @@ const routeTree = root.addChildren([
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 
-export const router = createRouter({ routeTree, defaultPreload: "intent", basepath: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" });
+export const router = createRouter({ routeTree, defaultPreload: "intent", defaultErrorComponent: RouteError, basepath: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" });
