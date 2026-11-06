@@ -11,7 +11,7 @@ export const supabaseConfigMissing = !url || !anonKey;
 
 // A anon key é pública por definição; quem protege os dados é o RLS.
 // A service role NUNCA entra no frontend.
-export const supabase = createClient(url ?? "http://localhost:54321", anonKey ?? "missing-anon-key", {
+export const supabase = createClient(url || "http://localhost:54321", anonKey || "missing-anon-key", {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true},
 });
 
