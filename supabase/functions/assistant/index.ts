@@ -235,6 +235,8 @@ type GContent = { role: "user" | "model"; parts: GPart[] };
 
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
 let cachedModels: string[] | null = null;
+let thinkingParam: "budget" | "level" | "none" = "budget";   // aprende o formato aceito pelo modelo
+export const trace: { model: string; ms: number; status: number; note?: string }[] = [];
 const noFreeTier = new Set<string>();   // modelos que responderam "limit: 0" nesta instância
 
 /* Modelos disponíveis para a chave, do melhor para o pior: o do secret
@@ -271,16 +273,33 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
   type GRes = { candidates?: { content?: GContent; finishReason?: string }[]; usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number }; error?: { code?: number; message?: string; status?: string } };
   // Uma chamada com tolerância: modelo sobrecarregado (503/500/429) ou retirado
   // (404) → espera um pouco e tenta o próximo modelo da lista (até 4 tentativas).
+  const deadline = Date.now() + 100_000;   // a função tem ~150 s; sobra tempo para gravar
   const call = async (): Promise<GRes> => {
     let last = "";
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const res = await fetch(`${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`, {
-        method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 2048 } }),
-      });
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const left = deadline - Date.now();
+      if (left < 5_000) throw new HttpError(504, "ai_timeout", last || "A IA demorou demais para responder.");
+      // Pensamento mínimo: respostas bem mais rápidas para conversa e ferramentas.
+      const thinking = thinkingParam === "budget" ? { thinkingConfig: { thinkingBudget: 0 } } : thinkingParam === "level" ? { thinkingConfig: { thinkingLevel: "low" } } : {};
+      const t0 = Date.now();
+      let res: Response;
+      try {
+        res = await fetch(`${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`, {
+          method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey }, signal: AbortSignal.timeout(Math.min(45_000, left - 2_000)),
+          body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 2048, ...thinking } }),
+        });
+      } catch {
+        trace.push({ model, ms: Date.now() - t0, status: 0, note: "timeout" });
+        last = `Google (${model}): sem resposta em ${Math.round((Date.now() - t0) / 1000)} s`;
+        const rest = candidates.filter((m) => m !== model && !noFreeTier.has(m)); if (rest.length) model = rest[0];
+        continue;
+      }
       const data = await res.json().catch(() => ({})) as GRes;
+      trace.push({ model, ms: Date.now() - t0, status: res.status });
       if (res.ok) return data;
       const msg = data.error?.message ?? "sem detalhes";
+      // Modelo não aceita o ajuste de pensamento: troca o formato e repete.
+      if (res.status === 400 && /thinking/i.test(msg) && thinkingParam !== "none") { thinkingParam = thinkingParam === "budget" ? "level" : "none"; attempt--; continue; }
       last = `Google (${model}, ${res.status}): ${msg}`;
       console.error("gemini", last);
       const nextModel = () => { const rest = candidates.filter((m) => m !== model && !noFreeTier.has(m)); if (!rest.length) return false; model = rest[0]; return true; };
@@ -291,13 +310,13 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
         throw new HttpError(429, "ai_rate_limited", wait ? `Limite gratuito atingido. O Google libera de novo em ${wait.replace(/\.\d+s$/, "s")}.` : last);
       }
       if (res.status === 404) { noFreeTier.add(model); if (nextModel()) continue; }
-      if ([500, 503, 504].includes(res.status)) { await new Promise((r) => setTimeout(r, 400)); if (attempt > 0) nextModel(); continue; }
+      if ([500, 503, 504].includes(res.status)) { nextModel(); await new Promise((r) => setTimeout(r, 300)); continue; }
       throw new HttpError(502, "ai_provider_error", last);
     }
     throw new HttpError(503, "ai_busy", last);
   };
   let tokensIn = 0, tokensOut = 0;
-  for (let step = 0; step < 8; step++) {
+  for (let step = 0; step < 6; step++) {
     const data = await call();
     tokensIn += data.usageMetadata?.promptTokenCount ?? 0; tokensOut += data.usageMetadata?.candidatesTokenCount ?? 0;
     const cand = data.candidates?.[0];
@@ -318,6 +337,8 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
 }
 
 Deno.serve(handler(async (req) => {
+  const started = Date.now();
+  trace.length = 0;
   const db = userClient(req);
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const who = body.assistant === "andrade" ? "andrade" : body.assistant === "gomes" ? "gomes" : null;
@@ -363,6 +384,7 @@ Deno.serve(handler(async (req) => {
   while (messages.length && messages[0].role !== "user") messages.shift();
 
   const sys = system(who, profile?.full_name ?? "", orgRow?.name ?? "estúdio");
+  await adminClient().from("platform_settings").upsert({ key: "ai_last_start", value: JSON.stringify({ at: new Date().toISOString(), provider, who }) }).then(() => {}, () => {});
   let out: RunResult;
   try {
     out = provider === "gemini"
@@ -376,7 +398,7 @@ Deno.serve(handler(async (req) => {
     const { count } = await admin.from("ai_messages").select("id", { count: "exact", head: true }).eq("conversation_id", convId);
     if (!count) await admin.from("ai_conversations").delete().eq("id", convId);
     else await admin.from("ai_conversations").update({ last_error: `${provider}: ${msg}`.slice(0, 2000) }).eq("id", convId);
-    await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000) }) }).then(() => {}, () => {});
+    await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000), ms: Date.now() - started, trace: trace.splice(0) }) }).then(() => {}, () => {});
     if (e instanceof HttpError) throw e;
     throw new HttpError(502, "ai_provider_error", msg);
   }
@@ -384,6 +406,7 @@ Deno.serve(handler(async (req) => {
 
   // Grava a troca (a tabela não aceita escrita direta do navegador).
   const admin = adminClient();
+  await admin.from("platform_settings").upsert({ key: "ai_last_run", value: JSON.stringify({ at: new Date().toISOString(), provider, ok: true, ms: Date.now() - started, trace: trace.splice(0) }) }).then(() => {}, () => {});
   await admin.from("ai_messages").insert([
     { organization_id: org, conversation_id: convId, role: "user", content: message },
     { organization_id: org, conversation_id: convId, role: "assistant", content: reply, model, tokens_in: tokensIn, tokens_out: tokensOut, actions: ctx.actions },
