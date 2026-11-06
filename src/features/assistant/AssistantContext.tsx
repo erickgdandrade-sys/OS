@@ -67,11 +67,11 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
     patch(who, (t) => ({ busy: true, face: "working", msgs: [...t.msgs, { id: `tmp-${Date.now()}`, role: "user", content: m, created_at: new Date().toISOString() }] }));
     const { data, error } = await supabase.functions.invoke("assistant", { body: { assistant: who, organization_id: orgId, conversation_id: threads[who].conv, message: m } });
     if (error) {
-      let code = error.message;
-      try { code = (await (error as { context?: Response }).context?.json())?.error ?? code; } catch { /* */ }
+      let code = error.message, detail = "";
+      try { const b = await (error as { context?: Response }).context?.json(); code = b?.error ?? code; detail = typeof b?.message === "string" && b.message !== code ? b.message : ""; } catch { /* */ }
       patch(who, (t) => ({ busy: false, face: "idle", msgs: t.msgs.slice(0, -1) }));
       if (code === "ai_not_configured") setNotConfigured(true);
-      else toast({ tone: "error", message: code === "forbidden" ? "Seu perfil não tem acesso aos assistentes." : errorMessage(code) });
+      else toast({ tone: "error", message: code === "forbidden" ? "Seu perfil não tem acesso aos assistentes." : `${errorMessage(code)}${code === "ai_provider_error" && detail ? ` Detalhe: ${detail.slice(0, 300)}` : ""}` });
       return false;
     }
     const r = data as { conversation_id: string; reply: string; actions: Msg["actions"] };
