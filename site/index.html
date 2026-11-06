@@ -221,7 +221,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
 .foot-links a:hover { color: var(--ceu); }
 
 /* Abertura: a logo se monta e pousa no cabecalho */
-#intro { position: fixed; inset: 0; z-index: 50; background: var(--white); pointer-events: none; animation: intro-safety 0s linear 4s forwards; }
+#intro { position: fixed; inset: 0; z-index: 50; background: var(--white); pointer-events: none; animation: intro-safety 0s linear 7s forwards; }
 #intro-logo { position: fixed; color: var(--ink); --amp: var(--azul); transform-origin: 0 0; will-change: transform; }
 #intro-logo .svg-logo { width: 100%; height: auto; overflow: hidden; }
 #intro-logo path { transform-box: fill-box; transform-origin: 50% 50%; }
@@ -261,9 +261,9 @@ html.intro .hero h1 span { animation-play-state: paused; }
 
 <div id="intro" aria-hidden="true"></div>
 <script>
-// Sem animacao para quem pede movimento reduzido ou chega direto numa pagina interna.
+// Sem animacao para quem pede movimento reduzido ou abre direto o portfolio, um projeto ou uma politica.
 (function () {
-  var skip = location.hash || matchMedia('(prefers-reduced-motion: reduce)').matches || !Element.prototype.animate;
+  var skip = /^#(portfolio|projeto-|privacidade|cookies)/.test(location.hash) || matchMedia('(prefers-reduced-motion: reduce)').matches || !Element.prototype.animate;
   var el = document.getElementById('intro');
   if (skip) el.remove(); else document.documentElement.classList.add('intro');
 })();
@@ -659,7 +659,7 @@ html.intro .hero h1 span { animation-play-state: paused; }
   if (!box) return;
   var root = document.documentElement, done = false;
   function end() { if (done) return; done = true; root.classList.remove('intro'); box.remove(); }
-  setTimeout(end, 3000);
+  setTimeout(end, 6000);
   try {
     var EASE = 'cubic-bezier(.2,.8,.2,1)', brand = document.querySelector('.brand');
     var logo = document.createElement('div'); logo.id = 'intro-logo';
@@ -687,14 +687,14 @@ html.intro .hero h1 span { animation-play-state: paused; }
     var size = svg.viewBox.baseVal.height;
     var anims = letters.map(function (l, i) {
       var p = document.createElementNS(NS, 'path'); p.setAttribute('d', l.all); svg.insertBefore(p, amp);
-      return p.animate([{ transform: 'translateY(' + size * 1.1 + 'px)' }, { transform: 'none' }], { duration: 430, delay: 60 + i * 48, easing: EASE, fill: 'backwards' });
+      return p.animate([{ transform: 'translateY(' + size * 1.1 + 'px)' }, { transform: 'none' }], { duration: 700, delay: 150 + i * 110, easing: EASE, fill: 'backwards' });
     });
-    anims.push(amp.animate([{ transform: 'scale(0) rotate(-120deg)' }, { transform: 'none' }], { duration: 480, delay: 330, easing: 'cubic-bezier(.3,1.4,.4,1)', fill: 'backwards' }));
+    anims.push(amp.animate([{ transform: 'scale(0) rotate(-120deg)' }, { transform: 'none' }], { duration: 800, delay: 900, easing: 'cubic-bezier(.3,1.4,.4,1)', fill: 'backwards' }));
 
     // Pouso: da posicao central ate o lugar exato da logo no cabecalho.
     var r = brand.getBoundingClientRect(), k = r.width / startW;
-    anims.push(logo.animate([{ transform: 'none' }, { transform: 'translate(' + (r.left - left) + 'px,' + (r.top - top) + 'px) scale(' + k + ')' }], { duration: 480, delay: 880, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'both' }));
-    anims.push(box.animate([{ backgroundColor: 'rgba(255,255,255,1)' }, { backgroundColor: 'rgba(255,255,255,0)' }], { duration: 480, delay: 1020, easing: 'ease-in-out', fill: 'both' }));
+    anims.push(logo.animate([{ transform: 'none' }, { transform: 'translate(' + (r.left - left) + 'px,' + (r.top - top) + 'px) scale(' + k + ')' }], { duration: 750, delay: 2200, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'both' }));
+    anims.push(box.animate([{ backgroundColor: 'rgba(255,255,255,1)' }, { backgroundColor: 'rgba(255,255,255,0)' }], { duration: 700, delay: 2400, easing: 'ease-in-out', fill: 'both' }));
     Promise.all(anims.map(function (a) { return a.finished; })).then(end, end);
   } catch (e) { end(); }
 })();
