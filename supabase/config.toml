@@ -49,6 +49,9 @@ import_map = "./functions/deno.json"
 [functions.briefing-public]
 verify_jwt = false                     # link avulso de briefing; a função valida o token
 
+[functions.assistant]
+verify_jwt = true                      # Andrade e Gomes: usam o JWT do usuário (RLS)
+
 [functions.document-pdf]
 verify_jwt = true
 import_map = "./functions/deno.json"

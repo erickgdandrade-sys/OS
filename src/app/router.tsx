@@ -64,6 +64,7 @@ const BriefingDetailPage = page(() => import("@/features/briefings/BriefingsPage
 const SocialPage = page(() => import("@/features/creative/SocialPage"), "SocialPage");
 const LibraryPage = page(() => import("@/features/creative/LibraryPage"), "LibraryPage");
 const BrandingHubPage = page(() => import("@/features/creative/BrandingHubPage"), "BrandingHubPage");
+const AssistantPage = page(() => import("@/features/assistant/AssistantPage"), "AssistantPage");
 const PublicBriefingPage = page(() => import("@/features/briefings/BriefingsPages"), "PublicBriefingPage");
 const FinancePage = page(() => import("@/features/finance/FinancePage"), "FinancePage");
 const CalendarPage = page(() => import("@/features/calendar/CalendarPage"), "CalendarPage");
@@ -170,11 +171,12 @@ const briefing = createRoute({ getParentRoute: () => app, path: "/briefings/$bri
 const social = createRoute({ getParentRoute: () => app, path: "/social", component: () => <RequirePerm perm="creative.write"><SocialPage /></RequirePerm> });
 const library = createRoute({ getParentRoute: () => app, path: "/biblioteca", component: LibraryPage });
 const brandingHub = createRoute({ getParentRoute: () => app, path: "/branding", component: BrandingHubPage });
+const assistant = createRoute({ getParentRoute: () => app, path: "/assistentes", component: () => <RequirePerm perm="ai.use"><AssistantPage /></RequirePerm> });
 const publicBriefing = createRoute({ getParentRoute: () => root, path: "/briefing", component: PublicBriefingPage });
 
 const routeTree = root.addChildren([
   login, forgot, createPassword, reset, invite, signout, firstAccess, portal, portalLink, publicProposal, publicBriefing,
-  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar, briefings, briefing, social, library, brandingHub]),
+  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar, briefings, briefing, social, library, brandingHub, assistant]),
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 

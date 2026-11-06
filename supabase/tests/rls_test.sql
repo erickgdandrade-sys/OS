@@ -447,6 +447,15 @@ select pg_temp.ok((select status from public.briefings where id = :'brief2') = '
 reset role; set role authenticated;
 select pg_temp.ok(pg_temp.fails($$insert into public.share_links (organization_id, project_id, token_hash, scopes) values ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'x', array['hack'])$$), 'escopo desconhecido é recusado');
 
+-- ----- Assistentes de IA
+reset role; set role authenticated; select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+insert into public.ai_conversations (organization_id, user_id, assistant, title) values (:'org_a', '00000000-0000-0000-0000-00000000000a', 'andrade', 'Minhas tarefas') returning id as conv1 \gset
+select pg_temp.ok(pg_temp.fails(format($$insert into public.ai_conversations (organization_id, user_id, assistant) values (%L, '00000000-0000-0000-0000-00000000000b', 'gomes')$$, :'org_a')), 'não cria conversa em nome de outra pessoa');
+select pg_temp.ok(pg_temp.fails(format($$insert into public.ai_messages (organization_id, conversation_id, role, content) values (%L, %L, 'assistant', 'forjado')$$, :'org_a', :'conv1')), 'mensagens só são gravadas pela função');
+select pg_temp.ok(pg_temp.fails(format($$insert into public.ai_conversations (organization_id, user_id, assistant) values (%L, '00000000-0000-0000-0000-00000000000a', 'outro')$$, :'org_a')), 'só existem os assistentes Andrade e Gomes');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.ok((select count(*) from public.ai_conversations where id = :'conv1') = 0, 'conversas são privadas de cada pessoa');
+
 -- ===== Anônimo ==============================================================
 reset role; set role anon; select pg_temp.as_user(null);
 select pg_temp.ok(pg_temp.empty_or_denied('select * from public.clients'), 'anônimo não lê clientes');

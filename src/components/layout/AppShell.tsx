@@ -58,7 +58,7 @@ const nav: { section: string; items: NavItem[] }[] = [
     { label: "Branding e naming", to: "/branding", icon: Palette },
     { label: "Social media", to: "/social", icon: Image, perm: "creative.write" },
     { label: "Biblioteca", to: "/biblioteca", icon: FolderOpen },
-    { label: "Assistente IA", icon: Sparkles, perm: "ai.use", phase: 5 },
+    { label: "Assistentes", to: "/assistentes", icon: Sparkles, perm: "ai.use" },
   ] },
   { section: "Estúdio", items: [
     { label: "Equipe", to: "/equipe", icon: Users, perm: "team.read" },
