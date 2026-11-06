@@ -146,7 +146,6 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
 .form textarea { resize: vertical; min-height: 116px; }
 .form .btn { justify-self: start; }
 .form .hint { font-size: 15px; color: var(--mut); }
-.out { display: grid; gap: 12px; border-top: 1px solid var(--rule); padding-top: 16px; }
 
 /* Rodapé */
 .foot { padding-block: clamp(48px, 6vw, 88px) 56px; }
@@ -221,6 +220,15 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
 .foot-links a { color: var(--white); }
 .foot-links a:hover { color: var(--ceu); }
 
+/* Abertura: a logo se monta e pousa no cabecalho */
+#intro { position: fixed; inset: 0; z-index: 50; background: var(--white); pointer-events: none; animation: intro-safety 0s linear 4s forwards; }
+#intro-logo { position: fixed; color: var(--ink); --amp: var(--azul); transform-origin: 0 0; will-change: transform; }
+#intro-logo .svg-logo { width: 100%; height: auto; overflow: hidden; }
+#intro-logo path { transform-box: fill-box; transform-origin: 50% 50%; }
+html.intro .brand { visibility: hidden; }
+html.intro .hero h1 span { animation-play-state: paused; }
+@keyframes intro-safety { to { visibility: hidden; } }
+
 @media (max-width: 860px) {
   .cards, .two { grid-template-columns: minmax(0, 1fr); }
   .nav a:not(.btn) { display: none; }
@@ -242,6 +250,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
   html { scroll-behavior: auto; }
   .hero h1 span { animation: none; }
   .tile { transition: none; }
+  #intro { display: none; }
   .rv, .mark, .row, .card img { transition: none; }
   [data-view] { animation: none; }
 }
@@ -250,6 +259,15 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
 <body>
 
 
+<div id="intro" aria-hidden="true"></div>
+<script>
+// Sem animacao para quem pede movimento reduzido ou chega direto numa pagina interna.
+(function () {
+  var skip = location.hash || matchMedia('(prefers-reduced-motion: reduce)').matches || !Element.prototype.animate;
+  var el = document.getElementById('intro');
+  if (skip) el.remove(); else document.documentElement.classList.add('intro');
+})();
+</script>
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#inicio" aria-label="ANDRA &amp; GO, início"><svg class="svg-logo" viewBox="0 0 1098.9 148.48" role="img" aria-label="ANDRA &amp; GO"><path d="M1068.1 75.18C1068.1 47.18 1055.11 29.18 1032.11 29.18C1009.11 29.18 996.11 47.18 996.11 75.18C996.11 102.98 1009.11 121.38 1032.11 121.38C1055.11 121.38 1068.1 102.98 1068.1 75.18ZM965.31 75.18C965.31 32.18 991.71 3.38 1032.11 3.38C1072.5 3.38 1098.9 32.18 1098.9 75.18C1098.9 117.98 1072.5 147.18 1032.11 147.18C991.71 147.18 965.31 117.98 965.31 75.18ZM826.91 75.78C826.91 29.78 852.51 3.38 891.71 3.38C921.11 3.38 946.71 17.78 950.91 49.58C950.91 49.58 921.31 49.58 921.31 49.58C917.11 33.18 903.31 29.18 891.71 29.18C866.51 29.18 857.31 49.18 857.31 74.78C857.31 100.98 867.11 121.38 892.31 121.38C907.11 121.38 923.71 114.38 923.71 92.18C923.71 92.18 896.71 92.18 896.71 92.18C896.71 92.18 896.71 68.18 896.71 68.18C896.71 68.18 953.51 68.18 953.51 68.18C953.51 68.18 953.51 82.78 953.51 82.78C953.51 125.18 930.51 147.18 892.31 147.18C850.11 147.18 826.91 120.18 826.91 75.78ZM625.59 96.78C625.59 96.78 604.59 35.78 604.59 35.78C604.59 35.78 602.79 35.78 602.79 35.78C602.79 35.78 581.79 96.78 581.79 96.78C581.79 96.78 625.59 96.78 625.59 96.78ZM584.39 5.18C584.39 5.18 622.99 5.18 622.99 5.18C622.99 5.18 673.59 145.18 673.59 145.18C673.59 145.18 642.19 145.18 642.19 145.18C642.19 145.18 633.19 118.98 633.19 118.98C633.19 118.98 574.19 118.98 574.19 118.98C574.19 118.98 565.19 145.18 565.19 145.18C565.19 145.18 533.79 145.18 533.79 145.18C533.79 145.18 584.39 5.18 584.39 5.18ZM497.79 51.98C497.79 39.38 490.59 31.18 474.19 31.18C474.19 31.18 448.59 31.18 448.59 31.18C448.59 31.18 448.59 72.58 448.59 72.58C448.59 72.58 474.19 72.58 474.19 72.58C490.59 72.58 497.79 64.38 497.79 51.98ZM418.59 5.18C418.59 5.18 475.19 5.18 475.19 5.18C512.39 5.18 528.59 24.58 528.59 51.98C528.59 71.78 519.99 87.78 500.59 94.78C500.59 94.78 529.99 145.18 529.99 145.18C529.99 145.18 500.39 145.18 500.39 145.18C500.39 145.18 473.79 98.58 473.79 98.58C473.79 98.58 448.59 98.58 448.59 98.58C448.59 98.58 448.59 145.18 448.59 145.18C448.59 145.18 418.59 145.18 418.59 145.18C418.59 145.18 418.59 5.18 418.59 5.18ZM374.19 75.18C374.19 44.38 364.19 31.18 335.59 31.18C335.59 31.18 315.59 31.18 315.59 31.18C315.59 31.18 315.59 119.18 315.59 119.18C315.59 119.18 335.59 119.18 335.59 119.18C364.19 119.18 374.19 105.98 374.19 75.18ZM285.59 5.18C285.59 5.18 338.59 5.18 338.59 5.18C382.19 5.18 404.79 30.18 404.79 75.18C404.79 120.18 382.19 145.18 338.59 145.18C338.59 145.18 285.59 145.18 285.59 145.18C285.59 145.18 285.59 5.18 285.59 5.18ZM149.6 5.18C149.6 5.18 180.8 5.18 180.8 5.18C180.8 5.18 237.2 97.18 237.2 97.18C237.2 97.18 237.8 97.18 237.8 97.18C237.8 97.18 237.8 5.18 237.8 5.18C237.8 5.18 267.8 5.18 267.8 5.18C267.8 5.18 267.8 145.18 267.8 145.18C267.8 145.18 235.4 145.18 235.4 145.18C235.4 145.18 180.2 54.98 180.2 54.98C180.2 54.98 179.6 54.98 179.6 54.98C179.6 54.98 179.6 145.18 179.6 145.18C179.6 145.18 149.6 145.18 149.6 145.18C149.6 145.18 149.6 5.18 149.6 5.18ZM91.8 96.78C91.8 96.78 70.8 35.78 70.8 35.78C70.8 35.78 69 35.78 69 35.78C69 35.78 48 96.78 48 96.78C48 96.78 91.8 96.78 91.8 96.78ZM50.6 5.18C50.6 5.18 89.2 5.18 89.2 5.18C89.2 5.18 139.8 145.18 139.8 145.18C139.8 145.18 108.4 145.18 108.4 145.18C108.4 145.18 99.4 118.98 99.4 118.98C99.4 118.98 40.4 118.98 40.4 118.98C40.4 118.98 31.4 145.18 31.4 145.18C31.4 145.18 0 145.18 0 145.18C0 145.18 50.6 5.18 50.6 5.18Z"/><path class="amp" d="M811.78 145.18C811.78 145.18 790.95 145.18 790.95 145.18C786.89 145.18 783.83 144.84 781.77 144.15C779.71 143.46 777.89 142.24 776.31 140.49C774.73 138.74 772.63 136.21 770.02 132.91C770.02 132.91 712.89 60.73 712.89 60.73C710.97 58.26 709.3 55.75 707.89 53.21C706.48 50.66 705.42 48.03 704.7 45.32C703.97 42.6 703.61 39.84 703.61 37.02C703.61 30.97 704.94 25.64 707.58 21.03C710.23 16.43 713.67 12.56 717.89 9.43C722.12 6.31 726.68 3.95 731.56 2.37C736.44 0.79 741.15 0 745.68 0C752.14 0 757.78 1.1 762.59 3.3C767.4 5.5 771.13 8.51 773.78 12.32C776.43 16.14 777.75 20.49 777.75 25.37C777.75 30.8 776.6 35.9 774.3 40.68C771.99 45.46 769.4 49.49 766.51 52.79C766.51 52.79 737.74 68.16 737.74 68.16C737.74 68.16 733.1 62.79 733.1 62.79C743.48 57.57 750.75 51.8 754.91 45.47C759.07 39.15 761.15 32.17 761.15 24.54C761.15 19.04 759.65 14.81 756.66 11.86C753.67 8.9 749.57 7.42 744.34 7.42C740.22 7.42 736.39 8.87 732.85 11.75C729.3 14.64 726.45 18.1 724.29 22.12C722.12 26.14 721.04 29.8 721.04 33.1C721.04 38.05 721.98 42.34 723.88 45.99C725.76 49.63 728.5 53.79 732.07 58.46C732.07 58.46 773.94 111.88 773.94 111.88C773.94 111.88 788.99 129.2 788.99 129.2C790.23 130.57 791.88 132.29 793.94 134.35C796 136.42 797.93 137.62 799.71 137.96C799.71 137.96 813.01 140.33 813.01 140.33C813.01 140.33 811.78 145.18 811.78 145.18ZM720.52 67.64C720.52 67.64 724.65 72.9 724.65 72.9C719.35 75.99 714.61 79.29 710.42 82.8C706.23 86.3 702.91 90.34 700.47 94.91C698.03 99.49 696.81 104.93 696.81 111.26C696.81 118.27 699.13 123.96 703.77 128.32C708.41 132.69 714.3 134.87 721.45 134.87C727.84 134.87 733.57 133.93 738.62 132.03C743.67 130.14 748.35 127.57 752.64 124.3C756.94 121.04 761.11 117.38 765.17 113.32C767.16 111.33 769.55 108.65 772.34 105.28C775.12 101.91 777.89 98.3 780.64 94.45C783.39 90.6 785.71 86.89 787.6 83.31C789.49 79.74 790.5 76.71 790.64 74.24C790.29 74.1 789.9 73.98 789.45 73.88C789.01 73.78 788.54 73.69 788.06 73.62C788.06 73.62 772.49 69.91 772.49 69.91C772.49 69.91 773.73 65.06 773.73 65.06C773.73 65.06 823.64 65.06 823.64 65.06C823.64 65.06 822.4 69.91 822.4 69.91C822.4 69.91 810.02 72.38 810.02 72.38C808.51 72.66 807.22 73.36 806.16 74.5C805.09 75.63 804.01 76.99 802.91 78.57C798.17 85.65 793.01 92.42 787.44 98.88C781.88 105.35 776.1 111.6 770.12 117.65C765.03 122.81 759.57 127.74 753.73 132.45C747.88 137.16 741.68 141 735.11 143.99C728.55 146.98 721.62 148.48 714.34 148.48C707.6 148.48 701.48 147.16 695.98 144.51C690.48 141.86 686.12 138.08 682.89 133.17C679.66 128.25 678.04 122.43 678.04 115.69C678.04 112.05 678.64 108.23 679.85 104.25C681.05 100.26 682.75 96.39 684.95 92.65C687.15 88.9 689.69 85.62 692.58 82.8C692.58 82.8 720.52 67.64 720.52 67.64Z"/></svg></a>
@@ -368,11 +386,8 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
         <label for="f-nome">Seu nome<input id="f-nome" name="nome" autocomplete="name" required></label>
         <label for="f-empresa">Empresa<input id="f-empresa" name="empresa" autocomplete="organization"></label>
         <label for="f-ideia">O que você quer construir?<textarea id="f-ideia" name="ideia" required></textarea></label>
-        <button class="btn" type="submit">Gerar link do WhatsApp</button>
-        <p class="hint" id="hint">Geramos um link direto para o nosso WhatsApp, com a sua mensagem pronta.</p>
-        <div class="out" id="out" hidden>
-          <a class="btn" id="wa" href="#contato" target="_blank" rel="noopener">Abrir conversa no WhatsApp</a>
-        </div>
+        <button class="btn" type="submit">Enviar pelo WhatsApp</button>
+        <p class="hint" id="hint">O WhatsApp abre com a sua mensagem pronta. É só enviar.</p>
       </form>
     </div>
   </section>
@@ -623,8 +638,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
   }
 
   // Mensagem de contato: nada é enviado por esta página
-  var form = document.getElementById('form'), out = document.getElementById('out'), wa = document.getElementById('wa'), hint = document.getElementById('hint');
-  var HINT = hint.textContent;
+  var form = document.getElementById('form'), hint = document.getElementById('hint');
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var nome = form.nome.value.trim(), emp = form.empresa.value.trim(), ideia = form.ideia.value.trim();
@@ -632,15 +646,58 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spa
     var numero = String(SITE.contato.whatsapp || '').replace(/\D/g, '');
     if (!numero) { hint.textContent = 'O WhatsApp está indisponível no momento.'; return; }
     var body = 'Olá, ANDRA & GO.\n\nMeu nome é ' + nome + '.' + (emp ? '\nEmpresa: ' + emp + '.' : '') + '\n\n' + ideia;
-    wa.href = 'https://wa.me/' + numero + '?text=' + encodeURIComponent(body);
-    out.hidden = false;
-    hint.textContent = 'Link pronto. Toque no botão para abrir a conversa e enviar.';
-    wa.focus();
+    var url = 'https://wa.me/' + numero + '?text=' + encodeURIComponent(body);
+    // Abre em nova aba para manter o site aberto; se o navegador bloquear, segue na mesma aba.
+    var aba = window.open(url, '_blank');
+    if (aba) aba.opener = null; else location.href = url;
   });
-  // Se a pessoa mudar o texto, o link antigo deixa de valer.
-  form.addEventListener('input', function () { out.hidden = true; hint.textContent = HINT; });
 })();
 </script>
+<script>
+(function () {
+  var box = document.getElementById('intro');
+  if (!box) return;
+  var root = document.documentElement, done = false;
+  function end() { if (done) return; done = true; root.classList.remove('intro'); box.remove(); }
+  setTimeout(end, 3000);
+  try {
+    var EASE = 'cubic-bezier(.2,.8,.2,1)', brand = document.querySelector('.brand');
+    var logo = document.createElement('div'); logo.id = 'intro-logo';
+    logo.appendChild(brand.querySelector('svg').cloneNode(true));
+    box.appendChild(logo);
+    var startW = Math.min(innerWidth * 0.72, 640);
+    logo.style.width = startW + 'px';
+    var startH = logo.offsetHeight;
+    var left = (innerWidth - startW) / 2, top = (innerHeight - startH) / 2;
+    logo.style.left = left + 'px'; logo.style.top = top + 'px';
 
+    // Separa as letras: cada contorno vira uma peca, e os miolos (A, D, R, O) ficam com a letra que os contem.
+    var svg = logo.querySelector('svg'), main = svg.querySelector('path:not(.amp)'), amp = svg.querySelector('.amp');
+    var NS = 'http://www.w3.org/2000/svg';
+    var parts = (main.getAttribute('d').match(/M[^M]*/g) || []).map(function (d) {
+      var p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); svg.appendChild(p);
+      var b = p.getBBox(); p.remove();
+      return { d: d, b: b };
+    });
+    function inside(a, c) { return a !== c && a.b.x >= c.b.x && a.b.y >= c.b.y && a.b.x + a.b.width <= c.b.x + c.b.width && a.b.y + a.b.height <= c.b.y + c.b.height; }
+    var letters = parts.filter(function (p) { return !parts.some(function (o) { return inside(p, o); }); });
+    letters.forEach(function (l) { l.all = l.d; parts.forEach(function (p) { if (inside(p, l)) l.all += p.d; }); });
+    letters.sort(function (a, b) { return a.b.x - b.b.x; });
+    main.remove();
+    var size = svg.viewBox.baseVal.height;
+    var anims = letters.map(function (l, i) {
+      var p = document.createElementNS(NS, 'path'); p.setAttribute('d', l.all); svg.insertBefore(p, amp);
+      return p.animate([{ transform: 'translateY(' + size * 1.1 + 'px)' }, { transform: 'none' }], { duration: 430, delay: 60 + i * 48, easing: EASE, fill: 'backwards' });
+    });
+    anims.push(amp.animate([{ transform: 'scale(0) rotate(-120deg)' }, { transform: 'none' }], { duration: 480, delay: 330, easing: 'cubic-bezier(.3,1.4,.4,1)', fill: 'backwards' }));
+
+    // Pouso: da posicao central ate o lugar exato da logo no cabecalho.
+    var r = brand.getBoundingClientRect(), k = r.width / startW;
+    anims.push(logo.animate([{ transform: 'none' }, { transform: 'translate(' + (r.left - left) + 'px,' + (r.top - top) + 'px) scale(' + k + ')' }], { duration: 480, delay: 880, easing: 'cubic-bezier(.7,0,.2,1)', fill: 'both' }));
+    anims.push(box.animate([{ backgroundColor: 'rgba(255,255,255,1)' }, { backgroundColor: 'rgba(255,255,255,0)' }], { duration: 480, delay: 1020, easing: 'ease-in-out', fill: 'both' }));
+    Promise.all(anims.map(function (a) { return a.finished; })).then(end, end);
+  } catch (e) { end(); }
+})();
+</script>
 </body>
 </html>
