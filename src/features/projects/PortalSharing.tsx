@@ -7,7 +7,7 @@ import { errorMessage } from "@/lib/domain";
 import { addDaysISO, dateTime, todayISO } from "@/lib/format";
 import { appUrl, invokeFunction, supabase } from "@/lib/supabase";
 
-const scopeLabel: Record<string, string> = { requests: "O que precisamos do cliente (briefings, referências, fotos…)", progress: "Andamento", tasks: "Etapas", files: "Arquivos", approvals: "Aprovações" };
+const scopeLabel: Record<string, string> = { requests: "O que precisamos do cliente (briefings, referências, fotos…)", progress: "Andamento", tasks: "Etapas", files: "Arquivos", approvals: "Aprovações", moodboards: "Moodboards marcados como visíveis" };
 
 /** Compartilhamento do projeto com o cliente: links seguros e contas do portal. */
 export function PortalSharing({ projectId, clientId }: { projectId: string; clientId: string }) {

@@ -61,6 +61,9 @@ const ContractPrintPage = page(() => import("@/features/commercial/ContractsPage
 const ContractWizardPage = page(() => import("@/features/commercial/ContractWizard"), "ContractWizardPage");
 const BriefingsPage = page(() => import("@/features/briefings/BriefingsPages"), "BriefingsPage");
 const BriefingDetailPage = page(() => import("@/features/briefings/BriefingsPages"), "BriefingDetailPage");
+const SocialPage = page(() => import("@/features/creative/SocialPage"), "SocialPage");
+const LibraryPage = page(() => import("@/features/creative/LibraryPage"), "LibraryPage");
+const BrandingHubPage = page(() => import("@/features/creative/BrandingHubPage"), "BrandingHubPage");
 const PublicBriefingPage = page(() => import("@/features/briefings/BriefingsPages"), "PublicBriefingPage");
 const FinancePage = page(() => import("@/features/finance/FinancePage"), "FinancePage");
 const CalendarPage = page(() => import("@/features/calendar/CalendarPage"), "CalendarPage");
@@ -164,11 +167,14 @@ const finance = createRoute({ getParentRoute: () => app, path: "/financeiro", co
 const calendar = createRoute({ getParentRoute: () => app, path: "/calendario", component: CalendarPage });
 const briefings = createRoute({ getParentRoute: () => app, path: "/briefings", component: () => <RequirePerm perm="clients.read"><BriefingsPage /></RequirePerm> });
 const briefing = createRoute({ getParentRoute: () => app, path: "/briefings/$briefingId", component: () => <RequirePerm perm="clients.read"><BriefingDetailPage /></RequirePerm> });
+const social = createRoute({ getParentRoute: () => app, path: "/social", component: () => <RequirePerm perm="creative.write"><SocialPage /></RequirePerm> });
+const library = createRoute({ getParentRoute: () => app, path: "/biblioteca", component: LibraryPage });
+const brandingHub = createRoute({ getParentRoute: () => app, path: "/branding", component: BrandingHubPage });
 const publicBriefing = createRoute({ getParentRoute: () => root, path: "/briefing", component: PublicBriefingPage });
 
 const routeTree = root.addChildren([
   login, forgot, createPassword, reset, invite, signout, firstAccess, portal, portalLink, publicProposal, publicBriefing,
-  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar, briefings, briefing]),
+  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar, briefings, briefing, social, library, brandingHub]),
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 

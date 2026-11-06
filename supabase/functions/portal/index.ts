@@ -74,6 +74,19 @@ Deno.serve(handler(async (req) => {
     out.approvals = approvals ?? [];
     out.allow_approvals = link.allow_approvals;
   }
+  if (scopes.has("moodboards")) {
+    const { data: boards } = await admin.from("moodboards").select("id, title, kind, viewport, updated_at")
+      .eq("project_id", link.project_id).eq("client_visible", true).order("created_at");
+    out.moodboards = await Promise.all((boards ?? []).map(async (b) => {
+      const { data: els } = await admin.from("moodboard_elements").select("id, type, x, y, width, height, rotation, z_index, data, file_id, files(storage_path)").eq("moodboard_id", b.id).order("z_index").limit(500);
+      const elements = await Promise.all((els ?? []).map(async ({ files, ...e }) => {
+        const f = files as unknown as { storage_path: string } | null;
+        const { data } = f ? await admin.storage.from("org-files").createSignedUrl(f.storage_path, 3600) : { data: null };
+        return { ...e, url: data?.signedUrl ?? null };
+      }));
+      return { ...b, elements };
+    }));
+  }
   if (scopes.has("requests")) {
     out.client_actions = await buildClientActions(admin, link, { approvals: scopes.has("approvals") && link.allow_approvals });
   }

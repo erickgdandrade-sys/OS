@@ -5,6 +5,9 @@ import { useRef, useState } from "react";
 import { useBreadcrumbs } from "@/components/layout/AppShell";
 import { Avatar, Badge, Button, Card, CardHeader, ConfirmDialog, EmptyState, ErrorState, Field, Input, Modal, PageHeader, Progress, Select, Spinner, Tabs, Textarea, useToast } from "@/components/ui";
 import { useOrg } from "@/features/auth/AuthProvider";
+import { MoodboardsPanel } from "@/features/creative/Moodboards";
+import { NamingPanel } from "@/features/creative/NamingPanel";
+import { ProductionsPanel } from "@/features/creative/ProductionsPanel";
 import { ClientRequestsPanel, useOpenClientRequests } from "./ClientRequestsPanel";
 import { clientName } from "@/features/clients/ClientsPages";
 import { fetchProfiles, ProjectTasks, type Member } from "@/features/tasks/TaskViews";
@@ -14,14 +17,14 @@ import { supabase } from "@/lib/supabase";
 import { DueLabel, progressOf } from "./ProjectsPages";
 import { PortalSharing } from "./PortalSharing";
 
-type Tab = "requests" | "tasks" | "overview" | "team" | "files" | "comments" | "time" | "portal" | "history";
+type Tab = "naming" | "moodboards" | "productions" | "requests" | "tasks" | "overview" | "team" | "files" | "comments" | "time" | "portal" | "history";
 
 export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const { orgId, userId, can } = useOrg();
   const qc = useQueryClient();
   const toast = useToast();
   const nav = useNavigate();
-  const [tab, setTab] = useState<Tab>("tasks");
+  const [tab, setTab] = useState<Tab>(() => (new URLSearchParams(window.location.search).get("aba") as Tab) || "tasks");
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -82,6 +85,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       <Tabs value={tab} onChange={setTab} items={[
         { value: "tasks", label: "Tarefas", count: project.tasks.filter((t) => !t.parent_id).length },
         { value: "requests" as const, label: "Pedidos ao cliente", count: openReqs.data || undefined },
+        ...(["branding", "naming"].includes(project.category) ? [{ value: "naming" as const, label: "Naming e pesquisa" }] : []),
+        { value: "moodboards" as const, label: "Moodboards" },
+        ...(["photography", "audiovisual", "campaign", "institutional", "social_media"].includes(project.category) ? [{ value: "productions" as const, label: "Produções" }] : []),
         { value: "overview", label: "Visão geral" }, { value: "team", label: "Equipe", count: members.data?.length },
         { value: "files", label: "Arquivos" }, { value: "comments", label: "Comentários" }, { value: "time", label: "Horas" },
         ...(can("portal.share") ? [{ value: "portal" as const, label: "Portal do cliente" }] : []), { value: "history", label: "Histórico" },
@@ -89,6 +95,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       <div className="pt-4">
         {tab === "tasks" && <ProjectTasks projectId={projectId} members={members.data ?? []} canEdit={!!canEdit} />}
         {tab === "requests" && <ClientRequestsPanel projectId={projectId} orgId={orgId} clientId={project.client_id} category={project.category} canEdit={!!canEdit} />}
+        {tab === "naming" && <NamingPanel projectId={projectId} orgId={orgId} canEdit={!!canEdit && can("creative.write")} />}
+        {tab === "moodboards" && <MoodboardsPanel projectId={projectId} orgId={orgId} canEdit={!!canEdit && can("creative.write")} />}
+        {tab === "productions" && <ProductionsPanel projectId={projectId} orgId={orgId} canEdit={!!canEdit} members={(members.data ?? []).map((m) => ({ user_id: m.user_id, full_name: m.profiles?.full_name }))} />}
         {tab === "overview" && <Overview project={project} />}
         {tab === "team" && <Team projectId={projectId} orgId={orgId} members={members.data ?? []} canEdit={!!canEdit} ownerId={project.owner_id} onChange={() => members.refetch()} />}
         {tab === "files" && <Files projectId={projectId} orgId={orgId} />}

@@ -8,6 +8,7 @@ import { categoryLabel, errorMessage, projectStatusLabel, projectStatusTone, tas
 import { date, dateTime, money } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 import { ClientActionsSection, type ClientActionsData } from "./ClientActions";
+import { MoodboardCanvas, boardKindLabel, type El } from "@/features/creative/Moodboards";
 
 /* Portal externo: layout próprio, sem nada do painel interno.
    Dados vêm só das views portal_* (RLS + colunas seguras) ou da Edge Function `portal`. */
@@ -179,7 +180,7 @@ export function PortalHome() {
 /* --------------------------------------- Acesso por link seguro (sem conta) */
 type LinkData = { project: { name: string; category: ProjectCategory; status: ProjectStatus; start_date: string | null; due_date: string | null; description: string | null; organizations: { name: string } | null };
   scopes: string[]; progress?: number; tasks?: { id: string; title: string; status: string; due_date: string | null }[];
-  files?: { id: string; name: string; url: string | null; created_at: string }[]; approvals?: PortalApproval[]; allow_approvals?: boolean; client_actions?: ClientActionsData };
+  files?: { id: string; name: string; url: string | null; created_at: string }[]; approvals?: PortalApproval[]; allow_approvals?: boolean; client_actions?: ClientActionsData; moodboards?: { id: string; title: string; kind: string; viewport: { x: number; y: number; zoom: number }; elements: El[] }[] };
 
 export function PortalLinkPage() {
   const toast = useToast();
@@ -217,6 +218,9 @@ export function PortalLinkPage() {
               catch (e) { toast({ tone: "error", message: errorMessage(e) }); }
             } : undefined} />)}</ul> : <p className="text-sm text-fg-3">Nada para aprovar.</p>}
           </Card>)}
+        {d.moodboards && d.moodboards.length > 0 && d.moodboards.map((b) => (
+          <Card key={b.id}><CardHeader title={b.title} description={`${boardKindLabel[b.kind] ?? "Quadro"} · arraste para navegar e use a roda do mouse para zoom`} />
+            <div className="h-[60vh]"><MoodboardCanvas elements={b.elements} viewport={b.viewport} editable={false} /></div></Card>))}
         {d.tasks && <Card><CardHeader title="Etapas" /><Steps tasks={d.tasks} /></Card>}
         {d.files && <Card><CardHeader title="Arquivos" description="Links de download válidos por 10 minutos." />{d.files.length ? <ul className="grid gap-2">{d.files.map((f) => (
           <li key={f.id} className="flex items-center gap-3 text-sm"><span className="flex-1 truncate">{f.name}</span>{f.url && <a href={f.url} target="_blank" rel="noreferrer noopener"><Button size="sm" icon={<Download className="size-3.5" />}>Baixar</Button></a>}</li>))}</ul> : <p className="text-sm text-fg-3">Nenhum arquivo.</p>}</Card>}
