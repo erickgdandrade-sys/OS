@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowUp, Plus } from "lucide-react";
+import { ArrowUp, Plus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button, Card, PageHeader, Textarea, cn } from "@/components/ui";
+import { Button, Card, ConfirmDialog, PageHeader, Textarea, cn, useToast } from "@/components/ui";
 import { useOrg } from "@/features/auth/AuthProvider";
+import { errorMessage } from "@/lib/domain";
 import { dateTime } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 import { assistantName, useAssistants } from "./AssistantContext";
@@ -23,6 +24,8 @@ export function AssistantPage() {
   const { active, activate, threads, send, openConversation, notConfigured, setMinimized } = useAssistants();
   const [who, setWho] = useState<Who>(active ?? "andrade");
   const [text, setText] = useState("");
+  const [removing, setRemoving] = useState<{ id: string; title: string | null } | "all" | null>(null);
+  const toast = useToast();
   const endRef = useRef<HTMLDivElement>(null);
   const t = threads[who];
   const convs = useQuery({ queryKey: ["ai-conversations", orgId, who, t.conv], queryFn: async () =>
@@ -55,10 +58,15 @@ export function AssistantPage() {
           <div className="p-3"><Button className="w-full" icon={<Plus className="size-4" />} onClick={() => openConversation(who, null)}>Nova conversa</Button></div>
           <ul className="max-h-[60vh] overflow-y-auto border-t border-border">
             {(convs.data ?? []).map((c) => (
-              <li key={c.id}><button type="button" onClick={() => { openConversation(who, c.id); activate(who); }} className={cn("block w-full truncate px-3 py-2 text-left text-sm hover:bg-surface-2", t.conv === c.id && "bg-surface-2 font-medium")}>
-                {c.title || "Conversa"}<span className="block text-[11px] font-normal text-fg-3">{dateTime(c.updated_at)}</span></button></li>))}
+              <li key={c.id} className={cn("group flex items-center hover:bg-surface-2", t.conv === c.id && "bg-surface-2")}>
+                <button type="button" onClick={() => { openConversation(who, c.id); activate(who); }} className={cn("min-w-0 flex-1 truncate px-3 py-2 text-left text-sm", t.conv === c.id && "font-medium")}>
+                  {c.title || "Conversa"}<span className="block text-[11px] font-normal text-fg-3">{dateTime(c.updated_at)}</span></button>
+                <button type="button" aria-label={`Apagar conversa ${c.title ?? ""}`} onClick={() => setRemoving({ id: c.id, title: c.title })}
+                  className="mr-1.5 rounded p-1.5 text-fg-3 opacity-0 hover:bg-surface-3 hover:text-danger focus:opacity-100 group-hover:opacity-100"><Trash2 className="size-3.5" /></button>
+              </li>))}
             {!convs.data?.length && <li className="px-3 py-3 text-xs text-fg-3">Nenhuma conversa ainda.</li>}
           </ul>
+          {(convs.data?.length ?? 0) > 1 && <div className="border-t border-border p-2"><Button size="sm" variant="ghost" className="w-full text-fg-3" icon={<Trash2 className="size-3.5" />} onClick={() => setRemoving("all")}>Apagar todas as conversas do {name}</Button></div>}
         </Card>
         <Card className="flex min-h-[60vh] flex-col" padded={false}>
           <div className="flex-1 space-y-4 overflow-y-auto p-5" aria-live="polite">
@@ -87,6 +95,17 @@ export function AssistantPage() {
           </form>
         </Card>
       </div>
+      <ConfirmDialog open={!!removing} onClose={() => setRemoving(null)} confirmLabel="Apagar"
+        title={removing === "all" ? `Apagar todas as conversas do ${name}?` : "Apagar esta conversa?"}
+        description={removing === "all" ? "Todo o histórico com este assistente será apagado. Tarefas que ele criou continuam nos projetos." : `“${typeof removing === "object" && removing ? removing.title ?? "Conversa" : ""}” será apagada. Tarefas criadas nela continuam nos projetos.`}
+        onConfirm={async () => {
+          const ids = removing === "all" ? (convs.data ?? []).map((c) => c.id) : removing ? [removing.id] : [];
+          const { error } = await supabase.from("ai_conversations").delete().in("id", ids);
+          if (error) { toast({ tone: "error", message: errorMessage(error) }); return; }
+          if (t.conv && ids.includes(t.conv)) openConversation(who, null);
+          setRemoving(null); convs.refetch();
+          toast({ tone: "success", message: ids.length > 1 ? "Conversas apagadas." : "Conversa apagada." });
+        }} />
       <p className="mt-3 text-xs text-fg-3">Os assistentes veem apenas o que você pode ver no sistema e podem errar. Confira antes de enviar algo ao cliente.</p>
     </div>
   );

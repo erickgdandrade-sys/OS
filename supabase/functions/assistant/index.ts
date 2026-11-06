@@ -6,7 +6,7 @@
 // telas): a IA nunca vê nada que a pessoa não veria. A chave da IA fica só no
 // servidor (secret GEMINI_API_KEY ou LLM_API_KEY) e nunca vai para o navegador.
 // POST { assistant, organization_id, conversation_id?, message }
-import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
+import type Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2.45.4";
 import { adminClient, handler, HttpError, isUuid, json, requirePerm, userClient } from "../_shared/http.ts";
 
@@ -158,6 +158,7 @@ const guide = `Mapa do ANDRA&GO OS (para orientar a pessoa):
 
 function system(who: Who, name: string, studio: string) {
   const base = `Você é ${who === "andrade" ? "o Andrade" : "o Gomes"}, assistente do ${studio} dentro do ANDRA&GO OS. Fale em português do Brasil, com clareza e poucas palavras; datas em DD/MM/AAAA e valores em R$. Hoje é ${today().split("-").reverse().join("/")} (fuso de São Paulo). Você está conversando com ${name || "uma pessoa da equipe"}.
+Seja rápido: para cumprimentos e conversa simples, responda direto, sem ferramentas. Quando precisar de dados, peça todas as consultas necessárias de uma vez (em paralelo), não uma por uma.
 Use as ferramentas para consultar dados reais; nunca invente números, nomes, prazos ou links. Se uma ferramenta falhar ou a pessoa não tiver permissão, diga isso com honestidade. Não peça nem repita senhas, tokens ou chaves.`;
   return who === "andrade"
     ? `${base}
@@ -183,7 +184,9 @@ async function runTool(tools: Tool[], ctx: Ctx, name: string, input: unknown): P
 
 /* ---------------------------------------------------------- Anthropic */
 async function runAnthropic(apiKey: string, who: Who, sys: string, messages: Anthropic.Beta.BetaMessageParam[], tools: Tool[], ctx: Ctx): Promise<RunResult> {
-  const client = new Anthropic({ apiKey });
+  // Carregado só quando a Anthropic é usada (a partida da função fica mais rápida com o Gemini).
+  const { default: AnthropicSDK } = await import("npm:@anthropic-ai/sdk@1.3.0");
+  const client = new AnthropicSDK({ apiKey });
   let tokensIn = 0, tokensOut = 0;
   for (let step = 0; step < 8; step++) {
     const res = await client.beta.messages.create({
@@ -236,12 +239,36 @@ type GContent = { role: "user" | "model"; parts: GPart[] };
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
 let cachedModels: string[] | null = null;
 let allModels: string[] = [];
-let lastGood: string | null = null;   // modelo que respondeu por último nesta instância
+let lastGood: string | null = null;   // modelo que respondeu por último
+let stateLoaded = false;
+// Estado aprendido (modelos disponíveis, modelo bom e nível de compatibilidade) fica
+// salvo no banco: uma função recém-iniciada não precisa redescobrir tudo.
+async function loadGeminiState() {
+  if (stateLoaded) return; stateLoaded = true;
+  const { data } = await adminClient().from("platform_settings").select("value").eq("key", "ai_gemini_state").maybeSingle();
+  try {
+    const v = JSON.parse(data?.value ?? "null") as { models?: string[]; lastGood?: string; compat?: number; at?: number } | null;
+    if (v && v.at && Date.now() - v.at < 24 * 3600_000) {
+      if (v.models?.length) cachedModels = v.models;
+      if (v.lastGood) lastGood = v.lastGood;
+      if (typeof v.compat === "number") compat = v.compat;
+    }
+  } catch { /* estado inválido: redescobre */ }
+}
+async function saveGeminiState() {
+  await adminClient().from("platform_settings").upsert({ key: "ai_gemini_state", value: JSON.stringify({ models: cachedModels ?? [], lastGood, compat, at: Date.now() }) });
+}
+// Tarefas depois da resposta (registro): não seguram a resposta para a pessoa.
+function background(p: Promise<unknown>) {
+  const rt = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime;
+  const safe = p.catch((e) => console.error("background", e));
+  if (rt?.waitUntil) rt.waitUntil(safe);
+}
 // Ajustes que o Google pode recusar ("invalid argument" sem detalhe). A cada 400
 // genérico o próximo nível é tentado; o que funcionou fica valendo nesta instância:
 // 0 = pensamento mínimo + esquemas completos · 1 = sem ajuste de pensamento ·
 // 2 = esquemas simplificados · 3 = sem ferramentas (só conversa).
-let compat = 0;
+let compat = 1;   // começa no nível que já funcionou com esta chave (sem ajuste de pensamento)
 export const trace: { model: string; ms: number; status: number; note?: string }[] = [];
 const noFreeTier = new Set<string>();   // modelos que responderam "limit: 0" nesta instância
 
@@ -269,6 +296,7 @@ async function geminiModels(apiKey: string): Promise<string[]> {
 }
 
 async function runGemini(apiKey: string, sys: string, history: { role: "user" | "assistant"; content: string }[], tools: Tool[], ctx: Ctx): Promise<RunResult> {
+  await loadGeminiState();
   const candidates = await geminiModels(apiKey);
   if (!candidates.length) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini gratuito disponível para esta chave.");
   let model = lastGood && candidates.includes(lastGood) ? lastGood : candidates[0];
@@ -416,7 +444,6 @@ Deno.serve(handler(async (req) => {
   while (messages.length && messages[0].role !== "user") messages.shift();
 
   const sys = system(who, profile?.full_name ?? "", orgRow?.name ?? "estúdio");
-  await adminClient().from("platform_settings").upsert({ key: "ai_last_start", value: JSON.stringify({ at: new Date().toISOString(), provider, who }) }).then(() => {}, () => {});
   let out: RunResult;
   try {
     out = provider === "gemini"
@@ -431,6 +458,7 @@ Deno.serve(handler(async (req) => {
     if (!count) await admin.from("ai_conversations").delete().eq("id", convId);
     else await admin.from("ai_conversations").update({ last_error: `${provider}: ${msg}`.slice(0, 2000) }).eq("id", convId);
     await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000), ms: Date.now() - started, trace: trace.splice(0), models: allModels, compat }) }).then(() => {}, () => {});
+    if (provider === "gemini") await saveGeminiState();
     if (e instanceof HttpError) throw e;
     throw new HttpError(502, "ai_provider_error", msg);
   }
@@ -438,11 +466,16 @@ Deno.serve(handler(async (req) => {
 
   // Grava a troca (a tabela não aceita escrita direta do navegador).
   const admin = adminClient();
-  await admin.from("platform_settings").upsert({ key: "ai_last_run", value: JSON.stringify({ at: new Date().toISOString(), provider, ok: true, ms: Date.now() - started, trace: trace.splice(0), models: allModels, compat }) }).then(() => {}, () => {});
-  await admin.from("ai_messages").insert([
-    { organization_id: org, conversation_id: convId, role: "user", content: message },
+  // Todas as linhas com as mesmas colunas (inserção em lote usa a união das colunas).
+  const saved = await admin.from("ai_messages").insert([
+    { organization_id: org, conversation_id: convId, role: "user", content: message, model: null, tokens_in: null, tokens_out: null, actions: [] },
     { organization_id: org, conversation_id: convId, role: "assistant", content: reply, model, tokens_in: tokensIn, tokens_out: tokensOut, actions: ctx.actions },
   ]);
-  await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
+  if (saved.error) console.error("ai_messages insert", saved.error.message);
+  background(Promise.all([
+    admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId),
+    admin.from("platform_settings").upsert({ key: "ai_last_run", value: JSON.stringify({ at: new Date().toISOString(), provider, ok: true, ms: Date.now() - started, trace: trace.splice(0), compat, model }) }),
+    provider === "gemini" ? saveGeminiState() : Promise.resolve(),
+  ]));
   return json(req, 200, { conversation_id: convId, reply, actions: ctx.actions });
 }));
