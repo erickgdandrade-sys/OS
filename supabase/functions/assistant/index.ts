@@ -235,22 +235,24 @@ type GContent = { role: "user" | "model"; parts: GPart[] };
 
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
 let cachedModels: string[] | null = null;
+const noFreeTier = new Set<string>();   // modelos que responderam "limit: 0" nesta instância
 
 /* Modelos disponíveis para a chave, do melhor para o pior: o do secret
    GEMINI_MODEL primeiro (se existir); depois os "flash" estáveis mais novos.
    Os nomes mudam com o tempo, então a lista vem da própria API do Google. */
 async function geminiModels(apiKey: string): Promise<string[]> {
-  if (cachedModels) return cachedModels;
+  if (cachedModels) return cachedModels.filter((m) => !noFreeTier.has(m));
   const res = await fetch(`${GEMINI_API}/models?pageSize=200`, { headers: { "x-goog-api-key": apiKey } });
   const data = await res.json().catch(() => ({})) as { models?: { name: string; supportedGenerationMethods?: string[] }[]; error?: { message?: string } };
   if (!res.ok) throw new HttpError(502, "ai_provider_error", `Google: ${data.error?.message ?? res.status}`);
   const names = (data.models ?? []).filter((m) => m.supportedGenerationMethods?.includes("generateContent")).map((m) => m.name.replace(/^models\//, ""))
-    .filter((n) => /gemini/.test(n) && !/(image|tts|audio|live|embedding|vision|thinking-exp|robotics|computer|native)/.test(n));
+    // Só a família "flash" tem plano gratuito de verdade; os demais costumam ter limite 0.
+    .filter((n) => /^gemini-.*flash/.test(n) && !/(image|tts|audio|live|embedding|vision|thinking|robotics|computer|native)/.test(n));
   const score = (n: string) => {
     const v = Number(/gemini-(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0);
     return v * 100 + (/flash/.test(n) ? 30 : 0) - (/lite/.test(n) ? 5 : 0) - (/(preview|exp)/.test(n) ? 20 : 0) - (/pro/.test(n) ? 10 : 0) - (/-\d{3}$/.test(n) ? 2 : 0);
   };
-  const ranked = names.sort((x, y) => score(y) - score(x));
+  const ranked = names.sort((x, y) => score(y) - score(x)).slice(0, 4);
   const fixed = Deno.env.get("GEMINI_MODEL")?.replace(/^models\//, "");
   cachedModels = [...new Set([...(fixed ? [fixed] : []), ...ranked])];
   if (!cachedModels.length) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini disponível para esta chave.");
@@ -259,7 +261,7 @@ async function geminiModels(apiKey: string): Promise<string[]> {
 
 async function runGemini(apiKey: string, sys: string, history: { role: "user" | "assistant"; content: string }[], tools: Tool[], ctx: Ctx): Promise<RunResult> {
   const candidates = await geminiModels(apiKey);
-  let mi = 0;
+  if (!candidates.length) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini gratuito disponível para esta chave.");
   let model = candidates[0];
   const contents: GContent[] = history.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
   const decl = tools.map((t) => {
@@ -271,21 +273,27 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
   // (404) → espera um pouco e tenta o próximo modelo da lista (até 4 tentativas).
   const call = async (): Promise<GRes> => {
     let last = "";
-    for (let attempt = 0; attempt < 4; attempt++) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       const res = await fetch(`${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`, {
         method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 4096 } }),
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 2048 } }),
       });
       const data = await res.json().catch(() => ({})) as GRes;
       if (res.ok) return data;
-      last = `Google (${model}, ${res.status}): ${data.error?.message ?? "sem detalhes"}`;
+      const msg = data.error?.message ?? "sem detalhes";
+      last = `Google (${model}, ${res.status}): ${msg}`;
       console.error("gemini", last);
-      const retryable = [404, 429, 500, 503, 504].includes(res.status);
-      if (!retryable) throw new HttpError(502, "ai_provider_error", last);
-      if (res.status === 404 || res.status === 429 || attempt > 0) { mi = Math.min(mi + 1, candidates.length - 1); model = candidates[mi]; }
-      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+      const nextModel = () => { const rest = candidates.filter((m) => m !== model && !noFreeTier.has(m)); if (!rest.length) return false; model = rest[0]; return true; };
+      if (res.status === 429) {
+        // "limit: 0" = este modelo não tem cota gratuita: risca e tenta outro na hora.
+        if (/limit: 0\b/.test(msg)) { noFreeTier.add(model); if (nextModel()) continue; }
+        const wait = /retry in ([\dhms.]+)/i.exec(msg)?.[1];
+        throw new HttpError(429, "ai_rate_limited", wait ? `Limite gratuito atingido. O Google libera de novo em ${wait.replace(/\.\d+s$/, "s")}.` : last);
+      }
+      if (res.status === 404) { noFreeTier.add(model); if (nextModel()) continue; }
+      if ([500, 503, 504].includes(res.status)) { await new Promise((r) => setTimeout(r, 400)); if (attempt > 0) nextModel(); continue; }
+      throw new HttpError(502, "ai_provider_error", last);
     }
-    if (/\b429\b/.test(last)) throw new HttpError(429, "ai_rate_limited", last);
     throw new HttpError(503, "ai_busy", last);
   };
   let tokensIn = 0, tokensOut = 0;
