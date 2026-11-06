@@ -40,6 +40,17 @@ npm run dev               # http://localhost:5173
 
 Produção (Vercel ou Cloudflare Pages): comando `npm run build`, pasta `dist`, variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Configure *rewrite* de todas as rotas para `/index.html` (SPA).
 
+### GitHub Pages
+
+O repositório já tem o workflow `.github/workflows/deploy-pages.yml`, que compila e publica a cada push na `main`:
+
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions.** Se ficar em "Deploy from a branch", o Pages publica os arquivos-fonte e a página abre em branco.
+2. **Settings → Secrets and variables → Actions → Variables:** crie `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+3. Em **Actions**, rode "Publicar no GitHub Pages" (ou faça um push). O site fica em `https://erickgdandrade-sys.github.io/OS/`.
+4. No Supabase, use `https://erickgdandrade-sys.github.io/OS` como *Site URL* e em `APP_URL`/`APP_ORIGINS` (`APP_ORIGINS` só com `https://erickgdandrade-sys.github.io`), e adicione `…/OS/convite`, `…/OS/redefinir-senha` e `…/OS/criar-senha` nas *Redirect URLs*.
+
+O caminho `/OS/` vem do nome do repositório. Se você renomear o repositório, o caminho muda sozinho no próximo deploy; atualize as URLs do Supabase.
+
 ## 3. Primeiro administrador
 
 O administrador inicial é definido no banco (`platform_settings.bootstrap_admin_email`), hoje **erickgdandrade@gmail.com**. Para trocar, rode no SQL Editor:

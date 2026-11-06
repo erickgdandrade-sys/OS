@@ -8,7 +8,7 @@ import { useOrg } from "@/features/auth/AuthProvider";
 import { clientName } from "@/features/clients/ClientsPages";
 import { errorMessage, type Tone } from "@/lib/domain";
 import { addDaysISO, date, money, todayISO } from "@/lib/format";
-import { supabase } from "@/lib/supabase";
+import { appUrl, supabase } from "@/lib/supabase";
 import { ProposalLinksButton, ServerPdfButton } from "./DocumentActions";
 
 export type ProposalStatus = "draft" | "sent" | "viewed" | "negotiation" | "approved" | "rejected" | "expired";
@@ -142,7 +142,7 @@ export function ProposalEditorPage({ proposalId }: { proposalId: string }) {
         meta={<><Badge tone={proposalStatusTone[data.p.status]} dot>{proposalStatusLabel[data.p.status]}</Badge>
           {data.p.sent_at && <span className="text-xs text-fg-3">Enviada em {date(data.p.sent_at)}</span>}{data.p.viewed_at && <span className="text-xs text-fg-3">· Vista em {date(data.p.viewed_at)}</span>}</>}
         actions={<>
-          <a href={`/propostas/${proposalId}/imprimir`} target="_blank" rel="noopener"><Button variant="ghost" icon={<FileDown className="size-4" />}>Imprimir</Button></a>
+          <a href={appUrl(`/propostas/${proposalId}/imprimir`)} target="_blank" rel="noopener"><Button variant="ghost" icon={<FileDown className="size-4" />}>Imprimir</Button></a>
           <ServerPdfButton kind="proposal" id={proposalId} />
           {can("contracts.write") && data.p.status === "approved" && <Button onClick={() => nav({ to: "/contratos/novo", search: { proposta: proposalId } })}>Gerar contrato</Button>}
           {can("proposals.write") && <ProposalLinksButton proposalId={proposalId} disabled={["draft", "rejected", "expired"].includes(data.p.status)} />}

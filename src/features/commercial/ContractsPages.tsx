@@ -8,7 +8,7 @@ import { useOrg } from "@/features/auth/AuthProvider";
 import { clientName } from "@/features/clients/ClientsPages";
 import { errorMessage, type Tone } from "@/lib/domain";
 import { date, dateTime, fillTemplate } from "@/lib/format";
-import { supabase } from "@/lib/supabase";
+import { appUrl, supabase } from "@/lib/supabase";
 import { ServerPdfButton, SignatureButton } from "./DocumentActions";
 
 type CStatus = "draft" | "in_review" | "sent_for_signature" | "signed" | "cancelled" | "expired";
@@ -100,7 +100,7 @@ export function ContractDetailPage({ contractId }: { contractId: string }) {
       <PageHeader title={c.title} description={<>Contrato Nº {String(c.number).padStart(4, "0")} · <Link to={`/clientes/${c.client_id}`} className="hover:text-accent">{clientName(c.clients)}</Link></>}
         meta={<><Badge tone={statusTone[c.status]} dot>{statusLabel[c.status]}</Badge>{c.client_visible && <Badge tone="info">Visível no portal</Badge>}{c.proposal_id && <Link to={`/propostas/${c.proposal_id}`} className="text-xs text-accent hover:underline">Ver proposta</Link>}</>}
         actions={<>
-          <a href={`/contratos/${c.id}/imprimir${viewVersion ? `?v=${viewVersion}` : ""}`} target="_blank" rel="noopener"><Button variant="ghost" icon={<FileDown className="size-4" />}>Imprimir</Button></a>
+          <a href={appUrl(`/contratos/${c.id}/imprimir${viewVersion ? `?v=${viewVersion}` : ""}`)} target="_blank" rel="noopener"><Button variant="ghost" icon={<FileDown className="size-4" />}>Imprimir</Button></a>
           <ServerPdfButton kind="contract" id={c.id} version={viewVersion ?? undefined} />
           {write && !locked && <Button icon={<PenLine className="size-4" />} onClick={() => setEditing(true)}>Revisar cláusulas</Button>}
           {write && c.status === "draft" && <Button variant="primary" disabled={filled.missing.length > 0} title={filled.missing.length ? "Preencha os campos pendentes" : undefined} onClick={() => patch({ status: "in_review" }, "Contrato marcado como revisado.")}>Marcar como revisado</Button>}

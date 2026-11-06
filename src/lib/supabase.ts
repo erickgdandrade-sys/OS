@@ -3,6 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
+/** URL absoluta dentro do app, respeitando o caminho base (ex.: /SISTEMA-TESTE/ no GitHub Pages). */
+export const appUrl = (path: string) => `${location.origin}${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`;
+
 /** true quando as variáveis do Supabase não foram configuradas. */
 export const supabaseConfigMissing = !url || !anonKey;
 

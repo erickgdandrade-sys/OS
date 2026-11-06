@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button, Field, Input } from "@/components/ui";
 import { errorMessage } from "@/lib/domain";
-import { supabase, supabaseConfigMissing } from "@/lib/supabase";
+import { appUrl, supabase, supabaseConfigMissing } from "@/lib/supabase";
 import { useAuth } from "./AuthProvider";
 
 /* Layout das telas de acesso: nome em texto, sem logotipo (identidade provisória). */
@@ -118,7 +118,7 @@ export function ForgotPasswordPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
   const onSubmit = handleSubmit(async ({ email }) => {
     setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/redefinir-senha` });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: appUrl("/redefinir-senha") });
     if (error && !/rate/i.test(error.message)) { setError(errorMessage(error)); return; }
     setSent(true); // mesma resposta exista ou não a conta (não revela e-mails cadastrados)
   });

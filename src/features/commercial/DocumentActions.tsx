@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Badge, Button, Field, Input, Modal, Select, useToast } from "@/components/ui";
 import { errorMessage } from "@/lib/domain";
 import { dateTime } from "@/lib/format";
-import { invokeFunction, supabase } from "@/lib/supabase";
+import { appUrl, invokeFunction, supabase } from "@/lib/supabase";
 
 /** Gera o PDF no servidor (fica salvo nos arquivos do estúdio) e abre o download. */
 export function ServerPdfButton({ kind, id, version }: { kind: "proposal" | "contract"; id: string; version?: number }) {
@@ -32,7 +32,7 @@ export function ProposalLinksButton({ proposalId, disabled }: { proposalId: stri
   const create = async () => {
     const { data, error } = await supabase.rpc("create_proposal_link", { p_proposal: proposalId, p_days: Number(days) });
     if (error) return toast({ tone: "error", message: errorMessage(error).includes("proposal_not_shareable") ? "Envie a proposta antes de gerar o link." : errorMessage(error) });
-    setUrl(`${location.origin}/proposta#${data}`); links.refetch();
+    setUrl(appUrl(`/proposta#${data}`)); links.refetch();
   };
   const revoke = async (id: string) => { await supabase.from("proposal_links").update({ revoked_at: new Date().toISOString() }).eq("id", id); links.refetch(); };
   const copy = async () => { try { await navigator.clipboard.writeText(url!); toast({ tone: "success", message: "Link copiado." }); } catch { toast({ tone: "info", message: "Selecione o link e copie." }); } };

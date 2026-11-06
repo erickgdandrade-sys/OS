@@ -5,7 +5,7 @@ import { Badge, Button, Card, CardHeader, Field, Input, Modal, Select, useToast 
 import { useOrg } from "@/features/auth/AuthProvider";
 import { errorMessage } from "@/lib/domain";
 import { addDaysISO, dateTime, todayISO } from "@/lib/format";
-import { invokeFunction, supabase } from "@/lib/supabase";
+import { appUrl, invokeFunction, supabase } from "@/lib/supabase";
 
 const scopeLabel: Record<string, string> = { progress: "Andamento", tasks: "Etapas", files: "Arquivos", approvals: "Aprovações" };
 
@@ -32,7 +32,7 @@ export function PortalSharing({ projectId, clientId }: { projectId: string; clie
     const expires = f.days === "never" ? null : new Date(addDaysISO(todayISO(), Number(f.days)) + "T23:59:59-03:00").toISOString();
     const { data, error } = await supabase.rpc("create_share_link", { p_project: projectId, p_label: f.label || null, p_scopes: f.scopes, p_expires_at: expires, p_allow_approvals: f.approvals });
     if (error) return toast({ tone: "error", message: errorMessage(error) });
-    setCreating(false); setNewUrl(`${location.origin}/p#${data}`); links.refetch();
+    setCreating(false); setNewUrl(appUrl(`/p#${data}`)); links.refetch();
   };
   const revoke = async (id: string) => {
     const { error } = await supabase.from("share_links").update({ revoked_at: new Date().toISOString() }).eq("id", id);

@@ -135,4 +135,4 @@ const routeTree = root.addChildren([
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 
-export const router = createRouter({ routeTree, defaultPreload: "intent" });
+export const router = createRouter({ routeTree, defaultPreload: "intent", basepath: import.meta.env.BASE_URL.replace(/\/$/, "") || "/" });
