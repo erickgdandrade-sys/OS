@@ -4,7 +4,7 @@ import { Eye, EyeOff, LogOut, MailCheck } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { Logo, Wordmark } from "@/components/brand/Wordmark";
 import { Button, Field, Input } from "@/components/ui";
 import { errorMessage } from "@/lib/domain";
 import { appUrl, supabase, supabaseConfigMissing } from "@/lib/supabase";
@@ -17,10 +17,7 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: strin
     <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(420px,520px)]">
       <aside className="bg-intent relative hidden overflow-hidden p-10 text-paper lg:flex lg:flex-col lg:justify-between">
         <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70"><Wordmark className="text-[13px]" os={false} /><span>Sistema do estúdio</span></div>
-        <div aria-hidden className="select-none font-extrabold leading-[0.82] tracking-[-0.06em] text-paper">
-          <p className="text-[clamp(88px,11vw,180px)]">ANDRA</p>
-          <p className="pl-[18%] text-[clamp(88px,11vw,180px)]"><span className="voice text-amp">&amp;</span>GO</p>
-        </div>
+        <Logo variant="stacked" tone="dark" className="w-[min(78%,620px)] text-paper" />
         <div>
           <div aria-hidden className="relative mb-6 h-px bg-white/30"><span className="absolute left-0 -top-px h-[3px] w-6 bg-white" /></div>
           <div className="flex items-end justify-between gap-6">
