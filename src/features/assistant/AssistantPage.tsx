@@ -47,7 +47,7 @@ export function AssistantPage() {
       {notConfigured && (
         <Card className="mb-4 border-warning/40">
           <p className="text-sm font-medium">Os assistentes ainda não estão ligados.</p>
-          <p className="mt-1 text-sm text-fg-2">O administrador precisa cadastrar a chave da IA no Supabase (Edge Functions → Secrets → <code>LLM_API_KEY</code>, com uma chave da Anthropic). A chave fica só no servidor e nunca aparece no navegador.</p>
+          <p className="mt-1 text-sm text-fg-2">O administrador precisa cadastrar a chave da IA no Supabase (Edge Functions → Secrets → <code>GEMINI_API_KEY</code>, gratuita no Google AI Studio, ou <code>LLM_API_KEY</code> da Anthropic). A chave fica só no servidor e nunca aparece no navegador.</p>
         </Card>
       )}
       <div className="grid gap-4 lg:grid-cols-[240px_1fr]">

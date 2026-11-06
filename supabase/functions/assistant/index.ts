@@ -4,7 +4,7 @@
 //             financeiro (se a pessoa tiver acesso) e como usar o sistema.
 // Toda leitura e escrita usa o JWT do próprio usuário (mesmas regras de RLS das
 // telas): a IA nunca vê nada que a pessoa não veria. A chave da IA fica só no
-// servidor (secret LLM_API_KEY) e nunca vai para o navegador.
+// servidor (secret GEMINI_API_KEY ou LLM_API_KEY) e nunca vai para o navegador.
 // POST { assistant, organization_id, conversation_id?, message }
 import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2.45.4";
@@ -167,6 +167,112 @@ Sua especialidade é a PLATAFORMA como um todo: explicar onde fica cada coisa e 
 ${guide}`;
 }
 
+type RunResult = { reply: string; tokensIn: number; tokensOut: number; model: string };
+const TOO_MANY_STEPS = "Precisei parar aqui: o pedido exigiu passos demais. Pode detalhar um pouco mais?";
+
+async function runTool(tools: Tool[], ctx: Ctx, name: string, input: unknown): Promise<{ ok: boolean; content: string }> {
+  const tool = tools.find((t) => t.def.name === name);
+  try {
+    if (!tool) throw new Error("Ferramenta desconhecida.");
+    const out = await tool.run(ctx, (input ?? {}) as Record<string, unknown>);
+    return { ok: true, content: JSON.stringify(out ?? null).slice(0, 60000) };
+  } catch (e) {
+    return { ok: false, content: e instanceof Error ? e.message : "Erro ao executar." };
+  }
+}
+
+/* ---------------------------------------------------------- Anthropic */
+async function runAnthropic(apiKey: string, who: Who, sys: string, messages: Anthropic.Beta.BetaMessageParam[], tools: Tool[], ctx: Ctx): Promise<RunResult> {
+  const client = new Anthropic({ apiKey });
+  let tokensIn = 0, tokensOut = 0;
+  for (let step = 0; step < 8; step++) {
+    const res = await client.beta.messages.create({
+      model: MODEL, max_tokens: 4096,
+      // Se o modelo recusar por engano, o servidor tenta outro modelo automaticamente.
+      betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
+      output_config: { effort: who === "andrade" ? "medium" : "low" },
+      system: sys, tools: tools.map((t) => t.def), messages,
+    });
+    tokensIn += res.usage.input_tokens; tokensOut += res.usage.output_tokens;
+    if (res.stop_reason === "refusal") return { reply: "Não consigo ajudar com esse pedido.", tokensIn, tokensOut, model: MODEL };
+    const text = res.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map((b) => b.text).join("\n").trim();
+    const uses = res.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use");
+    if (res.stop_reason !== "tool_use" || !uses.length) return { reply: text || "Pronto.", tokensIn, tokensOut, model: MODEL };
+    messages.push({ role: "assistant", content: res.content });
+    const results: Anthropic.Beta.BetaToolResultBlockParam[] = await Promise.all(uses.map(async (b) => {
+      const r = await runTool(tools, ctx, b.name, b.input);
+      return { type: "tool_result" as const, tool_use_id: b.id, content: r.content, ...(r.ok ? {} : { is_error: true }) };
+    }));
+    messages.push({ role: "user", content: results });
+  }
+  return { reply: TOO_MANY_STEPS, tokensIn, tokensOut, model: MODEL };
+}
+
+/* ------------------------------------------------------------- Gemini */
+// API REST do Gemini (generateContent com function calling). O modelo pode ser
+// trocado pelo secret GEMINI_MODEL sem mexer no código.
+// O Gemini aceita um subconjunto do JSON Schema: sem additionalProperties e sem
+// tipos em lista (["string","null"] vira type + nullable).
+function toGeminiSchema(s: unknown): unknown {
+  if (Array.isArray(s)) return s.map(toGeminiSchema);
+  if (!s || typeof s !== "object") return s;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(s as Record<string, unknown>)) {
+    if (k === "additionalProperties") continue;
+    if (k === "type" && Array.isArray(v)) {
+      const t = v.filter((x) => x !== "null");
+      out.type = t[0] ?? "string";
+      if (v.includes("null")) out.nullable = true;
+      continue;
+    }
+    if (k === "enum" && Array.isArray(v)) { out.enum = v.filter((x) => x !== null); continue; }
+    out[k] = toGeminiSchema(v);
+  }
+  return out;
+}
+type GPart = { text?: string; functionCall?: { name: string; args?: Record<string, unknown> }; functionResponse?: { name: string; response: Record<string, unknown> }; thought?: boolean };
+type GContent = { role: "user" | "model"; parts: GPart[] };
+
+async function runGemini(apiKey: string, sys: string, history: { role: "user" | "assistant"; content: string }[], tools: Tool[], ctx: Ctx): Promise<RunResult> {
+  const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const contents: GContent[] = history.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+  const decl = tools.map((t) => {
+    const params = toGeminiSchema(t.def.input_schema) as { properties?: Record<string, unknown> };
+    return { name: t.def.name, description: t.def.description, ...(params.properties && Object.keys(params.properties).length ? { parameters: params } : {}) };
+  });
+  let tokensIn = 0, tokensOut = 0;
+  for (let step = 0; step < 8; step++) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 4096 } }),
+    });
+    const data = await res.json().catch(() => ({})) as { candidates?: { content?: GContent; finishReason?: string }[]; usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number }; error?: { code?: number; message?: string; status?: string } };
+    if (!res.ok) {
+      console.error("gemini", res.status, data.error?.message);
+      if (res.status === 429) throw new HttpError(429, "ai_rate_limited", "Limite gratuito do Gemini atingido. Tente de novo em alguns minutos.");
+      if (res.status === 400 || res.status === 403) throw new HttpError(502, "ai_provider_error", data.error?.message ?? "Erro no Gemini");
+      throw new HttpError(502, "ai_provider_error", data.error?.message ?? `Gemini respondeu ${res.status}`);
+    }
+    tokensIn += data.usageMetadata?.promptTokenCount ?? 0; tokensOut += data.usageMetadata?.candidatesTokenCount ?? 0;
+    const cand = data.candidates?.[0];
+    const parts = cand?.content?.parts ?? [];
+    if (cand?.finishReason === "SAFETY" || cand?.finishReason === "PROHIBITED_CONTENT") return { reply: "Não consigo ajudar com esse pedido.", tokensIn, tokensOut, model };
+    const text = parts.filter((p) => p.text && !p.thought).map((p) => p.text).join("\n").trim();
+    const calls = parts.filter((p) => p.functionCall).map((p) => p.functionCall!);
+    if (!calls.length) return { reply: text || "Pronto.", tokensIn, tokensOut, model };
+    contents.push({ role: "model", parts });
+    const results = await Promise.all(calls.map(async (c) => {
+      const r = await runTool(tools, ctx, c.name, c.args);
+      let payload: unknown; try { payload = JSON.parse(r.content); } catch { payload = r.content; }
+      return { functionResponse: { name: c.name, response: r.ok ? { result: payload } : { error: r.content } } };
+    }));
+    contents.push({ role: "user", parts: results });
+  }
+  return { reply: TOO_MANY_STEPS, tokensIn, tokensOut, model };
+}
+
 Deno.serve(handler(async (req) => {
   const db = userClient(req);
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
@@ -178,7 +284,12 @@ Deno.serve(handler(async (req) => {
   await requirePerm(db, org, "ai.use");
   const { data: u } = await db.auth.getUser();
   if (!u.user) throw new HttpError(401, "not_authenticated");
-  const apiKey = Deno.env.get("LLM_API_KEY") ?? Deno.env.get("ANTHROPIC_API_KEY");
+  // Provedor de IA: Gemini (plano gratuito do Google) ou Anthropic. Escolha por
+  // LLM_PROVIDER ou, se não definido, pela chave que estiver cadastrada.
+  const geminiKey = Deno.env.get("GEMINI_API_KEY");
+  const anthropicKey = Deno.env.get("LLM_API_KEY") ?? Deno.env.get("ANTHROPIC_API_KEY");
+  const provider = Deno.env.get("LLM_PROVIDER") ?? (geminiKey ? "gemini" : "anthropic");
+  const apiKey = provider === "gemini" ? geminiKey : anthropicKey;
   if (!apiKey) throw new HttpError(503, "ai_not_configured");
 
   // Conversa: cria ou confere que é da pessoa (RLS da tabela).
@@ -207,43 +318,17 @@ Deno.serve(handler(async (req) => {
   // A primeira mensagem do histórico precisa ser da pessoa.
   while (messages.length && messages[0].role !== "user") messages.shift();
 
-  const client = new Anthropic({ apiKey });
-  let tokensIn = 0, tokensOut = 0, reply = "";
-  for (let step = 0; step < 8; step++) {
-    const res = await client.beta.messages.create({
-      model: MODEL, max_tokens: 4096,
-      // Se o modelo recusar por engano, o servidor tenta outro modelo automaticamente.
-      betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
-      output_config: { effort: who === "andrade" ? "medium" : "low" },
-      system: system(who, profile?.full_name ?? "", orgRow?.name ?? "estúdio"),
-      tools: tools.map((t) => t.def),
-      messages,
-    });
-    tokensIn += res.usage.input_tokens; tokensOut += res.usage.output_tokens;
-    if (res.stop_reason === "refusal") { reply = "Não consigo ajudar com esse pedido."; break; }
-    const text = res.content.filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text").map((b) => b.text).join("\n").trim();
-    const uses = res.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use");
-    if (res.stop_reason !== "tool_use" || !uses.length) { reply = text || "Pronto."; break; }
-    messages.push({ role: "assistant", content: res.content });
-    const results: Anthropic.Beta.BetaToolResultBlockParam[] = await Promise.all(uses.map(async (b) => {
-      const tool = tools.find((t) => t.def.name === b.name);
-      try {
-        if (!tool) throw new Error("Ferramenta desconhecida.");
-        const out = await tool.run(ctx, (b.input ?? {}) as Record<string, unknown>);
-        return { type: "tool_result" as const, tool_use_id: b.id, content: JSON.stringify(out ?? null).slice(0, 60000) };
-      } catch (e) {
-        return { type: "tool_result" as const, tool_use_id: b.id, is_error: true, content: e instanceof Error ? e.message : "Erro ao executar." };
-      }
-    }));
-    messages.push({ role: "user", content: results });
-    if (step === 7) reply = text || "Precisei parar aqui: o pedido exigiu passos demais. Pode detalhar um pouco mais?";
-  }
+  const sys = system(who, profile?.full_name ?? "", orgRow?.name ?? "estúdio");
+  const out = provider === "gemini"
+    ? await runGemini(apiKey, sys, messages as { role: "user" | "assistant"; content: string }[], tools, ctx)
+    : await runAnthropic(apiKey, who, sys, messages, tools, ctx);
+  const { reply, tokensIn, tokensOut, model } = out;
 
   // Grava a troca (a tabela não aceita escrita direta do navegador).
   const admin = adminClient();
   await admin.from("ai_messages").insert([
     { organization_id: org, conversation_id: convId, role: "user", content: message },
-    { organization_id: org, conversation_id: convId, role: "assistant", content: reply, model: MODEL, tokens_in: tokensIn, tokens_out: tokensOut, actions: ctx.actions },
+    { organization_id: org, conversation_id: convId, role: "assistant", content: reply, model, tokens_in: tokensIn, tokens_out: tokensOut, actions: ctx.actions },
   ]);
   await admin.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
   return json(req, 200, { conversation_id: convId, reply, actions: ctx.actions });

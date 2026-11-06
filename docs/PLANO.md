@@ -80,7 +80,7 @@ Branding (briefing interno e formulário público para o cliente), pesquisa comp
 
 ## Fase 5 — Inteligência
 
-**Assistentes ✅ (código pronto; ligar com a chave)** — `/assistentes`: **Andrade** (tarefas: o que fazer hoje, atrasadas, priorizar, criar e atualizar tarefas) e **Gomes** (plataforma: onde fica cada coisa, clientes, projetos, propostas, pendências dos clientes, agenda e financeiro para quem tem acesso; só consulta). Edge Function `assistant` com o modelo `claude-opus-5-5`, ferramentas executadas com o JWT do usuário (mesmas regras de RLS), conversas privadas por pessoa, ações registradas na mensagem. Para ligar: Supabase → Edge Functions → Secrets → `LLM_API_KEY` com uma chave da Anthropic.
+**Assistentes ✅ (código pronto; ligar com a chave)** — `/assistentes`: **Andrade** (tarefas: o que fazer hoje, atrasadas, priorizar, criar e atualizar tarefas) e **Gomes** (plataforma: onde fica cada coisa, clientes, projetos, propostas, pendências dos clientes, agenda e financeiro para quem tem acesso; só consulta). Edge Function `assistant` com o modelo `claude-opus-5-5`, ferramentas executadas com o JWT do usuário (mesmas regras de RLS), conversas privadas por pessoa, ações registradas na mensagem. Para ligar: Supabase → Edge Functions → Secrets → `GEMINI_API_KEY` (gratuita, Google AI Studio; modelo em `GEMINI_MODEL`, padrão `gemini-2.5-flash`) ou `LLM_API_KEY` (Anthropic). Com as duas, `LLM_PROVIDER` escolhe (`gemini` ou `anthropic`).
 
 Assistente de IA com contexto autorizado (Edge Function usa o JWT do usuário; nunca a service role para ler dados), automações configuráveis (tabela `automations` 🟡), integrações Meta/LinkedIn 🔌, relatórios avançados.
 

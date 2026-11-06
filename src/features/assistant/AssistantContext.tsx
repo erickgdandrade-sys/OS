@@ -128,7 +128,7 @@ function MiniChat() {
         <button type="button" aria-label="Fechar assistente" onClick={dismiss} className="rounded p-1.5 text-white/70 hover:bg-white/10 hover:text-white"><X className="size-4" /></button>
       </header>
       <div className="flex-1 space-y-3 overflow-y-auto p-3" aria-live="polite">
-        {notConfigured && <p className="rounded-md bg-warning-soft p-2 text-xs text-warning">Os assistentes ainda não estão ligados: o administrador precisa cadastrar a chave da IA (LLM_API_KEY) no Supabase.</p>}
+        {notConfigured && <p className="rounded-md bg-warning-soft p-2 text-xs text-warning">Os assistentes ainda não estão ligados: o administrador precisa cadastrar a chave da IA (GEMINI_API_KEY ou LLM_API_KEY) no Supabase.</p>}
         {!t.msgs.length && <p className="pt-6 text-center text-sm text-fg-3">Pergunte algo ao {name}. Ele acompanha você enquanto navega.</p>}
         {t.msgs.map((m) => (
           <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
