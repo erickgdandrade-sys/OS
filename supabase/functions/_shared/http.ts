@@ -9,7 +9,7 @@ export function corsHeaders(req: Request): HeadersInit {
   const allow = allowedOrigins.length === 0 || allowedOrigins.includes(origin) ? origin || "*" : allowedOrigins[0];
   return {
     "Access-Control-Allow-Origin": allow,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-portal-token",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-portal-token, x-briefing-token",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     Vary: "Origin",
   };
