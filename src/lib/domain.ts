@@ -115,6 +115,7 @@ export function errorMessage(e: unknown): string {
     approval_already_pending: "Já existe uma aprovação pendente para este item.",
     requests_not_allowed: "Este link não permite enviar respostas. Peça um novo link ao estúdio.",
     invalid_days: "Escolha uma validade entre 1 e 60 dias.",
+    ai_busy: "A IA gratuita do Google está sobrecarregada agora. Tente de novo em instantes.",
     ai_rate_limited: "O limite gratuito da IA foi atingido. Tente de novo em alguns minutos.",
     ai_provider_error: "A IA não respondeu agora. Tente de novo; se continuar, confira a chave cadastrada no Supabase.",
   };

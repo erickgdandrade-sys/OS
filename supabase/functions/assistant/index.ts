@@ -234,57 +234,63 @@ type GPart = { text?: string; functionCall?: { name: string; args?: Record<strin
 type GContent = { role: "user" | "model"; parts: GPart[] };
 
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
-let cachedModel: string | null = null;
+let cachedModels: string[] | null = null;
 
-/* Escolhe um modelo disponível para a chave: o do secret GEMINI_MODEL, se
-   existir; senão o "flash" mais recente que aceita generateContent (os nomes
-   mudam com o tempo, então a lista vem da própria API do Google). */
-async function pickGeminiModel(apiKey: string, avoid?: string): Promise<string> {
-  const fixed = Deno.env.get("GEMINI_MODEL");
-  if (fixed && fixed !== avoid) return fixed.replace(/^models\//, "");
-  if (cachedModel && cachedModel !== avoid) return cachedModel;
+/* Modelos disponíveis para a chave, do melhor para o pior: o do secret
+   GEMINI_MODEL primeiro (se existir); depois os "flash" estáveis mais novos.
+   Os nomes mudam com o tempo, então a lista vem da própria API do Google. */
+async function geminiModels(apiKey: string): Promise<string[]> {
+  if (cachedModels) return cachedModels;
   const res = await fetch(`${GEMINI_API}/models?pageSize=200`, { headers: { "x-goog-api-key": apiKey } });
   const data = await res.json().catch(() => ({})) as { models?: { name: string; supportedGenerationMethods?: string[] }[]; error?: { message?: string } };
   if (!res.ok) throw new HttpError(502, "ai_provider_error", `Google: ${data.error?.message ?? res.status}`);
   const names = (data.models ?? []).filter((m) => m.supportedGenerationMethods?.includes("generateContent")).map((m) => m.name.replace(/^models\//, ""))
-    .filter((n) => n !== avoid && /gemini/.test(n) && !/(image|tts|audio|live|embedding|vision|thinking-exp|robotics|computer)/.test(n));
+    .filter((n) => /gemini/.test(n) && !/(image|tts|audio|live|embedding|vision|thinking-exp|robotics|computer|native)/.test(n));
   const score = (n: string) => {
     const v = Number(/gemini-(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0);
     return v * 100 + (/flash/.test(n) ? 30 : 0) - (/lite/.test(n) ? 5 : 0) - (/(preview|exp)/.test(n) ? 20 : 0) - (/pro/.test(n) ? 10 : 0) - (/-\d{3}$/.test(n) ? 2 : 0);
   };
-  const best = names.sort((a, b) => score(b) - score(a))[0];
-  if (!best) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini disponível para esta chave.");
-  cachedModel = best;
-  return best;
+  const ranked = names.sort((x, y) => score(y) - score(x));
+  const fixed = Deno.env.get("GEMINI_MODEL")?.replace(/^models\//, "");
+  cachedModels = [...new Set([...(fixed ? [fixed] : []), ...ranked])];
+  if (!cachedModels.length) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini disponível para esta chave.");
+  return cachedModels;
 }
 
 async function runGemini(apiKey: string, sys: string, history: { role: "user" | "assistant"; content: string }[], tools: Tool[], ctx: Ctx): Promise<RunResult> {
-  let model = await pickGeminiModel(apiKey);
-  const url = () => `${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`;
+  const candidates = await geminiModels(apiKey);
+  let mi = 0;
+  let model = candidates[0];
   const contents: GContent[] = history.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
   const decl = tools.map((t) => {
     const params = toGeminiSchema(t.def.input_schema) as { properties?: Record<string, unknown> };
     return { name: t.def.name, description: t.def.description, ...(params.properties && Object.keys(params.properties).length ? { parameters: params } : {}) };
   });
+  type GRes = { candidates?: { content?: GContent; finishReason?: string }[]; usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number }; error?: { code?: number; message?: string; status?: string } };
+  // Uma chamada com tolerância: modelo sobrecarregado (503/500/429) ou retirado
+  // (404) → espera um pouco e tenta o próximo modelo da lista (até 4 tentativas).
+  const call = async (): Promise<GRes> => {
+    let last = "";
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const res = await fetch(`${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`, {
+        method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 4096 } }),
+      });
+      const data = await res.json().catch(() => ({})) as GRes;
+      if (res.ok) return data;
+      last = `Google (${model}, ${res.status}): ${data.error?.message ?? "sem detalhes"}`;
+      console.error("gemini", last);
+      const retryable = [404, 429, 500, 503, 504].includes(res.status);
+      if (!retryable) throw new HttpError(502, "ai_provider_error", last);
+      if (res.status === 404 || res.status === 429 || attempt > 0) { mi = Math.min(mi + 1, candidates.length - 1); model = candidates[mi]; }
+      await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+    }
+    if (/\b429\b/.test(last)) throw new HttpError(429, "ai_rate_limited", last);
+    throw new HttpError(503, "ai_busy", last);
+  };
   let tokensIn = 0, tokensOut = 0;
   for (let step = 0; step < 8; step++) {
-    let res = await fetch(url(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 4096 } }),
-    });
-    // Modelo retirado ou indisponível: escolhe outro uma vez e tenta de novo.
-    if (res.status === 404 && step === 0) {
-      cachedModel = null; model = await pickGeminiModel(apiKey, model);
-      res = await fetch(url(), { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 4096 } }) });
-    }
-    const data = await res.json().catch(() => ({})) as { candidates?: { content?: GContent; finishReason?: string }[]; usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number }; error?: { code?: number; message?: string; status?: string } };
-    if (!res.ok) {
-      console.error("gemini", res.status, data.error?.message);
-      if (res.status === 429) throw new HttpError(429, "ai_rate_limited", "Limite gratuito do Gemini atingido. Tente de novo em alguns minutos.");
-      throw new HttpError(502, "ai_provider_error", `Google (${model}, ${res.status}): ${data.error?.message ?? "sem detalhes"}`);
-    }
+    const data = await call();
     tokensIn += data.usageMetadata?.promptTokenCount ?? 0; tokensOut += data.usageMetadata?.candidatesTokenCount ?? 0;
     const cand = data.candidates?.[0];
     const parts = cand?.content?.parts ?? [];
