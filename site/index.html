@@ -699,5 +699,77 @@ html.intro .hero h1 span { animation-play-state: paused; }
   } catch (e) { end(); }
 })();
 </script>
+
+<!-- Assistente do site (Gomes): perguntas rápidas sobre o estúdio. -->
+<style>
+#gomes-btn { position: fixed; right: 20px; bottom: 20px; z-index: 60; display: flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border: 1px solid var(--rule); border-radius: 999px; background: var(--white); color: var(--ink); font: 500 14px/1.2 var(--sans); cursor: pointer; box-shadow: 0 12px 32px -14px rgba(11,12,18,.35); }
+#gomes-btn:hover { border-color: var(--azul); }
+.gomes-face { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; background: var(--azul); color: #fff; font: 700 15px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: -.02em; }
+#gomes-panel { position: fixed; right: 20px; bottom: 20px; z-index: 61; width: min(370px, calc(100vw - 40px)); height: min(520px, calc(100dvh - 40px)); display: none; flex-direction: column; overflow: hidden; border: 1px solid var(--rule); border-radius: 14px; background: var(--white); color: var(--ink); box-shadow: 0 24px 60px -24px rgba(11,12,18,.5); font: 400 14px/1.5 var(--sans); }
+#gomes-panel.open { display: flex; }
+#gomes-panel header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--ink); color: var(--paper); }
+#gomes-panel header .gomes-face { width: 34px; height: 34px; font-size: 13px; }
+#gomes-panel header b { display: block; font-weight: 600; } #gomes-panel header i { font: italic 400 13px/1 var(--serif); color: rgba(255,255,255,.6); }
+#gomes-close { margin-left: auto; border: 0; background: none; color: rgba(255,255,255,.7); font-size: 20px; cursor: pointer; padding: 4px 8px; }
+#gomes-log { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.gm { max-width: 85%; padding: 8px 12px; border-radius: 10px; white-space: pre-wrap; word-wrap: break-word; }
+.gm.u { align-self: flex-end; background: var(--ink); color: var(--paper); } .gm.a { align-self: flex-start; background: var(--paper); }
+.gm a { color: var(--azul); }
+#gomes-sugs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 8px; }
+#gomes-sugs button { border: 1px solid var(--rule); border-radius: 999px; background: none; padding: 5px 10px; font: 400 12.5px/1.2 var(--sans); color: var(--ink); cursor: pointer; }
+#gomes-sugs button:hover { border-color: var(--azul); color: var(--azul); }
+#gomes-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--paper2); }
+#gomes-input { flex: 1; resize: none; border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; font: inherit; color: var(--ink); background: var(--white); }
+#gomes-input:focus { outline: 2px solid var(--azul); outline-offset: 1px; }
+#gomes-send { border: 0; border-radius: 8px; background: var(--azul); color: #fff; padding: 0 14px; font: 600 14px var(--sans); cursor: pointer; }
+#gomes-send:disabled { opacity: .5; cursor: default; }
+@media print { #gomes-btn, #gomes-panel { display: none !important; } }
+</style>
+<button id="gomes-btn" type="button" aria-label="Tirar uma dúvida com o Gomes"><span class="gomes-face" aria-hidden="true">:v</span><span>Dúvidas? <b>Fale com o Gomes</b></span></button>
+<section id="gomes-panel" role="dialog" aria-label="Gomes, assistente da ANDRA &amp; GO">
+  <header><span class="gomes-face" aria-hidden="true">:v</span><span><b>Gomes</b><i>assistente da ANDRA &amp; GO</i></span><button id="gomes-close" type="button" aria-label="Fechar">×</button></header>
+  <div id="gomes-log" aria-live="polite"><div class="gm a">Oi! Eu sou o Gomes :v Posso tirar dúvidas rápidas sobre o estúdio, nossos serviços e como trabalhamos.</div></div>
+  <div id="gomes-sugs"><button type="button">O que vocês fazem?</button><button type="button">Como funciona um projeto de branding?</button><button type="button">Como peço um orçamento?</button></div>
+  <form id="gomes-form"><textarea id="gomes-input" rows="1" maxlength="1000" placeholder="Escreva sua pergunta…" aria-label="Sua pergunta"></textarea><button id="gomes-send" type="submit">Enviar</button></form>
+</section>
+<script>
+(function () {
+  var API_URL = '__SUPABASE_URL__', API_KEY = '__SUPABASE_ANON_KEY__';
+  var btn = document.getElementById('gomes-btn'), panel = document.getElementById('gomes-panel'), log = document.getElementById('gomes-log');
+  var form = document.getElementById('gomes-form'), input = document.getElementById('gomes-input'), send = document.getElementById('gomes-send');
+  var sugs = document.getElementById('gomes-sugs'), history = [], busy = false;
+  if (!API_URL || API_URL.indexOf('__') === 0) { btn.style.display = 'none'; return; }
+  var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var idle = [':v', ':v', ':v', ':v', ';v', ':v', ':v', ':V', ':v', ':^'], work = [':v', ':o', ':v', ':O', ':v', ':3'], frame = 0;
+  setInterval(function () {
+    if (calm) return; frame++;
+    var seq = busy ? work : idle, f = seq[frame % seq.length];
+    document.querySelectorAll('.gomes-face').forEach(function (el) { el.textContent = f; });
+  }, 380);
+  function esc(t) { return t.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function linkify(t) { return esc(t).replace(/(https?:\/\/[^\s)]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'); }
+  function add(role, text) { var d = document.createElement('div'); d.className = 'gm ' + (role === 'user' ? 'u' : 'a'); d.innerHTML = linkify(text); log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+  function open(v) { panel.classList.toggle('open', v); btn.style.display = v ? 'none' : ''; if (v) setTimeout(function () { input.focus(); }, 50); }
+  btn.addEventListener('click', function () { open(true); });
+  document.getElementById('gomes-close').addEventListener('click', function () { open(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) open(false); });
+  function ask(q) {
+    q = (q || '').trim(); if (!q || busy) return;
+    sugs.style.display = 'none'; add('user', q); history.push({ role: 'user', content: q }); input.value = '';
+    busy = true; send.disabled = true; var wait = add('assistant', '…');
+    fetch(API_URL + '/functions/v1/site-assistant', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: API_KEY, Authorization: 'Bearer ' + API_KEY }, body: JSON.stringify({ messages: history.slice(-10) }) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) {
+        var text = x.ok && x.d.reply ? x.d.reply : (x.d && x.d.error === 'ai_rate_limited' ? 'Muitas perguntas por agora. Fale com a gente pelo WhatsApp, pelo formulário “Tem uma ideia?”.' : 'Não consegui responder agora. Tente de novo ou fale com a gente pelo formulário “Tem uma ideia?”.');
+        wait.innerHTML = linkify(text); if (x.ok) history.push({ role: 'assistant', content: text });
+      })
+      .catch(function () { wait.textContent = 'Sem conexão agora. Tente de novo em instantes.'; })
+      .finally(function () { busy = false; send.disabled = false; log.scrollTop = log.scrollHeight; });
+  }
+  form.addEventListener('submit', function (e) { e.preventDefault(); ask(input.value); });
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(input.value); } });
+  sugs.addEventListener('click', function (e) { if (e.target.tagName === 'BUTTON') ask(e.target.textContent); });
+})();
+</script>
 </body>
 </html>

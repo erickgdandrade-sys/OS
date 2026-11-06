@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 
 /* Meu perfil: nome, telefone, foto (enviada ou avatar pronto), tema e senha.
    A foto é recortada em quadrado e reduzida no navegador antes do envio. */
-type Me = { id: string; full_name: string; phone: string | null; avatar_path: string | null; theme: "light" | "dark" | "system"; updated_at: string };
+type Me = { id: string; full_name: string; username: string | null; phone: string | null; avatar_path: string | null; theme: "light" | "dark" | "system"; updated_at: string };
 
 async function squareJpeg(file: File, size = 512): Promise<Blob> {
   const img = await createImageBitmap(file);
@@ -27,13 +27,21 @@ export function ProfilePage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const q = useQuery({ queryKey: ["profile", uid], enabled: !!uid, queryFn: async () => {
-    const { data, error } = await supabase.from("profiles").select("id, full_name, phone, avatar_path, theme, updated_at").eq("id", uid!).single();
+    const { data, error } = await supabase.from("profiles").select("id, full_name, username, phone, avatar_path, theme, updated_at").eq("id", uid!).single();
     if (error) throw error; return data as Me;
   } });
-  const [f, setF] = useState({ full_name: "", phone: "" });
+  const [f, setF] = useState({ full_name: "", phone: "", username: "" });
+  const [uname, setUname] = useState<"ok" | "taken" | "invalid" | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [pw, setPw] = useState({ a: "", b: "" });
-  useEffect(() => { if (q.data) setF({ full_name: q.data.full_name, phone: q.data.phone ?? "" }); }, [q.data]);
+  useEffect(() => { if (q.data) setF({ full_name: q.data.full_name, phone: q.data.phone ?? "", username: q.data.username ?? "" }); }, [q.data]);
+  useEffect(() => {
+    const u = f.username.trim().toLowerCase().replace(/^@/, "");
+    if (!q.data || u === (q.data.username ?? "")) { setUname(null); return; }
+    if (!/^[a-z0-9]([a-z0-9._]{1,28})[a-z0-9]$/.test(u)) { setUname("invalid"); return; }
+    const t = window.setTimeout(async () => { const { data } = await supabase.rpc("username_available", { p_username: u }); setUname(data ? "ok" : "taken"); }, 350);
+    return () => window.clearTimeout(t);
+  }, [f.username, q.data]);
   const refresh = () => { q.refetch(); qc.invalidateQueries({ queryKey: ["me"] }); qc.invalidateQueries({ queryKey: ["project-members"] }); };
   const save = async (patch: Partial<Me>, ok: string) => {
     const { error } = await supabase.from("profiles").update(patch).eq("id", uid!);
@@ -85,7 +93,7 @@ export function ProfilePage() {
         <Card className="h-fit">
           <div className="grid justify-items-center gap-3 text-center">
             <Avatar name={me.full_name || session?.user.email} path={current} version={me.updated_at} size={128} />
-            <div><p className="text-base font-semibold">{me.full_name || "Sem nome"}</p><p className="text-sm text-fg-3">{session?.user.email}</p></div>
+            <div><p className="text-base font-semibold">{me.full_name || "Sem nome"}</p>{me.username && <p className="text-sm text-accent">@{me.username}</p>}<p className="text-sm text-fg-3">{session?.user.email}</p></div>
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0])} aria-label="Escolher foto" />
             <div className="flex flex-wrap justify-center gap-2">
               <Button variant="primary" icon={<Camera className="size-4" />} loading={busy === "upload"} onClick={() => fileRef.current?.click()}>Enviar foto</Button>
@@ -111,9 +119,16 @@ export function ProfilePage() {
           </Card>
           <Card>
             <CardHeader title="Dados" />
-            <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); if (f.full_name.trim().length < 2) { toast({ tone: "error", message: "Informe seu nome." }); return; } save({ full_name: f.full_name.trim(), phone: f.phone.trim() || null }, "Perfil salvo."); }}>
+            <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); if (f.full_name.trim().length < 2) { toast({ tone: "error", message: "Informe seu nome." }); return; } if (uname === "taken" || uname === "invalid") { toast({ tone: "error", message: uname === "taken" ? "Esse @usuario já está em uso." : "Use 3 a 30 letras minúsculas, números, ponto ou _ (sem começar ou terminar com eles)." }); return; }
+              save({ full_name: f.full_name.trim(), phone: f.phone.trim() || null, username: f.username.trim().toLowerCase().replace(/^@/, "") || q.data!.username }, "Perfil salvo."); }}>
               <Field label="Nome" required htmlFor="pf-name"><Input id="pf-name" value={f.full_name} maxLength={120} onChange={(e) => setF({ ...f, full_name: e.target.value })} autoComplete="name" /></Field>
               <Field label="Telefone / WhatsApp" htmlFor="pf-phone"><Input id="pf-phone" value={f.phone} maxLength={30} onChange={(e) => setF({ ...f, phone: e.target.value })} inputMode="tel" placeholder="(81) 99999-0000" autoComplete="tel" /></Field>
+              <Field label="Nome de usuário" htmlFor="pf-user" className="sm:col-span-2"
+                hint={uname === "ok" ? "Disponível." : "É como a equipe encontra você no chat. Letras minúsculas, números, ponto e _."}
+                error={uname === "taken" ? "Esse @usuario já está em uso." : uname === "invalid" ? "Use 3 a 30 caracteres: a–z, 0–9, ponto ou _, sem começar ou terminar com ponto/_." : undefined}>
+                <div className="relative"><span className="pointer-events-none absolute left-3 top-2 text-sm text-fg-3">@</span>
+                  <Input id="pf-user" className="pl-7" value={f.username} maxLength={31} autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                    onChange={(e) => setF({ ...f, username: e.target.value.toLowerCase().replace(/\s/g, "") })} /></div></Field>
               <Field label="E-mail" htmlFor="pf-email" hint="Para trocar o e-mail, fale com o administrador." className="sm:col-span-2"><Input id="pf-email" value={session?.user.email ?? ""} disabled /></Field>
               <div className="sm:col-span-2"><Button type="submit" variant="primary">Salvar</Button></div>
             </form>

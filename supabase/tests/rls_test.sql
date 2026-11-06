@@ -466,6 +466,37 @@ select pg_temp.ok(pg_temp.fails($$update public.profiles set avatar_path = 'pres
 update public.profiles set full_name = 'Hackeado' where id = '00000000-0000-0000-0000-00000000000b';
 select pg_temp.ok((select full_name from public.profiles where id = '00000000-0000-0000-0000-00000000000b') <> 'Hackeado', 'não edita o perfil de outra pessoa');
 
+-- ----- @usuario e chat interno
+reset role; set role authenticated; select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.ok((select username from public.profiles where id = '00000000-0000-0000-0000-00000000000b') = 'membro', '@usuario gerado a partir do e-mail');
+reset role; select pg_temp.ok((select username from public.profiles where id = '00000000-0000-0000-0000-00000000000d') = 'admin2', 'nome repetido ganha sufixo'); set role authenticated;
+update public.profiles set username = 'Erick.Andrade' where id = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.ok((select username from public.profiles where id = '00000000-0000-0000-0000-00000000000a') = 'erick.andrade', 'usuario sempre em minúsculas');
+select pg_temp.ok(pg_temp.fails($$update public.profiles set username = 'membro' where id = '00000000-0000-0000-0000-00000000000a'$$), '@usuario é único');
+select pg_temp.ok(pg_temp.fails($$update public.profiles set username = 'a b!' where id = '00000000-0000-0000-0000-00000000000a'$$), 'formato do @usuario validado');
+select pg_temp.ok((select count(*) from public.search_people('@mem')) = 1, 'acha pessoa da equipe pelo @usuario');
+select pg_temp.ok((select count(*) from public.search_people('admin2')) = 0 and (select count(*) from public.search_people('cliente')) = 0, 'não lista outro estúdio nem clientes');
+select public.start_direct_chat('00000000-0000-0000-0000-00000000000b') as chat1 \gset
+select pg_temp.ok(public.start_direct_chat('00000000-0000-0000-0000-00000000000b') = :'chat1', 'conversa direta é reaproveitada');
+select pg_temp.ok(pg_temp.fails($$select public.start_direct_chat('00000000-0000-0000-0000-00000000000d')$$), 'não conversa com quem é de outro estúdio');
+insert into public.chat_messages (thread_id, author_id, body) values (:'chat1', '00000000-0000-0000-0000-00000000000a', 'Oi! Olha esse projeto');
+insert into public.chat_messages (thread_id, author_id, shared) values (:'chat1', '00000000-0000-0000-0000-00000000000a', jsonb_build_object('type', 'project', 'id', :'proj1', 'title', 'forjado'));
+select pg_temp.ok((select shared ->> 'title' from public.chat_messages where thread_id = :'chat1' and shared is not null) <> 'forjado', 'resumo do projeto compartilhado vem do banco');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+select pg_temp.ok((select unread from public.chat_overview() where id = :'chat1') = 2, 'quem recebe vê as não lidas');
+select pg_temp.ok(pg_temp.fails(format($$insert into public.chat_messages (thread_id, author_id, body) values (%L, '00000000-0000-0000-0000-00000000000a', 'falso')$$, :'chat1')), 'não envia em nome de outra pessoa');
+update public.chat_members set last_read_at = now() where thread_id = :'chat1' and user_id = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.ok((select unread from public.chat_overview() where id = :'chat1') = 0, 'marcar como lida zera o contador');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+select pg_temp.ok((select count(*) from public.chat_messages where thread_id = :'chat1') = 0, 'quem não participa não lê a conversa');
+select pg_temp.ok(pg_temp.fails(format($$insert into public.chat_messages (thread_id, author_id, body) values (%L, '00000000-0000-0000-0000-00000000000c', 'intruso')$$, :'chat1')), 'quem não participa não envia');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+select pg_temp.ok(pg_temp.fails($$select public.start_direct_chat('00000000-0000-0000-0000-00000000000a')$$), 'cliente do portal não usa o chat interno');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.create_group_chat('Equipe Arara', array['00000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000c']::uuid[]) as grp \gset
+select pg_temp.ok((select count(*) from public.chat_members where thread_id = :'grp') = 3, 'grupo com quem criou e convidados');
+select pg_temp.ok(pg_temp.fails($$select public.create_group_chat('X', array['00000000-0000-0000-0000-00000000000d']::uuid[])$$), 'grupo só com gente da equipe');
+
 -- ===== Anônimo ==============================================================
 reset role; set role anon; select pg_temp.as_user(null);
 select pg_temp.ok(pg_temp.empty_or_denied('select * from public.clients'), 'anônimo não lê clientes');

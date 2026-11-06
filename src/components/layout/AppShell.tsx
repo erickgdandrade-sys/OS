@@ -1,8 +1,9 @@
+import { chatTotalUnread, useChatOverview, useChatRealtime } from "@/features/chat/ChatPage";
 import { AssistantProvider } from "@/features/assistant/AssistantContext";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { UserRound, FolderOpen, ClipboardList,
+import { MessagesSquare, UserRound, FolderOpen, ClipboardList,
   Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronRight, CircleDollarSign, FileSignature, FileText, FolderKanban,
   Globe, Image, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Users, X,
   type LucideIcon,
@@ -43,12 +44,13 @@ export function useBreadcrumbs(crumbs: Crumb[]) {
 const AssistantsNavIcon = (({ className }: { className?: string }) => (
   <span aria-hidden className={cn(className, "inline-flex items-center justify-center font-mono text-[11px] font-bold leading-none")}>:v</span>
 )) as unknown as LucideIcon;
-type NavItem = { label: string; to?: string; icon: LucideIcon; perm?: Permission; phase?: number };
+type NavItem = { label: string; to?: string; icon: LucideIcon; perm?: Permission; phase?: number; badge?: "chat" };
 const nav: { section: string; items: NavItem[] }[] = [
   { section: "Geral", items: [
     { label: "Dashboard", to: "/", icon: LayoutDashboard, perm: "dashboard.view" },
     { label: "Minhas tarefas", to: "/tarefas", icon: ListChecks },
     { label: "Calendário", to: "/calendario", icon: CalendarDays },
+    { label: "Chat", to: "/chat", icon: MessagesSquare, badge: "chat" },
   ] },
   { section: "Operação", items: [
     { label: "Clientes", to: "/clientes", icon: Building2, perm: "clients.read" },
@@ -75,6 +77,8 @@ const nav: { section: string; items: NavItem[] }[] = [
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { membership, can, context, switchOrg } = useAuth();
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const chat = useChatOverview();
+  const unread = chatTotalUnread(chat.data);
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-fg">
       <div className="flex h-14 items-center px-4 pt-1">
@@ -115,6 +119,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                         className={cn("relative flex h-8 items-center gap-2.5 rounded-md px-2 text-[13px] transition-colors",
                           active ? "bg-[var(--sidebar-active)] font-medium text-white before:absolute before:-left-2 before:top-1.5 before:h-5 before:w-0.5 before:rounded-full before:bg-amp" : "hover:bg-[var(--sidebar-hover)] hover:text-white")}>
                         <Icon className={cn("size-4", active && "text-amp")} />{i.label}
+                        {i.badge === "chat" && unread > 0 && <span className="ml-auto rounded-full bg-accent px-1.5 text-[10px] font-semibold text-white" aria-label={`${unread} mensagens não lidas`}>{unread > 99 ? "99+" : unread}</span>}
                       </Link>
                     </li>
                   );
@@ -218,6 +223,7 @@ function UserMenu() {
 
 /* --------------------------------------------------------------- Shell */
 export function AppShell({ children }: { children?: ReactNode }) {
+  useChatRealtime();
   const [crumbs, setCrumbs] = useState<Crumb[]>([]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);

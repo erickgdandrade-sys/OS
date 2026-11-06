@@ -52,6 +52,9 @@ verify_jwt = false                     # link avulso de briefing; a função val
 [functions.assistant]
 verify_jwt = true                      # Andrade e Gomes: usam o JWT do usuário (RLS)
 
+[functions.site-assistant]
+verify_jwt = false                     # assistente público do site; só conteúdo já publicado, com limite de uso
+
 [functions.document-pdf]
 verify_jwt = true
 import_map = "./functions/deno.json"
