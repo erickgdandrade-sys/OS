@@ -235,6 +235,8 @@ type GContent = { role: "user" | "model"; parts: GPart[] };
 
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
 let cachedModels: string[] | null = null;
+let allModels: string[] = [];
+let lastGood: string | null = null;   // modelo que respondeu por último nesta instância
 let thinkingParam: "budget" | "level" | "none" = "budget";   // aprende o formato aceito pelo modelo
 export const trace: { model: string; ms: number; status: number; note?: string }[] = [];
 const noFreeTier = new Set<string>();   // modelos que responderam "limit: 0" nesta instância
@@ -250,11 +252,12 @@ async function geminiModels(apiKey: string): Promise<string[]> {
   const names = (data.models ?? []).filter((m) => m.supportedGenerationMethods?.includes("generateContent")).map((m) => m.name.replace(/^models\//, ""))
     // Só a família "flash" tem plano gratuito de verdade; os demais costumam ter limite 0.
     .filter((n) => /^gemini-.*flash/.test(n) && !/(image|tts|audio|live|embedding|vision|thinking|robotics|computer|native)/.test(n));
-  const score = (n: string) => {
-    const v = Number(/gemini-(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0);
-    return v * 100 + (/flash/.test(n) ? 30 : 0) - (/lite/.test(n) ? 5 : 0) - (/(preview|exp)/.test(n) ? 20 : 0) - (/pro/.test(n) ? 10 : 0) - (/-\d{3}$/.test(n) ? 2 : 0);
-  };
-  const ranked = names.sort((x, y) => score(y) - score(x)).slice(0, 4);
+  // Mais leves e estáveis primeiro: "flash-lite" responde rápido e tem mais cota grátis;
+  // versões "preview"/"exp" e as recém-lançadas costumam estar sobrecarregadas.
+  const ver = (n: string) => Number(/gemini-(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0);
+  const score = (n: string) => (/lite/.test(n) ? 1000 : 0) - (/(preview|exp)/.test(n) ? 500 : 0) + ver(n) * 10 - (/-\d{3}$/.test(n) ? 1 : 0);
+  const ranked = names.sort((x, y) => score(y) - score(x)).slice(0, 6);
+  allModels = names;
   const fixed = Deno.env.get("GEMINI_MODEL")?.replace(/^models\//, "");
   cachedModels = [...new Set([...(fixed ? [fixed] : []), ...ranked])];
   if (!cachedModels.length) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini disponível para esta chave.");
@@ -264,7 +267,7 @@ async function geminiModels(apiKey: string): Promise<string[]> {
 async function runGemini(apiKey: string, sys: string, history: { role: "user" | "assistant"; content: string }[], tools: Tool[], ctx: Ctx): Promise<RunResult> {
   const candidates = await geminiModels(apiKey);
   if (!candidates.length) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini gratuito disponível para esta chave.");
-  let model = candidates[0];
+  let model = lastGood && candidates.includes(lastGood) ? lastGood : candidates[0];
   const contents: GContent[] = history.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
   const decl = tools.map((t) => {
     const params = toGeminiSchema(t.def.input_schema) as { properties?: Record<string, unknown> };
@@ -274,9 +277,16 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
   // Uma chamada com tolerância: modelo sobrecarregado (503/500/429) ou retirado
   // (404) → espera um pouco e tenta o próximo modelo da lista (até 4 tentativas).
   const deadline = Date.now() + 100_000;   // a função tem ~150 s; sobra tempo para gravar
+  const tried = new Set<string>();
+  // Próximo modelo ainda não tentado nesta resposta (depois recomeça a lista).
+  const nextModel = () => {
+    const rest = candidates.filter((m) => !tried.has(m) && !noFreeTier.has(m));
+    if (!rest.length) { tried.clear(); return false; }
+    model = rest[0]; return true;
+  };
   const call = async (): Promise<GRes> => {
     let last = "";
-    for (let attempt = 0; attempt < 4; attempt++) {
+    for (let attempt = 0; attempt < 6; attempt++) {
       const left = deadline - Date.now();
       if (left < 5_000) throw new HttpError(504, "ai_timeout", last || "A IA demorou demais para responder.");
       // Pensamento mínimo: respostas bem mais rápidas para conversa e ferramentas.
@@ -285,24 +295,24 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
       let res: Response;
       try {
         res = await fetch(`${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`, {
-          method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey }, signal: AbortSignal.timeout(Math.min(45_000, left - 2_000)),
+          method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey }, signal: AbortSignal.timeout(Math.min(20_000, left - 2_000)),
           body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 2048, ...thinking } }),
         });
       } catch {
         trace.push({ model, ms: Date.now() - t0, status: 0, note: "timeout" });
         last = `Google (${model}): sem resposta em ${Math.round((Date.now() - t0) / 1000)} s`;
-        const rest = candidates.filter((m) => m !== model && !noFreeTier.has(m)); if (rest.length) model = rest[0];
+        tried.add(model); nextModel();
         continue;
       }
       const data = await res.json().catch(() => ({})) as GRes;
       trace.push({ model, ms: Date.now() - t0, status: res.status });
-      if (res.ok) return data;
+      if (res.ok) { tried.clear(); lastGood = model; return data; }
       const msg = data.error?.message ?? "sem detalhes";
       // Modelo não aceita o ajuste de pensamento: troca o formato e repete.
       if (res.status === 400 && /thinking/i.test(msg) && thinkingParam !== "none") { thinkingParam = thinkingParam === "budget" ? "level" : "none"; attempt--; continue; }
       last = `Google (${model}, ${res.status}): ${msg}`;
       console.error("gemini", last);
-      const nextModel = () => { const rest = candidates.filter((m) => m !== model && !noFreeTier.has(m)); if (!rest.length) return false; model = rest[0]; return true; };
+      tried.add(model);
       if (res.status === 429) {
         // "limit: 0" = este modelo não tem cota gratuita: risca e tenta outro na hora.
         if (/limit: 0\b/.test(msg)) { noFreeTier.add(model); if (nextModel()) continue; }
@@ -398,7 +408,7 @@ Deno.serve(handler(async (req) => {
     const { count } = await admin.from("ai_messages").select("id", { count: "exact", head: true }).eq("conversation_id", convId);
     if (!count) await admin.from("ai_conversations").delete().eq("id", convId);
     else await admin.from("ai_conversations").update({ last_error: `${provider}: ${msg}`.slice(0, 2000) }).eq("id", convId);
-    await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000), ms: Date.now() - started, trace: trace.splice(0) }) }).then(() => {}, () => {});
+    await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000), ms: Date.now() - started, trace: trace.splice(0), models: allModels }) }).then(() => {}, () => {});
     if (e instanceof HttpError) throw e;
     throw new HttpError(502, "ai_provider_error", msg);
   }
@@ -406,7 +416,7 @@ Deno.serve(handler(async (req) => {
 
   // Grava a troca (a tabela não aceita escrita direta do navegador).
   const admin = adminClient();
-  await admin.from("platform_settings").upsert({ key: "ai_last_run", value: JSON.stringify({ at: new Date().toISOString(), provider, ok: true, ms: Date.now() - started, trace: trace.splice(0) }) }).then(() => {}, () => {});
+  await admin.from("platform_settings").upsert({ key: "ai_last_run", value: JSON.stringify({ at: new Date().toISOString(), provider, ok: true, ms: Date.now() - started, trace: trace.splice(0), models: allModels }) }).then(() => {}, () => {});
   await admin.from("ai_messages").insert([
     { organization_id: org, conversation_id: convId, role: "user", content: message },
     { organization_id: org, conversation_id: convId, role: "assistant", content: reply, model, tokens_in: tokensIn, tokens_out: tokensOut, actions: ctx.actions },
