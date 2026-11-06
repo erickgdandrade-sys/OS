@@ -62,7 +62,7 @@ export function AssistantPage() {
                 <button type="button" onClick={() => { openConversation(who, c.id); activate(who); }} className={cn("min-w-0 flex-1 truncate px-3 py-2 text-left text-sm", t.conv === c.id && "font-medium")}>
                   {c.title || "Conversa"}<span className="block text-[11px] font-normal text-fg-3">{dateTime(c.updated_at)}</span></button>
                 <button type="button" aria-label={`Apagar conversa ${c.title ?? ""}`} onClick={() => setRemoving({ id: c.id, title: c.title })}
-                  className="mr-1.5 rounded p-1.5 text-fg-3 opacity-0 hover:bg-surface-3 hover:text-danger focus:opacity-100 group-hover:opacity-100"><Trash2 className="size-3.5" /></button>
+                  className="mr-1.5 rounded p-1.5 text-fg-3 hover:bg-surface-3 hover:text-danger"><Trash2 className="size-4" /></button>
               </li>))}
             {!convs.data?.length && <li className="px-3 py-3 text-xs text-fg-3">Nenhuma conversa ainda.</li>}
           </ul>
