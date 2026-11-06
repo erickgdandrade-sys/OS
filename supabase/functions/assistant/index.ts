@@ -237,7 +237,11 @@ const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
 let cachedModels: string[] | null = null;
 let allModels: string[] = [];
 let lastGood: string | null = null;   // modelo que respondeu por último nesta instância
-let thinkingParam: "budget" | "level" | "none" = "budget";   // aprende o formato aceito pelo modelo
+// Ajustes que o Google pode recusar ("invalid argument" sem detalhe). A cada 400
+// genérico o próximo nível é tentado; o que funcionou fica valendo nesta instância:
+// 0 = pensamento mínimo + esquemas completos · 1 = sem ajuste de pensamento ·
+// 2 = esquemas simplificados · 3 = sem ferramentas (só conversa).
+let compat = 0;
 export const trace: { model: string; ms: number; status: number; note?: string }[] = [];
 const noFreeTier = new Set<string>();   // modelos que responderam "limit: 0" nesta instância
 
@@ -269,6 +273,22 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
   if (!candidates.length) throw new HttpError(502, "ai_provider_error", "Nenhum modelo Gemini gratuito disponível para esta chave.");
   let model = lastGood && candidates.includes(lastGood) ? lastGood : candidates[0];
   const contents: GContent[] = history.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+  const simple = (sch: unknown): unknown => {
+    // Esquema mínimo: só tipo, descrição, propriedades, itens e obrigatórios.
+    if (!sch || typeof sch !== "object" || Array.isArray(sch)) return sch;
+    const o = sch as Record<string, unknown>;
+    const out: Record<string, unknown> = { type: Array.isArray(o.type) ? (o.type as string[]).find((x) => x !== "null") ?? "string" : o.type ?? "string" };
+    if (o.description) out.description = String(o.description) + (Array.isArray(o.enum) ? ` (opções: ${(o.enum as unknown[]).filter((x) => x !== null).join(", ")})` : "");
+    else if (Array.isArray(o.enum)) out.description = `Opções: ${(o.enum as unknown[]).filter((x) => x !== null).join(", ")}`;
+    if (o.properties) out.properties = Object.fromEntries(Object.entries(o.properties as Record<string, unknown>).map(([k, v]) => [k, simple(v)]));
+    if (o.items) out.items = simple(o.items);
+    if (Array.isArray(o.required) && out.type === "object") out.required = o.required;
+    return out;
+  };
+  const declSimple = tools.map((t) => {
+    const params = simple(t.def.input_schema) as { properties?: Record<string, unknown> };
+    return { name: t.def.name, description: t.def.description, ...(params.properties && Object.keys(params.properties).length ? { parameters: params } : {}) };
+  });
   const decl = tools.map((t) => {
     const params = toGeminiSchema(t.def.input_schema) as { properties?: Record<string, unknown> };
     return { name: t.def.name, description: t.def.description, ...(params.properties && Object.keys(params.properties).length ? { parameters: params } : {}) };
@@ -290,13 +310,15 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
       const left = deadline - Date.now();
       if (left < 5_000) throw new HttpError(504, "ai_timeout", last || "A IA demorou demais para responder.");
       // Pensamento mínimo: respostas bem mais rápidas para conversa e ferramentas.
-      const thinking = thinkingParam === "budget" ? { thinkingConfig: { thinkingBudget: 0 } } : thinkingParam === "level" ? { thinkingConfig: { thinkingLevel: "low" } } : {};
+      const thinking = compat === 0 ? { thinkingConfig: { thinkingBudget: 0 } } : {};
+      const toolPart = compat >= 3 ? {} : { tools: [{ functionDeclarations: compat >= 2 ? declSimple : decl }] };
+      const sysText = compat >= 3 ? `${sys}\n\n(As consultas ao sistema estão indisponíveis agora: responda sem elas e, se precisar de dados, explique onde a pessoa encontra na plataforma.)` : sys;
       const t0 = Date.now();
       let res: Response;
       try {
         res = await fetch(`${GEMINI_API}/models/${encodeURIComponent(model)}:generateContent`, {
           method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey }, signal: AbortSignal.timeout(Math.min(20_000, left - 2_000)),
-          body: JSON.stringify({ systemInstruction: { parts: [{ text: sys }] }, contents, tools: [{ functionDeclarations: decl }], generationConfig: { maxOutputTokens: 2048, ...thinking } }),
+          body: JSON.stringify({ systemInstruction: { parts: [{ text: sysText }] }, contents, ...toolPart, generationConfig: { maxOutputTokens: 2048, ...thinking } }),
         });
       } catch {
         trace.push({ model, ms: Date.now() - t0, status: 0, note: "timeout" });
@@ -309,7 +331,7 @@ async function runGemini(apiKey: string, sys: string, history: { role: "user" | 
       if (res.ok) { tried.clear(); lastGood = model; return data; }
       const msg = data.error?.message ?? "sem detalhes";
       // Modelo não aceita o ajuste de pensamento: troca o formato e repete.
-      if (res.status === 400 && /thinking/i.test(msg) && thinkingParam !== "none") { thinkingParam = thinkingParam === "budget" ? "level" : "none"; attempt--; continue; }
+      if (res.status === 400 && compat < 3) { compat++; trace[trace.length - 1].note = `400 → compat ${compat}: ${msg.slice(0, 120)}`; attempt--; continue; }
       last = `Google (${model}, ${res.status}): ${msg}`;
       console.error("gemini", last);
       tried.add(model);
@@ -408,7 +430,7 @@ Deno.serve(handler(async (req) => {
     const { count } = await admin.from("ai_messages").select("id", { count: "exact", head: true }).eq("conversation_id", convId);
     if (!count) await admin.from("ai_conversations").delete().eq("id", convId);
     else await admin.from("ai_conversations").update({ last_error: `${provider}: ${msg}`.slice(0, 2000) }).eq("id", convId);
-    await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000), ms: Date.now() - started, trace: trace.splice(0), models: allModels }) }).then(() => {}, () => {});
+    await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000), ms: Date.now() - started, trace: trace.splice(0), models: allModels, compat }) }).then(() => {}, () => {});
     if (e instanceof HttpError) throw e;
     throw new HttpError(502, "ai_provider_error", msg);
   }
@@ -416,7 +438,7 @@ Deno.serve(handler(async (req) => {
 
   // Grava a troca (a tabela não aceita escrita direta do navegador).
   const admin = adminClient();
-  await admin.from("platform_settings").upsert({ key: "ai_last_run", value: JSON.stringify({ at: new Date().toISOString(), provider, ok: true, ms: Date.now() - started, trace: trace.splice(0), models: allModels }) }).then(() => {}, () => {});
+  await admin.from("platform_settings").upsert({ key: "ai_last_run", value: JSON.stringify({ at: new Date().toISOString(), provider, ok: true, ms: Date.now() - started, trace: trace.splice(0), models: allModels, compat }) }).then(() => {}, () => {});
   await admin.from("ai_messages").insert([
     { organization_id: org, conversation_id: convId, role: "user", content: message },
     { organization_id: org, conversation_id: convId, role: "assistant", content: reply, model, tokens_in: tokensIn, tokens_out: tokensOut, actions: ctx.actions },
