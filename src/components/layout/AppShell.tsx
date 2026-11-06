@@ -233,7 +233,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
           </div>
         )}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface/80 px-3 backdrop-blur sm:px-5">
+          <header className="relative z-30 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-surface/80 px-3 backdrop-blur sm:px-5">
             <IconButton label="Abrir menu" className="lg:hidden" onClick={() => setMobileOpen(true)}><Menu className="size-4" /></IconButton>
             <nav aria-label="Trilha" className="flex min-w-0 items-center gap-1 text-sm">
               {crumbs.map((c, i) => (
