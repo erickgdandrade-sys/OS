@@ -724,6 +724,10 @@ html.intro .hero h1 span { animation-play-state: paused; }
 #gomes-send { border: 0; border-radius: 8px; background: var(--azul); color: #fff; padding: 0 14px; font: 600 14px var(--sans); cursor: pointer; }
 #gomes-send:disabled { opacity: .5; cursor: default; }
 @media print { #gomes-btn, #gomes-panel { display: none !important; } }
+/* Durante a abertura animada o Gomes fica escondido e entra junto com o site. */
+#gomes-btn { transition: opacity .5s ease .25s, transform .5s ease .25s; }
+html.intro #gomes-btn, html.intro #gomes-panel { opacity: 0; visibility: hidden; transform: translateY(8px); pointer-events: none; transition: none; }
+@media (prefers-reduced-motion: reduce) { #gomes-btn { transition: none; } }
 </style>
 <button id="gomes-btn" type="button" aria-label="Tirar uma dúvida com o Gomes"><span class="gomes-face" aria-hidden="true">:v</span><span>Dúvidas? <b>Fale com o Gomes</b></span></button>
 <section id="gomes-panel" role="dialog" aria-label="Gomes, assistente da ANDRA &amp; GO">
