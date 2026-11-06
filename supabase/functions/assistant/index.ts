@@ -349,9 +349,23 @@ Deno.serve(handler(async (req) => {
   while (messages.length && messages[0].role !== "user") messages.shift();
 
   const sys = system(who, profile?.full_name ?? "", orgRow?.name ?? "estúdio");
-  const out = provider === "gemini"
-    ? await runGemini(apiKey, sys, messages as { role: "user" | "assistant"; content: string }[], tools, ctx)
-    : await runAnthropic(apiKey, who, sys, messages, tools, ctx);
+  let out: RunResult;
+  try {
+    out = provider === "gemini"
+      ? await runGemini(apiKey, sys, messages as { role: "user" | "assistant"; content: string }[], tools, ctx)
+      : await runAnthropic(apiKey, who, sys, messages, tools, ctx);
+  } catch (e) {
+    // Guarda o motivo para diagnóstico; conversa nova e vazia é descartada.
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("assistant provider", provider, msg);
+    const admin = adminClient();
+    const { count } = await admin.from("ai_messages").select("id", { count: "exact", head: true }).eq("conversation_id", convId);
+    if (!count) await admin.from("ai_conversations").delete().eq("id", convId);
+    else await admin.from("ai_conversations").update({ last_error: `${provider}: ${msg}`.slice(0, 2000) }).eq("id", convId);
+    await admin.from("platform_settings").upsert({ key: "ai_last_error", value: JSON.stringify({ at: new Date().toISOString(), provider, message: msg.slice(0, 2000) }) }).then(() => {}, () => {});
+    if (e instanceof HttpError) throw e;
+    throw new HttpError(502, "ai_provider_error", msg);
+  }
   const { reply, tokensIn, tokensOut, model } = out;
 
   // Grava a troca (a tabela não aceita escrita direta do navegador).
