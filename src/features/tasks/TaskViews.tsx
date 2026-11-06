@@ -62,6 +62,7 @@ export function ProjectTasks({ projectId, members, canEdit }: { projectId: strin
     queryFn: async () => (await supabase.from("task_dependencies").select("task_id, depends_on_id").in("task_id", (tasks ?? []).map((t) => t.id))).data ?? [] });
   const subsOf = (id: string) => (tasks ?? []).filter((t) => t.parent_id === id);
   const memberName = (id: string | null) => members.find((m) => m.user_id === id)?.profiles?.full_name || null;
+  const memberAvatar = (id: string | null) => members.find((m) => m.user_id === id)?.profiles?.avatar_path ?? null;
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +106,7 @@ export function ProjectTasks({ projectId, members, canEdit }: { projectId: strin
                 {t.client_visible && <Eye className="size-3.5 shrink-0 text-fg-3" aria-label="Visível ao cliente" />}
                 <Badge tone={taskStatusTone[t.status]} className="hidden sm:inline-flex">{taskStatusLabel[t.status]}</Badge>
                 <span className="hidden w-28 md:block"><DueLabel due={t.due_date} done={t.status === "done"} /></span>
-                {t.assignee_id ? <Avatar name={memberName(t.assignee_id)} size={22} /> : <span className="size-[22px] rounded-full border border-dashed border-border-strong" aria-hidden />}
+                {t.assignee_id ? <Avatar name={memberName(t.assignee_id)} path={memberAvatar(t.assignee_id)} size={22} /> : <span className="size-[22px] rounded-full border border-dashed border-border-strong" aria-hidden />}
               </li>
             );
           })}
@@ -124,7 +125,7 @@ export function ProjectTasks({ projectId, members, canEdit }: { projectId: strin
                     <button key={t.id} draggable onDragStart={(e) => e.dataTransfer.setData("text/task", t.id)} onClick={() => setOpenId(t.id)}
                       className="rounded-md border border-border bg-surface p-2.5 text-left shadow-sm hover:border-border-strong">
                       <p className="text-sm leading-snug">{t.title}</p>
-                      <div className="mt-2 flex items-center justify-between"><DueLabel due={t.due_date} done={t.status === "done"} />{t.assignee_id && <Avatar name={memberName(t.assignee_id)} size={20} />}</div>
+                      <div className="mt-2 flex items-center justify-between"><DueLabel due={t.due_date} done={t.status === "done"} />{t.assignee_id && <Avatar name={memberName(t.assignee_id)} path={memberAvatar(t.assignee_id)} size={20} />}</div>
                     </button>
                   ))}
                 </div>
@@ -244,7 +245,7 @@ export function TaskModal({ taskId, projectId, members, canEdit, onClose }: { ta
           <h3 className="mb-2 flex items-center gap-1.5 text-xs font-medium text-fg-2"><MessageSquare className="size-3.5" />Comentários internos <span className="font-normal text-fg-3">(nunca aparecem para o cliente)</span></h3>
           <ul className="mb-3 grid gap-3">
             {comments.data?.map((c) => (
-              <li key={c.id} className="flex gap-2.5"><Avatar name={c.profiles?.full_name} size={24} />
+              <li key={c.id} className="flex gap-2.5"><Avatar name={c.profiles?.full_name} path={c.profiles?.avatar_path} size={24} />
                 <div className="min-w-0"><p className="text-xs"><span className="font-medium">{c.profiles?.full_name || "—"}</span> <span className="text-fg-3">{dateTime(c.created_at)}</span></p>
                   <p className="whitespace-pre-wrap text-sm text-fg-2">{c.body}</p></div></li>
             ))}

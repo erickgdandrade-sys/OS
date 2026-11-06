@@ -26,6 +26,8 @@ export function TeamPage() {
     queryKey: ["team", orgId],
     queryFn: async () => { const { data, error } = await supabase.rpc("team_directory", { p_org: orgId }); if (error) throw error; return data as Person[]; },
   });
+  const avatars = useQuery({ queryKey: ["team-avatars", data?.map((p) => p.user_id).join(",")], enabled: !!data?.length, queryFn: async () =>
+    Object.fromEntries(((await supabase.from("profiles").select("id, avatar_path").in("id", data!.map((p) => p.user_id))).data ?? []).map((r) => [r.id, r.avatar_path as string | null])) });
   const load = useQuery({
     queryKey: ["team-load", orgId],
     queryFn: async () => {
@@ -60,7 +62,7 @@ export function TeamPage() {
               <tbody>
                 {(data ?? []).map((p) => (
                   <tr key={p.user_id} className="border-t border-border">
-                    <td className="px-4 py-3"><div className="flex items-center gap-2.5"><Avatar name={p.full_name || p.email} size={28} />
+                    <td className="px-4 py-3"><div className="flex items-center gap-2.5"><Avatar name={p.full_name || p.email} path={avatars.data?.[p.user_id]} size={28} />
                       <div className="min-w-0"><p className="truncate font-medium">{p.full_name || "Convite enviado"}</p><p className="truncate text-xs text-fg-3">{p.email}</p></div></div></td>
                     <td className="px-4 py-3">
                       {manage && p.user_id !== userId && (p.role !== "admin" || membership.role === "admin") ? (

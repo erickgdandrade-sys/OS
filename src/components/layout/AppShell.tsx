@@ -2,7 +2,7 @@ import { AssistantProvider } from "@/features/assistant/AssistantContext";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { FolderOpen, ClipboardList,
+import { UserRound, FolderOpen, ClipboardList,
   Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronRight, CircleDollarSign, FileSignature, FileText, FolderKanban,
   Globe, Image, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Users, X,
   type LucideIcon,
@@ -191,21 +191,23 @@ function UserMenu() {
   const [open, setOpen] = useState(false);
   const { data: profile } = useQuery({
     queryKey: ["me", session?.user.id],
-    queryFn: async () => (await supabase.from("profiles").select("full_name").eq("id", session!.user.id).single()).data,
+    queryFn: async () => (await supabase.from("profiles").select("full_name, avatar_path, updated_at").eq("id", session!.user.id).single()).data,
     enabled: !!session,
   });
   const name = profile?.full_name || session?.user.email;
   return (
     <div className="relative">
       <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-md p-1 hover:bg-surface-2" aria-label="Conta">
-        <Avatar name={name} size={26} />
+        <Avatar name={name} path={profile?.avatar_path} version={profile?.updated_at} size={28} />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
           <div className="absolute right-0 z-40 mt-2 w-60 rounded-lg border border-border bg-surface p-1 shadow-md animate-pop">
-            <div className="px-2.5 py-2"><p className="truncate text-sm font-medium">{name}</p><p className="truncate text-xs text-fg-3">{session?.user.email}</p></div>
+            <div className="flex items-center gap-2.5 px-2.5 py-2"><Avatar name={name} path={profile?.avatar_path} version={profile?.updated_at} size={36} />
+              <div className="min-w-0"><p className="truncate text-sm font-medium">{name}</p><p className="truncate text-xs text-fg-3">{session?.user.email}</p></div></div>
             <div className="my-1 h-px bg-border" />
+            <Link to="/perfil" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg"><UserRound className="size-4" />Meu perfil</Link>
             <Link to="/sair" className="flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-fg-2 hover:bg-surface-2 hover:text-fg"><LogOut className="size-4" />Sair</Link>
           </div>
         </>

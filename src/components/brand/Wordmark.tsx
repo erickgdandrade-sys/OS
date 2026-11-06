@@ -1,4 +1,4 @@
-import { cn } from "@/components/ui";
+import { clsx as cn } from "clsx";
 import { logoArt } from "./logoArt";
 
 /* Logotipo ANDRA&GO desenhado a partir dos arquivos oficiais (vetores).

@@ -217,7 +217,7 @@ function Team({ projectId, orgId, members, canEdit, ownerId, onChange }: { proje
       <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
         {members.map((m) => (
           <li key={m.user_id} className="flex items-center gap-3 px-3 py-2.5">
-            <Avatar name={m.profiles?.full_name} size={28} />
+            <Avatar name={m.profiles?.full_name} path={m.profiles?.avatar_path} size={28} />
             <span className="flex-1 text-sm">{m.profiles?.full_name || "Sem nome"}</span>
             {(m.role === "lead" || m.user_id === ownerId) && <Badge tone="accent">Responsável</Badge>}
             {canEdit && m.user_id !== ownerId && <Button size="sm" variant="ghost" icon={<UserMinus className="size-3.5" />} onClick={() => remove(m.user_id)}>Remover</Button>}

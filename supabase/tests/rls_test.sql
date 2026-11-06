@@ -456,6 +456,16 @@ select pg_temp.ok(pg_temp.fails(format($$insert into public.ai_conversations (or
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.ok((select count(*) from public.ai_conversations where id = :'conv1') = 0, 'conversas são privadas de cada pessoa');
 
+-- ----- Perfil e foto
+reset role; set role authenticated; select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+update public.profiles set avatar_path = 'preset:gomes', full_name = 'Pessoa A' where id = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.ok((select avatar_path from public.profiles where id = '00000000-0000-0000-0000-00000000000a') = 'preset:gomes', 'escolhe um avatar pronto');
+update public.profiles set avatar_path = '00000000-0000-0000-0000-00000000000a/foto.jpg' where id = '00000000-0000-0000-0000-00000000000a';
+select pg_temp.ok(pg_temp.fails($$update public.profiles set avatar_path = '00000000-0000-0000-0000-00000000000b/foto.jpg' where id = '00000000-0000-0000-0000-00000000000a'$$), 'não aponta a foto para a pasta de outra pessoa');
+select pg_temp.ok(pg_temp.fails($$update public.profiles set avatar_path = 'preset:qualquer' where id = '00000000-0000-0000-0000-00000000000a'$$), 'só avatares prontos conhecidos');
+update public.profiles set full_name = 'Hackeado' where id = '00000000-0000-0000-0000-00000000000b';
+select pg_temp.ok((select full_name from public.profiles where id = '00000000-0000-0000-0000-00000000000b') <> 'Hackeado', 'não edita o perfil de outra pessoa');
+
 -- ===== Anônimo ==============================================================
 reset role; set role anon; select pg_temp.as_user(null);
 select pg_temp.ok(pg_temp.empty_or_denied('select * from public.clients'), 'anônimo não lê clientes');

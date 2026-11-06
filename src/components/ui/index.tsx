@@ -1,5 +1,6 @@
 // Componentes base do design system. Todos usam os tokens de src/styles.css.
 import { clsx } from "clsx";
+import { avatarUrl, PresetAvatar } from "./avatarPresets";
 import { Loader2, X, AlertTriangle, Inbox, CheckCircle2, Info } from "lucide-react";
 import {
   createContext, forwardRef, useCallback, useContext, useEffect, useId, useRef, useState,
@@ -104,8 +105,14 @@ export function CardHeader({ title, description, actions }: { title: ReactNode; 
 }
 
 /* --------------------------------------------------------------- Avatar */
-export function Avatar({ name, size = 24, className }: { name?: string | null; size?: number; className?: string }) {
+export function Avatar({ name, size = 24, className, path, version }: { name?: string | null; size?: number; className?: string; path?: string | null; version?: string | number }) {
   const hue = [...(name ?? "?")].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  if (path?.startsWith("preset:")) {
+    return <span title={name ?? undefined} className={cn("inline-flex shrink-0 rounded-full ring-2 ring-surface", className)}><PresetAvatar id={path.slice(7)} size={size} /></span>;
+  }
+  const url = avatarUrl(path, version);
+  if (url) return <img src={url} alt={name ? `Foto de ${name}` : ""} title={name ?? undefined} width={size} height={size} loading="lazy"
+    className={cn("inline-block shrink-0 rounded-full object-cover ring-2 ring-surface", className)} style={{ width: size, height: size }} />;
   return (
     <span title={name ?? undefined} className={cn("inline-flex shrink-0 items-center justify-center rounded-full font-medium text-white ring-2 ring-surface", className)}
       style={{ width: size, height: size, fontSize: Math.max(9, size * 0.38), background: `oklch(0.55 0.11 ${hue})` }}>{initials(name)}</span>
