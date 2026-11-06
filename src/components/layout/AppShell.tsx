@@ -1,9 +1,10 @@
+import { AssistantProvider } from "@/features/assistant/AssistantContext";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { FolderOpen, ClipboardList,
   Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronRight, CircleDollarSign, FileSignature, FileText, FolderKanban,
-  Image, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Palette, Search, Settings, Sparkles, Sun, Users, X,
+  Image, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Users, X,
   type LucideIcon,
 } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -38,6 +39,10 @@ export function useBreadcrumbs(crumbs: Crumb[]) {
 
 /* ----------------------------------------------------------- Navegação */
 // Módulos das fases seguintes aparecem desabilitados e identificados, nunca como botões falsos.
+/* Ícone do menu: o rosto do Gomes em caracteres do teclado. */
+const AssistantsNavIcon = (({ className }: { className?: string }) => (
+  <span aria-hidden className={cn(className, "inline-flex items-center justify-center font-mono text-[11px] font-bold leading-none")}>:v</span>
+)) as unknown as LucideIcon;
 type NavItem = { label: string; to?: string; icon: LucideIcon; perm?: Permission; phase?: number };
 const nav: { section: string; items: NavItem[] }[] = [
   { section: "Geral", items: [
@@ -58,7 +63,7 @@ const nav: { section: string; items: NavItem[] }[] = [
     { label: "Branding e naming", to: "/branding", icon: Palette },
     { label: "Social media", to: "/social", icon: Image, perm: "creative.write" },
     { label: "Biblioteca", to: "/biblioteca", icon: FolderOpen },
-    { label: "Assistentes", to: "/assistentes", icon: Sparkles, perm: "ai.use" },
+    { label: "Assistentes", to: "/assistentes", icon: AssistantsNavIcon, perm: "ai.use" },
   ] },
   { section: "Estúdio", items: [
     { label: "Equipe", to: "/equipe", icon: Users, perm: "team.read" },
@@ -225,6 +230,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
 
   return (
     <CrumbCtx.Provider value={setCrumbs}>
+      <AssistantProvider>
       <div className="flex h-dvh overflow-hidden">
         <aside className="hidden w-60 shrink-0 lg:block"><Sidebar /></aside>
         {mobileOpen && (
@@ -268,6 +274,7 @@ export function AppShell({ children }: { children?: ReactNode }) {
         </div>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      </AssistantProvider>
     </CrumbCtx.Provider>
   );
 }
