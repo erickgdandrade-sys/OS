@@ -51,6 +51,12 @@ O repositório já tem o workflow `.github/workflows/deploy-pages.yml`, que comp
 
 O caminho `/OS/` vem do nome do repositório. Se você renomear o repositório, o caminho muda sozinho no próximo deploy; atualize as URLs do Supabase.
 
+### Site institucional
+
+O mesmo deploy publica o site público em `https://erickgdandrade-sys.github.io/OS/site/`. A plataforma continua em `https://erickgdandrade-sys.github.io/OS/`.
+
+Para o conteúdo vir do sistema, aplique a migration `20261111000100_site.sql` com `npx supabase db push` ou colando o arquivo no **SQL Editor** do Supabase. Ela cria a tabela `site_settings` e o bucket público `site-public`. Enquanto isso não for feito, o site mostra o conteúdo de `site/site-config.json` e a tela **Site** avisa que falta a tabela.
+
 ## 3. Primeiro administrador
 
 O administrador inicial é definido no banco (`platform_settings.bootstrap_admin_email`), hoje **erickgdandrade@gmail.com**. Para trocar, rode no SQL Editor:

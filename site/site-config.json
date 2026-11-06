@@ -1,0 +1,92 @@
+{
+  "empresa": {
+    "nome": "ANDRA & GO",
+    "razaoSocial": "[Razão social]",
+    "cnpj": "[CNPJ]",
+    "cidade": "Criciúma, SC"
+  },
+  "contato": { "email": "contato@example.com" },
+  "redes": [
+    { "nome": "Instagram", "url": "https://www.instagram.com/" },
+    { "nome": "Behance", "url": "https://www.behance.net/" },
+    { "nome": "LinkedIn", "url": "https://www.linkedin.com/" }
+  ],
+  "textura": { "intensidade": 1, "velocidade": 1 },
+  "frases": [
+    "Criatividade precisa de intenção",
+    "Ideias boas merecem ser bem construídas",
+    "Pensar diferente é apenas o começo",
+    "Toda identidade começa com uma ideia",
+    "O próximo passo começa com uma boa pergunta"
+  ],
+  "portfolio": [
+    {
+      "slug": "exemplo-identidade",
+      "exemplo": true,
+      "titulo": "Projeto de exemplo 1",
+      "cliente": "Nome do cliente",
+      "ano": "2026",
+      "categorias": ["Branding"],
+      "resumo": "Exemplo de como um projeto de identidade aparece no portfólio. Troque este texto no sistema.",
+      "desafio": "Descreva aqui o problema que o cliente precisava resolver.",
+      "solucao": "Descreva aqui o caminho escolhido e o que foi entregue.",
+      "capa": "assets/capa.jpg",
+      "imagens": ["assets/post.jpg", "assets/assinatura.jpg"],
+      "link": ""
+    },
+    {
+      "slug": "exemplo-design",
+      "exemplo": true,
+      "titulo": "Projeto de exemplo 2",
+      "cliente": "Nome do cliente",
+      "ano": "2026",
+      "categorias": ["Design"],
+      "resumo": "Exemplo de como um projeto de design aparece no portfólio. Troque este texto no sistema.",
+      "desafio": "Descreva aqui o problema que o cliente precisava resolver.",
+      "solucao": "Descreva aqui o caminho escolhido e o que foi entregue.",
+      "capa": "assets/post.jpg",
+      "imagens": ["assets/assinatura.jpg"],
+      "link": ""
+    },
+    {
+      "slug": "exemplo-estrategia",
+      "exemplo": true,
+      "titulo": "Projeto de exemplo 3",
+      "cliente": "Nome do cliente",
+      "ano": "2026",
+      "categorias": ["Estratégia"],
+      "resumo": "Exemplo de como um projeto de estratégia aparece no portfólio. Troque este texto no sistema.",
+      "desafio": "Descreva aqui o problema que o cliente precisava resolver.",
+      "solucao": "Descreva aqui o caminho escolhido e o que foi entregue.",
+      "capa": "assets/assinatura.jpg",
+      "imagens": ["assets/capa.jpg"],
+      "link": ""
+    }
+  ],
+  "politicas": {
+    "privacidade": {
+      "titulo": "Política de Privacidade",
+      "atualizadaEm": "6 de novembro de 2026",
+      "secoes": [
+        { "titulo": "Quem somos", "paragrafos": ["Este site é mantido por {{razaoSocial}}, inscrita no CNPJ {{cnpj}}, com sede em {{cidade}} (ANDRA & GO). Tratamos dados pessoais de acordo com a Lei Geral de Proteção de Dados (Lei 13.709/2018)."] },
+        { "titulo": "Quais dados tratamos", "paragrafos": ["Dados que você nos envia por e-mail ou outro canal de contato: nome, empresa, endereço de e-mail e o conteúdo da mensagem.", "O formulário deste site não envia nem guarda nada em nossos servidores. Ele apenas monta um texto no seu navegador, e o envio acontece pelo seu próprio e-mail, se você decidir enviar.", "Dados técnicos, como endereço IP e informações do navegador, podem ser registrados pelo serviço de hospedagem e pelo Google Fonts, usado para carregar as fontes do site."] },
+        { "titulo": "Para que usamos", "paragrafos": ["Usamos seus dados para responder ao seu contato, preparar propostas e manter a relação comercial com você. A base legal é o legítimo interesse ou a execução de procedimentos preliminares a um contrato, conforme o caso."] },
+        { "titulo": "Com quem compartilhamos", "paragrafos": ["Não vendemos dados pessoais. Podemos compartilhá-los com fornecedores necessários à operação, como serviços de e-mail e hospedagem, e com autoridades quando a lei exigir."] },
+        { "titulo": "Por quanto tempo guardamos", "paragrafos": ["Guardamos os dados pelo tempo necessário para atender à finalidade do contato e cumprir obrigações legais. Depois disso, eles são eliminados ou anonimizados."] },
+        { "titulo": "Seus direitos", "paragrafos": ["Você pode pedir confirmação do tratamento, acesso, correção, anonimização, portabilidade ou eliminação dos seus dados, além de informações sobre compartilhamento. Para isso, escreva para {{email}}."] },
+        { "titulo": "Alterações", "paragrafos": ["Podemos atualizar esta política. A data da última atualização fica sempre no topo desta página."] }
+      ]
+    },
+    "cookies": {
+      "titulo": "Política de Cookies",
+      "atualizadaEm": "6 de novembro de 2026",
+      "secoes": [
+        { "titulo": "O que são cookies", "paragrafos": ["Cookies são pequenos arquivos que um site guarda no seu navegador para lembrar informações entre uma visita e outra."] },
+        { "titulo": "Como este site usa cookies", "paragrafos": ["Hoje este site não usa cookies próprios, nem cookies de publicidade ou de análise de audiência."] },
+        { "titulo": "Serviços de terceiros", "paragrafos": ["As fontes do site são carregadas pelo Google Fonts, que recebe dados técnicos da sua conexão, como o endereço IP. Links para Instagram, Behance e LinkedIn levam a sites externos, que têm políticas próprias."] },
+        { "titulo": "Como controlar", "paragrafos": ["Você pode bloquear ou apagar cookies nas configurações do seu navegador a qualquer momento."] },
+        { "titulo": "Alterações", "paragrafos": ["Se passarmos a usar cookies de análise ou publicidade, atualizaremos esta política e pediremos seu consentimento antes de ativá-los. Dúvidas podem ser enviadas para {{email}}."] }
+      ]
+    }
+  }
+}

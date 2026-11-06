@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { FolderOpen, ClipboardList,
   Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronRight, CircleDollarSign, FileSignature, FileText, FolderKanban,
-  Image, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Users, X,
+  Globe, Image, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Users, X,
   type LucideIcon,
 } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -67,6 +67,7 @@ const nav: { section: string; items: NavItem[] }[] = [
   ] },
   { section: "Estúdio", items: [
     { label: "Equipe", to: "/equipe", icon: Users, perm: "team.read" },
+    { label: "Site", to: "/configuracoes-site", icon: Globe, perm: "settings.manage" },
     { label: "Configurações", to: "/configuracoes", icon: Settings, perm: "settings.manage" },
   ] },
 ];

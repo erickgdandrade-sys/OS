@@ -37,6 +37,12 @@ jobs:
           [ -n "${{ vars.VITE_SUPABASE_URL }}" ] && export VITE_SUPABASE_URL="${{ vars.VITE_SUPABASE_URL }}"
           [ -n "${{ vars.VITE_SUPABASE_ANON_KEY }}" ] && export VITE_SUPABASE_ANON_KEY="${{ vars.VITE_SUPABASE_ANON_KEY }}"
           npm run build
+      # Site institucional: publicado em /<repositório>/site/, lê o conteúdo do Supabase.
+      - name: Site institucional
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: node scripts/build-site.mjs
       # SPA: o Pages devolve 404.html para rotas como /SISTEMA-TESTE/projetos/…; o app assume a partir dali.
       - run: cp dist/index.html dist/404.html && touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v3

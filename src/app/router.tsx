@@ -68,6 +68,7 @@ const AssistantPage = page(() => import("@/features/assistant/AssistantPage"), "
 const PublicBriefingPage = page(() => import("@/features/briefings/BriefingsPages"), "PublicBriefingPage");
 const FinancePage = page(() => import("@/features/finance/FinancePage"), "FinancePage");
 const CalendarPage = page(() => import("@/features/calendar/CalendarPage"), "CalendarPage");
+const SitePage = page(() => import("@/features/site/SitePage"), "SitePage");
 import type { Permission } from "@/lib/domain";
 
 function FullScreenLoading() {
@@ -144,6 +145,8 @@ const project = createRoute({ getParentRoute: () => app, path: "/projetos/$proje
   component: function P() { const { projectId } = project.useParams(); return <ProjectDetailPage key={projectId} projectId={projectId} />; } });
 const team = createRoute({ getParentRoute: () => app, path: "/equipe", component: () => <RequirePerm perm="team.read"><TeamPage /></RequirePerm> });
 const settings = createRoute({ getParentRoute: () => app, path: "/configuracoes", component: () => <RequirePerm perm="settings.manage"><SettingsPage /></RequirePerm> });
+// O caminho /site/ é o site público publicado junto do app; por isso a tela de edição usa outro endereço.
+const siteSettings = createRoute({ getParentRoute: () => app, path: "/configuracoes-site", component: () => <RequirePerm perm="settings.manage"><SitePage /></RequirePerm> });
 
 const crm = createRoute({ getParentRoute: () => app, path: "/crm", component: () => <RequirePerm perm="crm.read"><CrmPage /></RequirePerm> });
 const proposals = createRoute({ getParentRoute: () => app, path: "/propostas",
@@ -176,7 +179,7 @@ const publicBriefing = createRoute({ getParentRoute: () => root, path: "/briefin
 
 const routeTree = root.addChildren([
   login, forgot, createPassword, reset, invite, signout, firstAccess, portal, portalLink, publicProposal, publicBriefing,
-  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar, briefings, briefing, social, library, brandingHub, assistant]),
+  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, siteSettings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar, briefings, briefing, social, library, brandingHub, assistant]),
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 

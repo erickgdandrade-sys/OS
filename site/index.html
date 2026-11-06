@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-60%20-60%20509.08%20516.8%22%3E%3Crect%20x%3D%22-60%22%20y%3D%22-60%22%20width%3D%22509.08%22%20height%3D%22516.8%22%20fill%3D%22%231F4FE0%22%2F%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M357.4%20387.98C357.4%20387.98%20301.73%20387.98%20301.73%20387.98C290.89%20387.98%20282.72%20387.07%20277.21%20385.23C271.7%20383.39%20266.83%20380.13%20262.6%20375.44C258.38%20370.76%20252.77%20364.01%20245.8%20355.19C245.8%20355.19%2093.14%20162.3%2093.14%20162.3C87.99%20155.69%2083.54%20148.99%2079.77%20142.19C76.01%20135.39%2073.16%20128.37%2071.23%20121.11C69.3%20113.85%2068.34%20106.46%2068.34%2098.92C68.34%2082.76%2071.87%2068.52%2078.95%2056.21C86.02%2043.91%2095.2%2033.57%20106.5%2025.21C117.8%2016.86%20129.97%2010.57%20143.01%206.34C156.05%202.11%20168.64%200%20180.76%200C198.03%200%20213.09%202.94%20225.96%208.82C238.81%2014.7%20248.78%2022.73%20255.85%2032.93C262.92%2043.12%20266.46%2054.75%20266.46%2067.79C266.46%2082.3%20263.38%2095.94%20257.23%20108.71C251.07%20121.48%20244.14%20132.27%20236.43%20141.08C236.43%20141.08%20159.55%20182.14%20159.55%20182.14C159.55%20182.14%20147.15%20167.81%20147.15%20167.81C174.88%20153.85%20194.31%20138.42%20205.43%20121.52C216.54%20104.62%20222.1%2085.97%20222.1%2065.58C222.1%2050.89%20218.1%2039.59%20210.11%2031.69C202.12%2023.79%20191.14%2019.84%20177.18%2019.84C166.16%2019.84%20155.92%2023.7%20146.46%2031.41C136.99%2039.13%20129.37%2048.36%20123.59%2059.11C117.8%2069.85%20114.91%2079.64%20114.91%2088.45C114.91%20101.68%20117.43%20113.16%20122.48%20122.9C127.53%20132.64%20134.84%20143.75%20144.39%20156.24C144.39%20156.24%20256.27%20298.98%20256.27%20298.98C256.27%20298.98%20296.5%20345.27%20296.5%20345.27C299.8%20348.95%20304.21%20353.54%20309.72%20359.05C315.24%20364.56%20320.38%20367.78%20325.16%20368.69C325.16%20368.69%20360.7%20375.03%20360.7%20375.03C360.7%20375.03%20357.4%20387.98%20357.4%20387.98ZM113.53%20180.76C113.53%20180.76%20124.55%20194.82%20124.55%20194.82C110.4%20203.08%2097.73%20211.9%2086.52%20221.27C75.32%20230.64%2066.45%20241.43%2059.93%20253.65C53.41%20265.87%2050.15%20280.43%2050.15%20297.32C50.15%20316.06%2056.35%20331.26%2068.75%20342.93C81.15%20354.6%2096.9%20360.43%20116.01%20360.43C133.09%20360.43%20148.39%20357.9%20161.89%20352.85C175.39%20347.8%20187.88%20340.91%20199.36%20332.18C210.84%20323.46%20222%20313.68%20232.84%20302.84C238.17%20297.51%20244.56%20290.34%20252%20281.34C259.44%20272.34%20266.83%20262.7%20274.18%20252.41C281.52%20242.12%20287.72%20232.2%20292.78%20222.65C297.83%20213.1%20300.54%20205.01%20300.91%20198.4C299.99%20198.03%20298.93%20197.71%20297.74%20197.44C296.54%20197.16%20295.3%20196.93%20294.02%20196.75C294.02%20196.75%20252.41%20186.83%20252.41%20186.83C252.41%20186.83%20255.72%20173.88%20255.72%20173.88C255.72%20173.88%20389.08%20173.88%20389.08%20173.88C389.08%20173.88%20385.78%20186.83%20385.78%20186.83C385.78%20186.83%20352.71%20193.44%20352.71%20193.44C348.67%20194.18%20345.22%20196.06%20342.38%20199.09C339.53%20202.12%20336.63%20205.75%20333.7%20209.97C321.02%20228.9%20307.24%20246.99%20292.36%20264.26C277.48%20281.53%20262.05%20298.25%20246.07%20314.41C232.47%20328.19%20217.87%20341.37%20202.26%20353.95C186.64%20366.54%20170.06%20376.82%20152.52%20384.81C134.97%20392.8%20116.47%20396.8%2097%20396.8C78.99%20396.8%2062.64%20393.26%2047.95%20386.19C33.25%20379.12%2021.58%20369.02%2012.95%20355.88C4.31%20342.75%200%20327.18%200%20309.17C0%20299.44%201.61%20289.24%204.82%20278.59C8.03%20267.93%2012.58%20257.6%2018.46%20247.59C24.34%20237.58%2031.14%20228.81%2038.85%20221.27C38.85%20221.27%20113.53%20180.76%20113.53%20180.76Z%22%2F%3E%3C%2Fsvg%3E">
+<title>ANDRA &amp; GO</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="ANDRA &amp; GO é um estúdio criativo e estratégico em Criciúma. Branding, design e estratégia para marcas com identidade.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Conceito: página editorial assimétrica. Papel e tinta como base, azul granulado só nos momentos de virada. O módulo GO avança com a leitura. */
+:root {
+  --ink: #0B0C12; --paper: #ECECEA; --paper2: #D8D9DC; --white: #FFFFFF;
+  --mut: #565963; --mut-d: #A4A8B4; --rule: #BBBDC4; --rule-d: #33353F;
+  --azul: #1F4FE0; --ceu: #8CC4FF;
+  --sans: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --gut: clamp(16px, 4.2vw, 80px);
+  --sec: clamp(72px, 10vw, 160px);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 18px; line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--paper); }
+h1, h2, h3, p, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+a { color: inherit; }
+em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
+:focus-visible { outline: 2px solid var(--azul); outline-offset: 3px; }
+.on-dark :focus-visible { outline-color: var(--ceu); }
+.wrap { padding-left: max(var(--gut), env(safe-area-inset-left, 0px)); padding-right: max(var(--gut), env(safe-area-inset-right, 0px)); }
+.band { padding-block: var(--sec); }
+.dark { background: var(--ink); color: var(--white); }
+.eyebrow { font-size: 15px; font-weight: 500; color: var(--mut); }
+.dark .eyebrow { color: var(--mut-d); }
+.display { font-weight: 500; letter-spacing: -0.035em; line-height: 1.02; text-wrap: balance; }
+.h2 { font-size: clamp(2.5rem, 6.4vw, 6.5rem); }
+.lede { font-size: clamp(1.15rem, 1.6vw, 1.5rem); line-height: 1.42; max-width: 34em; }
+.mark { background: var(--azul); color: var(--white); padding: 0 .1em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.svg-logo { display: block; fill: currentColor; }
+.svg-logo .amp { fill: var(--amp, currentColor); }
+
+/* Cabeçalho */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--paper); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 68px; }
+.brand { display: block; color: var(--ink); --amp: var(--azul); width: 168px; }
+.nav { display: flex; align-items: center; gap: clamp(16px, 2.4vw, 36px); font-size: 16px; font-weight: 500; }
+.nav a { text-decoration: none; }
+.nav a:not(.btn):hover { color: var(--azul); }
+.btn { display: inline-block; background: var(--ink); color: var(--white); border: 0; font: inherit; font-weight: 600; text-decoration: none; padding: 12px 18px; cursor: pointer; transition: background .2s; }
+.btn { white-space: nowrap; }
+.btn:hover { background: var(--azul); }
+
+/* Abertura */
+.hero { position: relative; background: #0A1666 url(assets/capa.jpg) center / cover; color: var(--white); }
+.hero .wrap { padding-block: clamp(56px, 7vw, 112px) clamp(40px, 4vw, 64px); display: grid; gap: clamp(48px, 6vw, 96px); }
+.hero h1 { font-size: clamp(3.1rem, 7.7vw, 9.4rem); font-weight: 600; letter-spacing: -0.045em; line-height: 1; }
+.hero h1 span { display: block; animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.hero h1 span:nth-child(2) { margin-left: clamp(0px, 5.4vw, 104px); animation-delay: .12s; }
+.hero h1 em { color: var(--ceu); font-weight: 400; }
+@keyframes rise { from { transform: translateY(.22em); } to { transform: none; } }
+.hero-foot { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: end; }
+.hero-foot p { grid-column: 1 / span 6; min-width: 0; }
+.hero-foot div { grid-column: 9 / -1; font-size: 16px; min-width: 0; }
+.hero .btn { background: var(--white); color: var(--ink); margin-top: 14px; }
+.hero .btn:hover { background: var(--ceu); }
+
+/* Manifesto */
+.manifesto .wrap { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(32px, 4vw, 64px) 24px; align-items: start; }
+.manifesto h2 { grid-column: 1 / span 7; grid-row: 1; min-width: 0; line-height: 1.16; }
+.manifesto .txt { grid-column: 1 / span 6; grid-row: 2; display: grid; gap: 20px; min-width: 0; }
+.tiles { grid-column: 8 / -1; grid-row: 1 / span 2; background: var(--ink); padding: clamp(16px, 2.4vw, 36px); display: grid; grid-template-columns: repeat(4, 1fr); aspect-ratio: 1; max-width: 100%; }
+.tile { aspect-ratio: 1; background: var(--paper); transition: transform .7s cubic-bezier(.6,0,.2,1); }
+.tile.q { border-radius: 0 0 100% 0; }
+.tile.c { border-radius: 50%; }
+.tile.blank { background: none; }
+.tile.blue { background: url(assets/post.jpg) center / 400%; }
+
+/* Frentes */
+.pillars { --pg: clamp(56px, 6.4vw, 104px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--pg); margin-top: clamp(40px, 6vw, 88px); }
+.pillar { min-width: 0; display: grid; gap: 14px; align-content: start; position: relative; }
+.pillar h3 { font-size: clamp(2.3rem, 4.8vw, 5rem); font-weight: 500; letter-spacing: -0.035em; line-height: 1.05; }
+.pillar + .pillar::before { content: "&"; position: absolute; left: calc(var(--pg) * -1 + .06em); top: -.02em; font: italic 400 clamp(2.3rem, 4.8vw, 5rem)/1.05 var(--serif); color: var(--azul); }
+.pillar > p { color: var(--mut); min-height: 3em; }
+.pillar ul { border-top: 2px solid var(--ink); padding-top: 14px; display: grid; gap: 8px; }
+.note { margin-top: clamp(40px, 5vw, 72px); padding-top: 24px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: baseline; }
+.note strong { grid-column: 1 / span 6; font-size: clamp(1.6rem, 3vw, 3rem); font-weight: 500; letter-spacing: -0.025em; line-height: 1.1; min-width: 0; }
+.note p { grid-column: 8 / -1; min-width: 0; }
+
+/* Processo */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin-top: clamp(40px, 6vw, 88px); }
+.step { min-width: 0; border-top: 1px solid var(--rule-d); padding-top: 18px; position: relative; display: grid; gap: 10px; align-content: start; }
+.step::before { content: ""; position: absolute; top: -3px; left: 0; width: 56px; height: 5px; background: var(--ceu); }
+.step:nth-child(1) { margin-top: 168px; } .step:nth-child(2) { margin-top: 112px; } .step:nth-child(3) { margin-top: 56px; }
+.step span { font: italic 400 2.6rem/1 var(--serif); color: var(--ceu); }
+.step h3 { font-size: clamp(1.45rem, 2.2vw, 2rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1.12; }
+.step p { color: var(--mut-d); }
+.processo-head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+.processo-head > div { grid-column: 1 / span 10; display: grid; gap: 20px; min-width: 0; }
+.processo-head h2 { text-wrap: wrap; }
+
+/* Diferenciais */
+.rows { margin-top: clamp(32px, 5vw, 72px); border-bottom: 1px solid var(--rule); }
+.row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px 24px; padding-block: clamp(20px, 2.6vw, 36px); border-top: 1px solid var(--rule); align-items: baseline; }
+.row h3 { grid-column: 1 / span 6; font-size: clamp(1.6rem, 3.2vw, 3.1rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1.08; min-width: 0; }
+.row p { grid-column: 8 / -1; min-width: 0; }
+
+/* Para quem */
+.who { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.who-main { background: #0A1666 url(assets/post.jpg) center / cover; color: var(--white); padding-block: var(--sec); padding-left: max(var(--gut), env(safe-area-inset-left, 0px)); padding-right: var(--gut); display: grid; gap: 24px; align-content: end; min-width: 0; }
+.who-main .eyebrow { color: var(--white); }
+.who-side { background: var(--paper2); padding-block: var(--sec); padding-left: var(--gut); padding-right: max(var(--gut), env(safe-area-inset-right, 0px)); display: grid; gap: 20px; align-content: end; min-width: 0; }
+.who-side li { padding-block: 12px; border-top: 1px solid var(--rule); }
+
+/* O que não somos */
+.nots { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 32px 24px; }
+.nots h2 { grid-column: 1 / span 5; min-width: 0; }
+.nots ul { grid-column: 7 / -1; display: grid; gap: 14px; min-width: 0; }
+.nots li { font-size: clamp(1.25rem, 2.1vw, 2rem); line-height: 1.22; letter-spacing: -0.015em; color: var(--mut-d); text-decoration: line-through; text-decoration-color: var(--ceu); text-decoration-thickness: 2px; }
+
+/* Nome */
+.name-big { font-size: clamp(3rem, 11.6vw, 13rem); font-weight: 700; letter-spacing: -0.045em; line-height: .96; margin-top: 24px; }
+.name-big i { font-style: normal; color: var(--rule); }
+.name-big em { color: var(--azul); font-weight: 400; margin-right: .1em; }
+.name-big span { display: block; }
+.name-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; margin-top: clamp(32px, 5vw, 64px); }
+.name-grid > div { min-width: 0; display: grid; gap: 6px; align-content: start; }
+.name-grid > div:nth-child(1) { grid-column: 1 / span 4; } .name-grid > div:nth-child(2) { grid-column: 5 / span 4; } .name-grid > div:nth-child(3) { grid-column: 9 / -1; }
+.name-grid b { font-size: 16px; font-weight: 600; }
+.say { font: italic 400 2rem/1.1 var(--serif); }
+
+/* Contato */
+.contact { background: #0A1666 url(assets/assinatura.jpg) center / cover; color: var(--white); }
+.contact .wrap { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 40px 24px; align-items: start; }
+.contact-copy { grid-column: 1 / span 6; display: grid; gap: 24px; min-width: 0; }
+.contact h2 { font-size: clamp(2.8rem, 7vw, 7.4rem); }
+.contact h2 em { display: block; font-size: .72em; line-height: 1.08; letter-spacing: -0.015em; margin-top: .14em; }
+.contact .addr { font-size: 18px; }
+.contact .addr b { display: block; font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 500; user-select: all; overflow-wrap: anywhere; }
+.form { grid-column: 8 / -1; background: var(--paper); color: var(--ink); padding: clamp(20px, 2.6vw, 36px); display: grid; gap: 16px; min-width: 0; }
+.form label { display: grid; gap: 6px; font-size: 16px; font-weight: 500; }
+.form input, .form textarea { font: inherit; font-weight: 400; color: var(--ink); background: var(--white); border: 1px solid var(--rule); border-radius: 0; padding: 12px; width: 100%; }
+.form textarea { resize: vertical; min-height: 116px; }
+.form .btn { justify-self: start; }
+.form .hint { font-size: 15px; color: var(--mut); }
+.out { display: grid; gap: 12px; border-top: 1px solid var(--rule); padding-top: 16px; }
+.out .acts { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.out a { font-weight: 600; }
+
+/* Rodapé */
+.foot { padding-block: clamp(48px, 6vw, 88px) 56px; }
+.foot .logo-big { width: 100%; color: var(--white); --amp: var(--ceu); }
+.foot-row { display: flex; flex-wrap: wrap; gap: 12px 40px; justify-content: space-between; margin-top: 32px; color: var(--mut-d); font-size: 16px; }
+.foot-row em { color: var(--white); font-size: 1.25rem; }
+
+/* Módulo GO: avança com a leitura */
+.go { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; pointer-events: none; }
+.go i { display: block; width: 7%; height: 100%; background: var(--azul); will-change: transform; }
+
+/* Abertura com textura viva */
+.hero { overflow: hidden; }
+#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero .wrap { position: relative; }
+
+/* Faixa de frases */
+.marquee { overflow: hidden; background: var(--ink); color: var(--white); padding-block: 18px; }
+.track { display: flex; width: max-content; gap: 56px; white-space: nowrap; font: italic 400 clamp(1.6rem, 3vw, 2.8rem)/1.2 var(--serif); will-change: transform; }
+.track span::after { content: "&"; color: var(--ceu); margin-left: 56px; }
+
+/* Revelacao: parte de um estado visivel */
+.rv { transition: transform .9s cubic-bezier(.2,.7,.2,1), opacity .9s; }
+.rv.pre { transform: translateY(34px); opacity: .3; }
+.mark { background-image: linear-gradient(var(--azul), var(--azul)); background-repeat: no-repeat; background-size: 100% 100%; background-color: transparent; transition: background-size .9s cubic-bezier(.6,0,.2,1) .15s, color .4s .3s; }
+.mark.pre { background-size: 0% 100%; color: var(--ink); }
+.row { transition: padding-left .35s, color .35s; }
+.row:hover { padding-left: 18px; color: var(--azul); }
+.pillar li { transition: transform .3s; }
+.pillar li:hover { transform: translateX(8px); }
+.btn { transition: background .2s, transform .25s; }
+.btn:hover { transform: translateY(-2px); }
+[data-view] { animation: fade .5s both; }
+@keyframes fade { from { transform: translateY(14px); } to { transform: none; } }
+
+/* Portfolio */
+.page { min-height: 70vh; }
+.page-h { font-size: clamp(3rem, 8vw, 8.6rem); margin-top: 16px; }
+.work-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; }
+.more { font-weight: 600; }
+.more:hover, .foot-links a:hover { color: var(--azul); }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 24px; margin-top: clamp(32px, 4vw, 56px); }
+.card { min-width: 0; display: grid; gap: 10px; text-decoration: none; }
+.card .pic { position: relative; overflow: hidden; aspect-ratio: 4 / 3; background: var(--paper2); }
+.card img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+.card:hover img { transform: scale(1.06); }
+.card h3 { font-size: clamp(1.4rem, 2vw, 1.9rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1.12; }
+.card p { color: var(--mut); font-size: 16px; }
+.flag { position: absolute; left: 12px; top: 12px; background: var(--white); color: var(--ink); font-size: 14px; font-weight: 600; padding: 4px 10px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
+.chip { font: inherit; font-size: 16px; font-weight: 500; background: none; color: var(--ink); border: 1px solid var(--rule); padding: 8px 14px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.back { display: inline-block; font-weight: 600; margin-bottom: 28px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 32px; color: var(--mut); margin-top: 20px; }
+.hero-img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin-top: 40px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 24px; margin-top: 48px; }
+.two > div { min-width: 0; display: grid; gap: 8px; align-content: start; }
+.two h2 { font-size: clamp(1.5rem, 2.4vw, 2.2rem); font-weight: 500; letter-spacing: -0.02em; }
+.gallery { display: grid; gap: 24px; margin-top: 48px; }
+.gallery img { display: block; width: 100%; }
+
+/* Politicas */
+.doc { max-width: 900px; }
+.doc h1 { font-size: clamp(2.6rem, 6vw, 5.4rem); }
+.doc .upd { color: var(--mut); margin-top: 12px; }
+.doc section { margin-top: 40px; display: grid; gap: 12px; }
+.doc h2 { font-size: 1.6rem; font-weight: 500; letter-spacing: -0.015em; }
+.doc p { max-width: 42em; }
+
+/* Rodape */
+.foot-links nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.foot-links a { color: var(--white); }
+.foot-links a:hover { color: var(--ceu); }
+
+@media (max-width: 860px) {
+  .cards, .two { grid-template-columns: minmax(0, 1fr); }
+  .nav a:not(.btn) { display: none; }
+  .brand { width: 136px; }
+  .nav .btn { padding: 9px 12px; font-size: 15px; }
+  .manifesto h2, .manifesto .txt { grid-row: auto; }
+  .hero-foot p, .hero-foot div, .manifesto h2, .manifesto .txt, .note strong, .note p, .processo-head > div, .row h3, .row p, .nots h2, .nots ul, .contact-copy, .form { grid-column: 1 / -1; }
+  .tiles { grid-column: 1 / -1; grid-row: auto; }
+  .pillars, .steps { grid-template-columns: minmax(0, 1fr); gap: 44px; }
+  .pillar > p { min-height: 0; }
+  .pillar + .pillar::before { position: static; display: block; margin-bottom: -10px; }
+  .step:nth-child(n) { margin-top: 0; }
+  .who { grid-template-columns: minmax(0, 1fr); }
+  .who-main { padding-right: max(var(--gut), env(safe-area-inset-right, 0px)); }
+  .who-side { padding-left: max(var(--gut), env(safe-area-inset-left, 0px)); }
+  .name-grid > div:nth-child(n) { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero h1 span { animation: none; }
+  .tile { transition: none; }
+  .rv, .mark, .row, .card img { transition: none; }
+  [data-view] { animation: none; }
+}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="ANDRA &amp; GO, início"><svg class="svg-logo" viewBox="0 0 1098.9 148.48" role="img" aria-label="ANDRA &amp; GO"><path d="M1068.1 75.18C1068.1 47.18 1055.11 29.18 1032.11 29.18C1009.11 29.18 996.11 47.18 996.11 75.18C996.11 102.98 1009.11 121.38 1032.11 121.38C1055.11 121.38 1068.1 102.98 1068.1 75.18ZM965.31 75.18C965.31 32.18 991.71 3.38 1032.11 3.38C1072.5 3.38 1098.9 32.18 1098.9 75.18C1098.9 117.98 1072.5 147.18 1032.11 147.18C991.71 147.18 965.31 117.98 965.31 75.18ZM826.91 75.78C826.91 29.78 852.51 3.38 891.71 3.38C921.11 3.38 946.71 17.78 950.91 49.58C950.91 49.58 921.31 49.58 921.31 49.58C917.11 33.18 903.31 29.18 891.71 29.18C866.51 29.18 857.31 49.18 857.31 74.78C857.31 100.98 867.11 121.38 892.31 121.38C907.11 121.38 923.71 114.38 923.71 92.18C923.71 92.18 896.71 92.18 896.71 92.18C896.71 92.18 896.71 68.18 896.71 68.18C896.71 68.18 953.51 68.18 953.51 68.18C953.51 68.18 953.51 82.78 953.51 82.78C953.51 125.18 930.51 147.18 892.31 147.18C850.11 147.18 826.91 120.18 826.91 75.78ZM625.59 96.78C625.59 96.78 604.59 35.78 604.59 35.78C604.59 35.78 602.79 35.78 602.79 35.78C602.79 35.78 581.79 96.78 581.79 96.78C581.79 96.78 625.59 96.78 625.59 96.78ZM584.39 5.18C584.39 5.18 622.99 5.18 622.99 5.18C622.99 5.18 673.59 145.18 673.59 145.18C673.59 145.18 642.19 145.18 642.19 145.18C642.19 145.18 633.19 118.98 633.19 118.98C633.19 118.98 574.19 118.98 574.19 118.98C574.19 118.98 565.19 145.18 565.19 145.18C565.19 145.18 533.79 145.18 533.79 145.18C533.79 145.18 584.39 5.18 584.39 5.18ZM497.79 51.98C497.79 39.38 490.59 31.18 474.19 31.18C474.19 31.18 448.59 31.18 448.59 31.18C448.59 31.18 448.59 72.58 448.59 72.58C448.59 72.58 474.19 72.58 474.19 72.58C490.59 72.58 497.79 64.38 497.79 51.98ZM418.59 5.18C418.59 5.18 475.19 5.18 475.19 5.18C512.39 5.18 528.59 24.58 528.59 51.98C528.59 71.78 519.99 87.78 500.59 94.78C500.59 94.78 529.99 145.18 529.99 145.18C529.99 145.18 500.39 145.18 500.39 145.18C500.39 145.18 473.79 98.58 473.79 98.58C473.79 98.58 448.59 98.58 448.59 98.58C448.59 98.58 448.59 145.18 448.59 145.18C448.59 145.18 418.59 145.18 418.59 145.18C418.59 145.18 418.59 5.18 418.59 5.18ZM374.19 75.18C374.19 44.38 364.19 31.18 335.59 31.18C335.59 31.18 315.59 31.18 315.59 31.18C315.59 31.18 315.59 119.18 315.59 119.18C315.59 119.18 335.59 119.18 335.59 119.18C364.19 119.18 374.19 105.98 374.19 75.18ZM285.59 5.18C285.59 5.18 338.59 5.18 338.59 5.18C382.19 5.18 404.79 30.18 404.79 75.18C404.79 120.18 382.19 145.18 338.59 145.18C338.59 145.18 285.59 145.18 285.59 145.18C285.59 145.18 285.59 5.18 285.59 5.18ZM149.6 5.18C149.6 5.18 180.8 5.18 180.8 5.18C180.8 5.18 237.2 97.18 237.2 97.18C237.2 97.18 237.8 97.18 237.8 97.18C237.8 97.18 237.8 5.18 237.8 5.18C237.8 5.18 267.8 5.18 267.8 5.18C267.8 5.18 267.8 145.18 267.8 145.18C267.8 145.18 235.4 145.18 235.4 145.18C235.4 145.18 180.2 54.98 180.2 54.98C180.2 54.98 179.6 54.98 179.6 54.98C179.6 54.98 179.6 145.18 179.6 145.18C179.6 145.18 149.6 145.18 149.6 145.18C149.6 145.18 149.6 5.18 149.6 5.18ZM91.8 96.78C91.8 96.78 70.8 35.78 70.8 35.78C70.8 35.78 69 35.78 69 35.78C69 35.78 48 96.78 48 96.78C48 96.78 91.8 96.78 91.8 96.78ZM50.6 5.18C50.6 5.18 89.2 5.18 89.2 5.18C89.2 5.18 139.8 145.18 139.8 145.18C139.8 145.18 108.4 145.18 108.4 145.18C108.4 145.18 99.4 118.98 99.4 118.98C99.4 118.98 40.4 118.98 40.4 118.98C40.4 118.98 31.4 145.18 31.4 145.18C31.4 145.18 0 145.18 0 145.18C0 145.18 50.6 5.18 50.6 5.18Z"/><path class="amp" d="M811.78 145.18C811.78 145.18 790.95 145.18 790.95 145.18C786.89 145.18 783.83 144.84 781.77 144.15C779.71 143.46 777.89 142.24 776.31 140.49C774.73 138.74 772.63 136.21 770.02 132.91C770.02 132.91 712.89 60.73 712.89 60.73C710.97 58.26 709.3 55.75 707.89 53.21C706.48 50.66 705.42 48.03 704.7 45.32C703.97 42.6 703.61 39.84 703.61 37.02C703.61 30.97 704.94 25.64 707.58 21.03C710.23 16.43 713.67 12.56 717.89 9.43C722.12 6.31 726.68 3.95 731.56 2.37C736.44 0.79 741.15 0 745.68 0C752.14 0 757.78 1.1 762.59 3.3C767.4 5.5 771.13 8.51 773.78 12.32C776.43 16.14 777.75 20.49 777.75 25.37C777.75 30.8 776.6 35.9 774.3 40.68C771.99 45.46 769.4 49.49 766.51 52.79C766.51 52.79 737.74 68.16 737.74 68.16C737.74 68.16 733.1 62.79 733.1 62.79C743.48 57.57 750.75 51.8 754.91 45.47C759.07 39.15 761.15 32.17 761.15 24.54C761.15 19.04 759.65 14.81 756.66 11.86C753.67 8.9 749.57 7.42 744.34 7.42C740.22 7.42 736.39 8.87 732.85 11.75C729.3 14.64 726.45 18.1 724.29 22.12C722.12 26.14 721.04 29.8 721.04 33.1C721.04 38.05 721.98 42.34 723.88 45.99C725.76 49.63 728.5 53.79 732.07 58.46C732.07 58.46 773.94 111.88 773.94 111.88C773.94 111.88 788.99 129.2 788.99 129.2C790.23 130.57 791.88 132.29 793.94 134.35C796 136.42 797.93 137.62 799.71 137.96C799.71 137.96 813.01 140.33 813.01 140.33C813.01 140.33 811.78 145.18 811.78 145.18ZM720.52 67.64C720.52 67.64 724.65 72.9 724.65 72.9C719.35 75.99 714.61 79.29 710.42 82.8C706.23 86.3 702.91 90.34 700.47 94.91C698.03 99.49 696.81 104.93 696.81 111.26C696.81 118.27 699.13 123.96 703.77 128.32C708.41 132.69 714.3 134.87 721.45 134.87C727.84 134.87 733.57 133.93 738.62 132.03C743.67 130.14 748.35 127.57 752.64 124.3C756.94 121.04 761.11 117.38 765.17 113.32C767.16 111.33 769.55 108.65 772.34 105.28C775.12 101.91 777.89 98.3 780.64 94.45C783.39 90.6 785.71 86.89 787.6 83.31C789.49 79.74 790.5 76.71 790.64 74.24C790.29 74.1 789.9 73.98 789.45 73.88C789.01 73.78 788.54 73.69 788.06 73.62C788.06 73.62 772.49 69.91 772.49 69.91C772.49 69.91 773.73 65.06 773.73 65.06C773.73 65.06 823.64 65.06 823.64 65.06C823.64 65.06 822.4 69.91 822.4 69.91C822.4 69.91 810.02 72.38 810.02 72.38C808.51 72.66 807.22 73.36 806.16 74.5C805.09 75.63 804.01 76.99 802.91 78.57C798.17 85.65 793.01 92.42 787.44 98.88C781.88 105.35 776.1 111.6 770.12 117.65C765.03 122.81 759.57 127.74 753.73 132.45C747.88 137.16 741.68 141 735.11 143.99C728.55 146.98 721.62 148.48 714.34 148.48C707.6 148.48 701.48 147.16 695.98 144.51C690.48 141.86 686.12 138.08 682.89 133.17C679.66 128.25 678.04 122.43 678.04 115.69C678.04 112.05 678.64 108.23 679.85 104.25C681.05 100.26 682.75 96.39 684.95 92.65C687.15 88.9 689.69 85.62 692.58 82.8C692.58 82.8 720.52 67.64 720.52 67.64Z"/></svg></a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#fazemos">O que fazemos</a>
+      <a href="#processo">Como trabalhamos</a>
+      <a href="#portfolio">Portfólio</a>
+      <a class="btn" href="#contato">Tem uma ideia?</a>
+    </nav>
+  </div>
+  <div class="go" aria-hidden="true"><i id="go"></i></div>
+</header>
+
+<main id="inicio">
+<div id="v-home" data-view>
+  <section class="hero on-dark" id="hero">
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <h1><span>Ideias com <em>intenção.</em></span><span>Marcas com <em>identidade.</em></span></h1>
+      <div class="hero-foot">
+        <p class="lede">Somos um estúdio criativo e estratégico que conecta ideias, marcas e negócios por meio de branding, design e estratégia.</p>
+        <div>
+          <p>Estúdio Criativo em Criciúma e região</p>
+          <a class="btn" href="#contato">Vamos conversar</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="manifesto band">
+    <div class="wrap">
+      <h2 class="display h2 rv">Sua marca não precisa de <span class="mark">mais do mesmo.</span></h2>
+      <div class="txt">
+        <p class="lede">Criatividade não é apenas produzir algo visualmente interessante. É encontrar maneiras inteligentes de resolver problemas, construir percepções e gerar valor.</p>
+        <p class="lede"><em>A criatividade é o meio. A intenção é o que direciona.</em></p>
+      </div>
+      <div class="tiles" id="tiles" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true"><div class="track" id="track"></div></div>
+
+  <section class="band" id="fazemos">
+    <div class="wrap">
+      <p class="eyebrow">O que fazemos</p>
+      <div class="pillars">
+        <article class="pillar rv">
+          <h3>Branding</h3>
+          <p>Construção e desenvolvimento de marcas.</p>
+          <ul><li>Estratégia de marca</li><li>Posicionamento</li><li>Identidade visual</li><li>Sistemas de identidade</li><li>Personalidade e comunicação de marca</li><li>Rebranding e evolução de marcas</li></ul>
+        </article>
+        <article class="pillar rv">
+          <h3>Design</h3>
+          <p>Soluções visuais e experiências gráficas.</p>
+          <ul><li>Design gráfico</li><li>Direção de arte</li><li>Comunicação visual</li><li>Materiais institucionais e comerciais</li><li>Design para ambientes digitais</li><li>Sistemas gráficos e peças de comunicação</li></ul>
+        </article>
+        <article class="pillar rv">
+          <h3>Estratégia</h3>
+          <p>Comunicação, criatividade e objetivos de negócio conectados.</p>
+          <ul><li>Estratégia de comunicação</li><li>Marketing</li><li>Planejamento estratégico</li><li>Estratégia de conteúdo</li><li>Posicionamento e diferenciação</li><li>Planejamento de presença digital</li></ul>
+        </article>
+      </div>
+      <div class="note">
+        <strong>Três frentes, <em>um só processo.</em></strong>
+        <p>Pensamento, criação e estratégia trabalham juntos para entregar soluções mais completas.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band dark on-dark" id="processo">
+    <div class="wrap">
+      <div class="processo-head">
+        <div>
+          <p class="eyebrow">Como trabalhamos</p>
+          <h2 class="display h2 rv">Antes de desenhar uma marca, precisamos entender <em>o que ela tem a dizer.</em></h2>
+        </div>
+      </div>
+      <ol class="steps" style="list-style:none;padding:0">
+        <li class="step rv"><span>1</span><h3>Entendemos o problema</h3><p>Compreendemos o que realmente precisa ser resolvido antes de definir como resolver.</p></li>
+        <li class="step rv"><span>2</span><h3>Questionamos o caminho</h3><p>Não aceitamos a primeira resposta sem explorar outras possibilidades.</p></li>
+        <li class="step rv"><span>3</span><h3>Identificamos oportunidades</h3><p>Investigamos o contexto para encontrar o que pode ser feito de diferente.</p></li>
+        <li class="step rv"><span>4</span><h3>Desenvolvemos a solução</h3><p>Transformamos pensamento em marcas, experiências e soluções visuais. Cada escolha tem uma justificativa.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band" id="diferenciais">
+    <div class="wrap">
+      <p class="eyebrow">Por que a ANDRA &amp; GO</p>
+      <div class="rows">
+        <div class="row rv"><h3>Pensamento estratégico</h3><p>Compreendemos o contexto e investigamos o problema antes de começar a execução.</p></div>
+        <div class="row rv"><h3>Experimentação</h3><p>Exploramos possibilidades, questionamos padrões e desenvolvemos soluções fora do convencional.</p></div>
+        <div class="row rv"><h3>Visão multidisciplinar</h3><p>Integramos branding, design, comunicação e marketing em um mesmo processo de construção.</p></div>
+        <div class="row rv"><h3>Proximidade</h3><p>Trabalhamos de maneira colaborativa, humana e próxima de cada cliente.</p></div>
+        <div class="row rv"><h3>Criatividade com <em>intenção</em></h3><p>A estética nunca existe desconectada do conceito e dos objetivos do projeto.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="trabalhos">
+    <div class="wrap">
+      <div class="work-head">
+        <h2 class="display h2 rv">Projetos</h2>
+        <a class="more" href="#portfolio">Ver portfólio completo</a>
+      </div>
+      <div class="cards" id="cards-home"></div>
+    </div>
+  </section>
+
+  <section class="contact band on-dark" id="contato">
+    <div class="wrap">
+      <div class="contact-copy">
+        <h2 class="display">Tem uma ideia? <em>Vamos descobrir até onde ela pode chegar.</em></h2>
+        <p class="addr">Escreva para a gente<b id="addr">contato@example.com</b></p>
+      </div>
+      <form class="form" id="form" novalidate>
+        <label for="f-nome">Seu nome<input id="f-nome" name="nome" autocomplete="name" required></label>
+        <label for="f-empresa">Empresa<input id="f-empresa" name="empresa" autocomplete="organization"></label>
+        <label for="f-ideia">O que você quer construir?<textarea id="f-ideia" name="ideia" required></textarea></label>
+        <button class="btn" type="submit">Montar mensagem</button>
+        <p class="hint" id="hint">Vamos montar a mensagem para você enviar pelo seu e-mail.</p>
+        <div class="out" id="out" hidden>
+          <label for="f-msg">Sua mensagem<textarea id="f-msg" readonly></textarea></label>
+          <div class="acts">
+            <button class="btn" type="button" id="copy">Copiar mensagem</button>
+            <a id="mail" href="#contato">Abrir no e-mail</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<div id="v-portfolio" data-view hidden>
+  <section class="band page">
+    <div class="wrap">
+      <p class="eyebrow">Portfólio</p>
+      <h1 class="display page-h">Ideias que <em>ganharam forma.</em></h1>
+      <div class="filters" id="filters"></div>
+      <div class="cards" id="cards-all"></div>
+    </div>
+  </section>
+</div>
+
+<div id="v-projeto" data-view hidden><article class="band page"><div class="wrap" id="projeto"></div></article></div>
+
+<div id="v-doc" data-view hidden><article class="band page"><div class="wrap doc" id="doc"></div></article></div>
+</main>
+
+<footer class="foot dark">
+  <div class="wrap">
+    <div class="logo-big"><svg class="svg-logo" viewBox="0 0 1098.9 148.48" role="img" aria-label="ANDRA &amp; GO"><path d="M1068.1 75.18C1068.1 47.18 1055.11 29.18 1032.11 29.18C1009.11 29.18 996.11 47.18 996.11 75.18C996.11 102.98 1009.11 121.38 1032.11 121.38C1055.11 121.38 1068.1 102.98 1068.1 75.18ZM965.31 75.18C965.31 32.18 991.71 3.38 1032.11 3.38C1072.5 3.38 1098.9 32.18 1098.9 75.18C1098.9 117.98 1072.5 147.18 1032.11 147.18C991.71 147.18 965.31 117.98 965.31 75.18ZM826.91 75.78C826.91 29.78 852.51 3.38 891.71 3.38C921.11 3.38 946.71 17.78 950.91 49.58C950.91 49.58 921.31 49.58 921.31 49.58C917.11 33.18 903.31 29.18 891.71 29.18C866.51 29.18 857.31 49.18 857.31 74.78C857.31 100.98 867.11 121.38 892.31 121.38C907.11 121.38 923.71 114.38 923.71 92.18C923.71 92.18 896.71 92.18 896.71 92.18C896.71 92.18 896.71 68.18 896.71 68.18C896.71 68.18 953.51 68.18 953.51 68.18C953.51 68.18 953.51 82.78 953.51 82.78C953.51 125.18 930.51 147.18 892.31 147.18C850.11 147.18 826.91 120.18 826.91 75.78ZM625.59 96.78C625.59 96.78 604.59 35.78 604.59 35.78C604.59 35.78 602.79 35.78 602.79 35.78C602.79 35.78 581.79 96.78 581.79 96.78C581.79 96.78 625.59 96.78 625.59 96.78ZM584.39 5.18C584.39 5.18 622.99 5.18 622.99 5.18C622.99 5.18 673.59 145.18 673.59 145.18C673.59 145.18 642.19 145.18 642.19 145.18C642.19 145.18 633.19 118.98 633.19 118.98C633.19 118.98 574.19 118.98 574.19 118.98C574.19 118.98 565.19 145.18 565.19 145.18C565.19 145.18 533.79 145.18 533.79 145.18C533.79 145.18 584.39 5.18 584.39 5.18ZM497.79 51.98C497.79 39.38 490.59 31.18 474.19 31.18C474.19 31.18 448.59 31.18 448.59 31.18C448.59 31.18 448.59 72.58 448.59 72.58C448.59 72.58 474.19 72.58 474.19 72.58C490.59 72.58 497.79 64.38 497.79 51.98ZM418.59 5.18C418.59 5.18 475.19 5.18 475.19 5.18C512.39 5.18 528.59 24.58 528.59 51.98C528.59 71.78 519.99 87.78 500.59 94.78C500.59 94.78 529.99 145.18 529.99 145.18C529.99 145.18 500.39 145.18 500.39 145.18C500.39 145.18 473.79 98.58 473.79 98.58C473.79 98.58 448.59 98.58 448.59 98.58C448.59 98.58 448.59 145.18 448.59 145.18C448.59 145.18 418.59 145.18 418.59 145.18C418.59 145.18 418.59 5.18 418.59 5.18ZM374.19 75.18C374.19 44.38 364.19 31.18 335.59 31.18C335.59 31.18 315.59 31.18 315.59 31.18C315.59 31.18 315.59 119.18 315.59 119.18C315.59 119.18 335.59 119.18 335.59 119.18C364.19 119.18 374.19 105.98 374.19 75.18ZM285.59 5.18C285.59 5.18 338.59 5.18 338.59 5.18C382.19 5.18 404.79 30.18 404.79 75.18C404.79 120.18 382.19 145.18 338.59 145.18C338.59 145.18 285.59 145.18 285.59 145.18C285.59 145.18 285.59 5.18 285.59 5.18ZM149.6 5.18C149.6 5.18 180.8 5.18 180.8 5.18C180.8 5.18 237.2 97.18 237.2 97.18C237.2 97.18 237.8 97.18 237.8 97.18C237.8 97.18 237.8 5.18 237.8 5.18C237.8 5.18 267.8 5.18 267.8 5.18C267.8 5.18 267.8 145.18 267.8 145.18C267.8 145.18 235.4 145.18 235.4 145.18C235.4 145.18 180.2 54.98 180.2 54.98C180.2 54.98 179.6 54.98 179.6 54.98C179.6 54.98 179.6 145.18 179.6 145.18C179.6 145.18 149.6 145.18 149.6 145.18C149.6 145.18 149.6 5.18 149.6 5.18ZM91.8 96.78C91.8 96.78 70.8 35.78 70.8 35.78C70.8 35.78 69 35.78 69 35.78C69 35.78 48 96.78 48 96.78C48 96.78 91.8 96.78 91.8 96.78ZM50.6 5.18C50.6 5.18 89.2 5.18 89.2 5.18C89.2 5.18 139.8 145.18 139.8 145.18C139.8 145.18 108.4 145.18 108.4 145.18C108.4 145.18 99.4 118.98 99.4 118.98C99.4 118.98 40.4 118.98 40.4 118.98C40.4 118.98 31.4 145.18 31.4 145.18C31.4 145.18 0 145.18 0 145.18C0 145.18 50.6 5.18 50.6 5.18Z"/><path class="amp" d="M811.78 145.18C811.78 145.18 790.95 145.18 790.95 145.18C786.89 145.18 783.83 144.84 781.77 144.15C779.71 143.46 777.89 142.24 776.31 140.49C774.73 138.74 772.63 136.21 770.02 132.91C770.02 132.91 712.89 60.73 712.89 60.73C710.97 58.26 709.3 55.75 707.89 53.21C706.48 50.66 705.42 48.03 704.7 45.32C703.97 42.6 703.61 39.84 703.61 37.02C703.61 30.97 704.94 25.64 707.58 21.03C710.23 16.43 713.67 12.56 717.89 9.43C722.12 6.31 726.68 3.95 731.56 2.37C736.44 0.79 741.15 0 745.68 0C752.14 0 757.78 1.1 762.59 3.3C767.4 5.5 771.13 8.51 773.78 12.32C776.43 16.14 777.75 20.49 777.75 25.37C777.75 30.8 776.6 35.9 774.3 40.68C771.99 45.46 769.4 49.49 766.51 52.79C766.51 52.79 737.74 68.16 737.74 68.16C737.74 68.16 733.1 62.79 733.1 62.79C743.48 57.57 750.75 51.8 754.91 45.47C759.07 39.15 761.15 32.17 761.15 24.54C761.15 19.04 759.65 14.81 756.66 11.86C753.67 8.9 749.57 7.42 744.34 7.42C740.22 7.42 736.39 8.87 732.85 11.75C729.3 14.64 726.45 18.1 724.29 22.12C722.12 26.14 721.04 29.8 721.04 33.1C721.04 38.05 721.98 42.34 723.88 45.99C725.76 49.63 728.5 53.79 732.07 58.46C732.07 58.46 773.94 111.88 773.94 111.88C773.94 111.88 788.99 129.2 788.99 129.2C790.23 130.57 791.88 132.29 793.94 134.35C796 136.42 797.93 137.62 799.71 137.96C799.71 137.96 813.01 140.33 813.01 140.33C813.01 140.33 811.78 145.18 811.78 145.18ZM720.52 67.64C720.52 67.64 724.65 72.9 724.65 72.9C719.35 75.99 714.61 79.29 710.42 82.8C706.23 86.3 702.91 90.34 700.47 94.91C698.03 99.49 696.81 104.93 696.81 111.26C696.81 118.27 699.13 123.96 703.77 128.32C708.41 132.69 714.3 134.87 721.45 134.87C727.84 134.87 733.57 133.93 738.62 132.03C743.67 130.14 748.35 127.57 752.64 124.3C756.94 121.04 761.11 117.38 765.17 113.32C767.16 111.33 769.55 108.65 772.34 105.28C775.12 101.91 777.89 98.3 780.64 94.45C783.39 90.6 785.71 86.89 787.6 83.31C789.49 79.74 790.5 76.71 790.64 74.24C790.29 74.1 789.9 73.98 789.45 73.88C789.01 73.78 788.54 73.69 788.06 73.62C788.06 73.62 772.49 69.91 772.49 69.91C772.49 69.91 773.73 65.06 773.73 65.06C773.73 65.06 823.64 65.06 823.64 65.06C823.64 65.06 822.4 69.91 822.4 69.91C822.4 69.91 810.02 72.38 810.02 72.38C808.51 72.66 807.22 73.36 806.16 74.5C805.09 75.63 804.01 76.99 802.91 78.57C798.17 85.65 793.01 92.42 787.44 98.88C781.88 105.35 776.1 111.6 770.12 117.65C765.03 122.81 759.57 127.74 753.73 132.45C747.88 137.16 741.68 141 735.11 143.99C728.55 146.98 721.62 148.48 714.34 148.48C707.6 148.48 701.48 147.16 695.98 144.51C690.48 141.86 686.12 138.08 682.89 133.17C679.66 128.25 678.04 122.43 678.04 115.69C678.04 112.05 678.64 108.23 679.85 104.25C681.05 100.26 682.75 96.39 684.95 92.65C687.15 88.9 689.69 85.62 692.58 82.8C692.58 82.8 720.52 67.64 720.52 67.64Z"/></svg></div>
+    <div class="foot-row">
+      <em>Ideias com intenção. Marcas com identidade.</em>
+      <span>Estúdio Criativo · Criciúma e região · 2026</span>
+    </div>
+    <div class="foot-row foot-links">
+      <nav id="redes" aria-label="Redes sociais"></nav>
+      <nav aria-label="Políticas"><a href="#privacidade">Política de Privacidade</a><a href="#cookies">Política de Cookies</a></nav>
+    </div>
+  </div>
+</footer>
+
+<script type="application/json" id="cfg">{"empresa":{"nome":"ANDRA & GO","razaoSocial":"[Razão social]","cnpj":"[CNPJ]","cidade":"Criciúma, SC"},"contato":{"email":"contato@example.com"},"redes":[{"nome":"Instagram","url":"https://www.instagram.com/"},{"nome":"Behance","url":"https://www.behance.net/"},{"nome":"LinkedIn","url":"https://www.linkedin.com/"}],"textura":{"intensidade":1,"velocidade":1},"frases":["Criatividade precisa de intenção","Ideias boas merecem ser bem construídas","Pensar diferente é apenas o começo","Toda identidade começa com uma ideia","O próximo passo começa com uma boa pergunta"],"portfolio":[{"slug":"exemplo-identidade","exemplo":true,"titulo":"Projeto de exemplo 1","cliente":"Nome do cliente","ano":"2026","categorias":["Branding"],"resumo":"Exemplo de como um projeto de identidade aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/capa.jpg","imagens":["assets/post.jpg","assets/assinatura.jpg"],"link":""},{"slug":"exemplo-design","exemplo":true,"titulo":"Projeto de exemplo 2","cliente":"Nome do cliente","ano":"2026","categorias":["Design"],"resumo":"Exemplo de como um projeto de design aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/post.jpg","imagens":["assets/assinatura.jpg"],"link":""},{"slug":"exemplo-estrategia","exemplo":true,"titulo":"Projeto de exemplo 3","cliente":"Nome do cliente","ano":"2026","categorias":["Estratégia"],"resumo":"Exemplo de como um projeto de estratégia aparece no portfólio. Troque este texto no sistema.","desafio":"Descreva aqui o problema que o cliente precisava resolver.","solucao":"Descreva aqui o caminho escolhido e o que foi entregue.","capa":"assets/assinatura.jpg","imagens":["assets/capa.jpg"],"link":""}],"politicas":{"privacidade":{"titulo":"Política de Privacidade","atualizadaEm":"6 de novembro de 2026","secoes":[{"titulo":"Quem somos","paragrafos":["Este site é mantido por {{razaoSocial}}, inscrita no CNPJ {{cnpj}}, com sede em {{cidade}} (ANDRA & GO). Tratamos dados pessoais de acordo com a Lei Geral de Proteção de Dados (Lei 13.709/2018)."]},{"titulo":"Quais dados tratamos","paragrafos":["Dados que você nos envia por e-mail ou outro canal de contato: nome, empresa, endereço de e-mail e o conteúdo da mensagem.","O formulário deste site não envia nem guarda nada em nossos servidores. Ele apenas monta um texto no seu navegador, e o envio acontece pelo seu próprio e-mail, se você decidir enviar.","Dados técnicos, como endereço IP e informações do navegador, podem ser registrados pelo serviço de hospedagem e pelo Google Fonts, usado para carregar as fontes do site."]},{"titulo":"Para que usamos","paragrafos":["Usamos seus dados para responder ao seu contato, preparar propostas e manter a relação comercial com você. A base legal é o legítimo interesse ou a execução de procedimentos preliminares a um contrato, conforme o caso."]},{"titulo":"Com quem compartilhamos","paragrafos":["Não vendemos dados pessoais. Podemos compartilhá-los com fornecedores necessários à operação, como serviços de e-mail e hospedagem, e com autoridades quando a lei exigir."]},{"titulo":"Por quanto tempo guardamos","paragrafos":["Guardamos os dados pelo tempo necessário para atender à finalidade do contato e cumprir obrigações legais. Depois disso, eles são eliminados ou anonimizados."]},{"titulo":"Seus direitos","paragrafos":["Você pode pedir confirmação do tratamento, acesso, correção, anonimização, portabilidade ou eliminação dos seus dados, além de informações sobre compartilhamento. Para isso, escreva para {{email}}."]},{"titulo":"Alterações","paragrafos":["Podemos atualizar esta política. A data da última atualização fica sempre no topo desta página."]}]},"cookies":{"titulo":"Política de Cookies","atualizadaEm":"6 de novembro de 2026","secoes":[{"titulo":"O que são cookies","paragrafos":["Cookies são pequenos arquivos que um site guarda no seu navegador para lembrar informações entre uma visita e outra."]},{"titulo":"Como este site usa cookies","paragrafos":["Hoje este site não usa cookies próprios, nem cookies de publicidade ou de análise de audiência."]},{"titulo":"Serviços de terceiros","paragrafos":["As fontes do site são carregadas pelo Google Fonts, que recebe dados técnicos da sua conexão, como o endereço IP. Links para Instagram, Behance e LinkedIn levam a sites externos, que têm políticas próprias."]},{"titulo":"Como controlar","paragrafos":["Você pode bloquear ou apagar cookies nas configurações do seu navegador a qualquer momento."]},{"titulo":"Alterações","paragrafos":["Se passarmos a usar cookies de análise ou publicidade, atualizaremos esta política e pediremos seu consentimento antes de ativá-los. Dúvidas podem ser enviadas para {{email}}."]}]}}}</script>
+<script>window.SITE = JSON.parse(document.getElementById('cfg').textContent);</script>
+<script>
+(function () {
+  // Preenchidos em scripts/build-site.mjs. Sem eles, o site usa site-config.json.
+  var API_URL = '__SUPABASE_URL__', API_KEY = '__SUPABASE_ANON_KEY__';
+  var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
+  function safeImg(u) { return /^(https?:\/\/|assets\/)/i.test(u || '') ? u : ''; }
+  function fill(s) {
+    var e = SITE.empresa, m = { razaoSocial: e.razaoSocial, cnpj: e.cnpj, cidade: e.cidade, email: SITE.contato.email };
+    return String(s).replace(/\{\{(\w+)\}\}/g, function (a, k) { return m[k] != null ? m[k] : a; });
+  }
+
+  function card(p) {
+    var a = el('a', 'card rv'); a.href = '#projeto-' + encodeURIComponent(p.slug);
+    var pic = el('div', 'pic'), img = el('img');
+    img.src = safeImg(p.capa); img.alt = 'Capa do projeto ' + p.titulo; img.loading = 'lazy';
+    pic.appendChild(img);
+    if (p.exemplo) pic.appendChild(el('span', 'flag', 'Exemplo'));
+    a.appendChild(pic); a.appendChild(el('h3', '', p.titulo));
+    a.appendChild(el('p', '', [p.cliente, (p.categorias || []).join(', '), p.ano].filter(Boolean).join(' · ')));
+    return a;
+  }
+  function renderCards(box, list) { box.textContent = ''; list.forEach(function (p) { box.appendChild(card(p)); }); }
+  var filtro = 'Todos';
+  function renderPortfolio() {
+    var all = SITE.portfolio || [], cats = ['Todos'], f = $('filters');
+    all.forEach(function (p) { (p.categorias || []).forEach(function (c) { if (cats.indexOf(c) < 0) cats.push(c); }); });
+    f.textContent = '';
+    cats.forEach(function (c) {
+      var b = el('button', 'chip', c); b.type = 'button'; b.setAttribute('aria-pressed', c === filtro);
+      b.addEventListener('click', function () { filtro = c; renderPortfolio(); });
+      f.appendChild(b);
+    });
+    renderCards($('cards-all'), all.filter(function (p) { return filtro === 'Todos' || (p.categorias || []).indexOf(filtro) > -1; }));
+  }
+  function renderProjeto(slug) {
+    var p = (SITE.portfolio || []).filter(function (x) { return x.slug === slug; })[0], b = $('projeto');
+    b.textContent = '';
+    var back = el('a', 'back', 'Voltar ao portfólio'); back.href = '#portfolio'; b.appendChild(back);
+    if (!p) { b.appendChild(el('h1', 'display page-h', 'Projeto não encontrado')); return; }
+    if (p.exemplo) { var w = el('p', 'eyebrow', 'Projeto de exemplo'); b.appendChild(w); }
+    b.appendChild(el('h1', 'display page-h', p.titulo));
+    var m = el('div', 'meta'); [p.cliente, (p.categorias || []).join(', '), p.ano].filter(Boolean).forEach(function (x) { m.appendChild(el('span', '', x)); }); b.appendChild(m);
+    var c = el('img', 'hero-img'); c.src = safeImg(p.capa); c.alt = 'Capa do projeto ' + p.titulo; b.appendChild(c);
+    if (p.resumo) { var r = el('p', 'lede', p.resumo); r.style.marginTop = '40px'; b.appendChild(r); }
+    var two = el('div', 'two');
+    [['O desafio', p.desafio], ['A solução', p.solucao]].forEach(function (x) { if (!x[1]) return; var d = el('div'); d.appendChild(el('h2', '', x[0])); d.appendChild(el('p', '', x[1])); two.appendChild(d); });
+    b.appendChild(two);
+    var g = el('div', 'gallery'); (p.imagens || []).forEach(function (u, i) { var im = el('img'); im.src = safeImg(u); im.alt = p.titulo + ', imagem ' + (i + 1); im.loading = 'lazy'; g.appendChild(im); }); b.appendChild(g);
+    if (safeUrl(p.link)) { var l = el('a', 'btn', 'Ver projeto'); l.href = p.link; l.target = '_blank'; l.rel = 'noopener'; l.style.marginTop = '32px'; b.appendChild(l); }
+  }
+  function renderDoc(k) {
+    var d = SITE.politicas[k], b = $('doc'); b.textContent = '';
+    b.appendChild(el('h1', 'display', d.titulo));
+    b.appendChild(el('p', 'upd', 'Última atualização: ' + d.atualizadaEm));
+    d.secoes.forEach(function (s) { var x = el('section'); x.appendChild(el('h2', '', s.titulo)); s.paragrafos.forEach(function (p) { x.appendChild(el('p', '', fill(p))); }); b.appendChild(x); });
+  }
+  function renderCommon() {
+    $('addr').textContent = SITE.contato.email;
+    var r = $('redes'); r.textContent = '';
+    (SITE.redes || []).forEach(function (n) { var u = safeUrl(n.url); if (!u) return; var a = el('a', '', n.nome); a.href = u; a.target = '_blank'; a.rel = 'noopener'; r.appendChild(a); });
+    var tr = $('track'); tr.textContent = '';
+    var fr = SITE.frases || []; for (var i = 0; i < 4; i++) fr.forEach(function (x) { tr.appendChild(el('span', '', x)); });
+    renderCards($('cards-home'), (SITE.portfolio || []).slice(0, 3));
+  }
+
+  function show(id) { document.querySelectorAll('[data-view]').forEach(function (v) { v.hidden = v.id !== id; }); }
+  function route() {
+    var h = decodeURIComponent(location.hash.slice(1));
+    if (h === 'portfolio') { show('v-portfolio'); renderPortfolio(); scrollTo(0, 0); }
+    else if (h.indexOf('projeto-') === 0) { show('v-projeto'); renderProjeto(h.slice(8)); scrollTo(0, 0); }
+    else if (h === 'privacidade' || h === 'cookies') { show('v-doc'); renderDoc(h); scrollTo(0, 0); }
+    else { show('v-home'); var t = h && document.getElementById(h); if (t) t.scrollIntoView(); else if (!h) scrollTo(0, 0); }
+    dispatchEvent(new Event('resize')); reveal();
+  }
+  addEventListener('hashchange', route);
+
+  // Revelacao ao rolar
+  var io = 'IntersectionObserver' in window && !calm ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.remove('pre'); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -8% 0px' }) : null;
+  function reveal() {
+    if (!io) return;
+    document.querySelectorAll('.rv, .mark').forEach(function (e, i) {
+      if (e.dataset.seen) return; e.dataset.seen = 1;
+      if (e.getBoundingClientRect().top < innerHeight * 0.92) return;
+      var sib = e.parentNode ? [].indexOf.call(e.parentNode.children, e) : 0;
+      e.style.transitionDelay = Math.min(sib, 4) * 90 + 'ms';
+      e.classList.add('pre'); io.observe(e);
+    });
+  }
+
+  // Faixa que acelera com a rolagem
+  var x = 0, last = scrollY, boost = 0, tr = $('track');
+  function marquee() {
+    var dy = Math.abs(scrollY - last); last = scrollY; boost = Math.min(14, boost * .92 + dy * .12);
+    x -= .7 + boost; var w = tr.scrollWidth / 4; if (w && -x > w) x += w;
+    tr.style.transform = 'translateX(' + x + 'px)';
+    requestAnimationFrame(marquee);
+  }
+  if (!calm) marquee();
+
+  // Paineis de modulos acompanham a rolagem
+  var tiles = $('tiles');
+  if (!calm) addEventListener('scroll', function () {
+    if ($('v-home').hidden) return;
+    var r = tiles.getBoundingClientRect(), p = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+    tiles.style.transform = 'translateY(' + (p * -36) + 'px)';
+  }, { passive: true });
+
+  // Textura da abertura deformada em WebGL
+  function liquid() {
+    var c = $('gl'), gl = c.getContext('webgl', { antialias: false, alpha: false });
+    if (!gl) { c.hidden = true; return; }
+    var VS = 'attribute vec2 a;varying vec2 v;void main(){v=a*.5+.5;gl_Position=vec4(a,0.,1.);}';
+    var FS = 'precision highp float;varying vec2 v;uniform sampler2D T;uniform vec2 R,M;uniform float t,S,H;' +
+      'float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}' +
+      'float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}' +
+      'float b(vec2 p){return n(p)*.6+n(p*2.1+3.)*.3+n(p*4.3+7.)*.1;}' +
+      'void main(){float as=R.x/R.y;vec2 p=v;p.x*=as;' +
+      'vec2 q=vec2(b(p*1.6+t),b(p*1.6+vec2(5.2,1.3)-t));' +
+      'vec2 r=vec2(b(p*1.6+q*3.+vec2(1.7,9.2)+t*1.3),b(p*1.6+q*3.+vec2(8.3,2.8)-t));' +
+      'vec2 m=M;m.x*=as;vec2 d=p-m;float g=exp(-dot(d,d)*7.)*H;' +
+      'vec2 w=(r-.5)*.55*S+vec2(-d.y,d.x)*g*.7-d*g*.35;' +
+      'vec2 uv=v+w/vec2(as,1.);uv.y=1.-uv.y;uv=abs(mod(uv+1.,2.)-1.);' +
+      'vec3 c=texture2D(T,uv).rgb;' +
+      'float l=smoothstep(.42,.78,r.x+g*.25);' +
+      'c=mix(c,vec3(.13,.40,.86),l*.62);c=mix(c,vec3(.03,.05,.32),smoothstep(.55,.2,r.y)*.55);' +
+      'c+=(h(floor(gl_FragCoord.xy))-.5)*.075;gl_FragColor=vec4(c,1.);}';
+    function sh(ty, src) { var s = gl.createShader(ty); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+    var pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr); gl.useProgram(pr);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,3,-1,-1,3]), gl.STATIC_DRAW);
+    var A = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(A); gl.vertexAttribPointer(A, 2, gl.FLOAT, false, 0, 0);
+    var U = {}; ['R','M','t','S','H'].forEach(function (k) { U[k] = gl.getUniformLocation(pr, k); });
+    var mx = .7, my = .5, tx = .7, ty = .5, hot = 0, hotT = 0, vis = true, hero = $('hero');
+    hero.addEventListener('pointermove', function (e) { var r = hero.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width; ty = 1 - (e.clientY - r.top) / r.height; hotT = 1; });
+    hero.addEventListener('pointerleave', function () { hotT = 0; });
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (e) { vis = e[0].isIntersecting; }).observe(hero);
+    function size() { var d = Math.min(devicePixelRatio || 1, 1.5), w = Math.round(c.clientWidth * d), h = Math.round(c.clientHeight * d); if (c.width !== w || c.height !== h) { c.width = w; c.height = h; gl.viewport(0, 0, w, h); } }
+    var img = new Image();
+    img.onload = function () {
+      gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      var t0 = performance.now();
+      function frame(now) {
+        var cfg = SITE.textura || {}, I = cfg.intensidade == null ? 1 : +cfg.intensidade, V = cfg.velocidade == null ? 1 : +cfg.velocidade;
+        if (vis && !document.hidden) {
+          size(); mx += (tx - mx) * .06; my += (ty - my) * .06; hot += (hotT - hot) * .05;
+          gl.uniform2f(U.R, c.width, c.height); gl.uniform2f(U.M, mx, my);
+          gl.uniform1f(U.t, (now - t0) * .00011 * V + 4); gl.uniform1f(U.S, I); gl.uniform1f(U.H, hot * I);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+        }
+        if (!calm) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    };
+    img.src = 'assets/capa.jpg';
+  }
+  try { liquid(); } catch (e) { $('gl').hidden = true; }
+
+  renderCommon(); route();
+  function load() {
+    if (API_URL.indexOf('http') === 0) {
+      return fetch(API_URL + '/rest/v1/site_settings?select=content&limit=1', { cache: 'no-store', headers: { apikey: API_KEY, Authorization: 'Bearer ' + API_KEY } })
+        .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .then(function (rows) { return rows[0] && rows[0].content; });
+    }
+    return fetch('site-config.json', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw 0; return r.json(); });
+  }
+  load().then(function (d) {
+    if (!d || !Object.keys(d).length) return;
+    window.SITE = Object.assign({}, SITE, d); renderCommon(); route();
+  }).catch(function () {});
+})();
+</script>
+<script>
+(function () {
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Módulo GO
+  var go = document.getElementById('go');
+  function move() {
+    var max = document.documentElement.scrollHeight - innerHeight;
+    var p = max > 0 ? Math.min(1, scrollY / max) : 0;
+    go.style.transform = 'translateX(' + (p * (innerWidth - go.offsetWidth)) + 'px)';
+  }
+  addEventListener('scroll', move, { passive: true }); addEventListener('resize', move); move();
+
+  // Módulos que se conectam
+  var map = ['q0','.','q1','B'], rows = [map, ['q3','C','q2','.'], ['s','.','q0','q1'], ['q1','q3','Q2','c']];
+  var box = document.getElementById('tiles'), turn = [];
+  rows.forEach(function (r) { r.forEach(function (k) {
+    var d = document.createElement('div'); d.className = 'tile';
+    var deg = 0;
+    if (k === '.') d.className += ' blank';
+    else if (k === 'B') d.className += ' blue';
+    else if (k === 'C') d.className += ' c blue';
+    else if (k === 'c') d.className += ' c';
+    else if (k === 'Q2') { d.className += ' q blue'; deg = 180; }
+    else if (k.charAt(0) === 'q') { d.className += ' q'; deg = 90 * +k.charAt(1); }
+    d.style.transform = 'rotate(' + deg + 'deg)'; d._deg = deg;
+    box.appendChild(d);
+    if (d.className.indexOf(' q') > -1) turn.push(d);
+  }); });
+  function spin(d) { d._deg += 90; d.style.transform = 'rotate(' + d._deg + 'deg)'; }
+  if (!calm) {
+    setInterval(function () { if (!document.hidden) spin(turn[Math.floor(Math.random() * turn.length)]); }, 1400);
+  }
+
+  // Mensagem de contato: nada é enviado por esta página
+  var form = document.getElementById('form'), out = document.getElementById('out'), msg = document.getElementById('f-msg'), hint = document.getElementById('hint');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var nome = form.nome.value.trim(), emp = form.empresa.value.trim(), ideia = form.ideia.value.trim();
+    if (!nome || !ideia) { hint.textContent = 'Preencha seu nome e conte um pouco da sua ideia.'; (nome ? form.ideia : form.nome).focus(); return; }
+    var body = 'Olá, ANDRA & GO.\n\nMeu nome é ' + nome + '.' + (emp ? '\nEmpresa: ' + emp + '.' : '') + '\n\n' + ideia;
+    msg.value = body;
+    document.getElementById('mail').href = 'mailto:' + SITE.contato.email + '?subject=' + encodeURIComponent('Tenho uma ideia') + '&body=' + encodeURIComponent(body);
+    out.hidden = false;
+    hint.textContent = 'Mensagem pronta. Copie e envie para ' + SITE.contato.email + '.';
+  });
+  var copy = document.getElementById('copy');
+  copy.addEventListener('click', function () {
+    function done() { copy.textContent = 'Copiada'; setTimeout(function () { copy.textContent = 'Copiar mensagem'; }, 1800); }
+    function fallback() { msg.focus(); msg.select(); hint.textContent = 'Texto selecionado. Use Ctrl+C para copiar.'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg.value).then(done, fallback); else fallback();
+  });
+})();
+</script>
+
+</body>
+</html>

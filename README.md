@@ -45,6 +45,10 @@ Passo a passo completo (banco, Edge Functions, primeiro administrador, deploy): 
 | `npm test` | Testes unitários (Vitest) |
 | `npm run test:db` | Migrations + testes de RLS num Postgres descartável |
 
+## Site institucional
+
+`site/` é o site público da ANDRA & GO (HTML estático), publicado junto do app em `/site/` pelo `scripts/build-site.mjs`. Portfólio, políticas, redes e contato são editados em **Site**, no menu do sistema, e ficam em `public.site_settings`. Sem esse conteúdo, o site usa `site/site-config.json`.
+
 ## Extras
 
 `extras/fervo-landing/` guarda a landing page do estúdio Fervo criada anteriormente nesta conversa (HTML estático, independente do sistema).
