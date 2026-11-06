@@ -3,6 +3,9 @@
 // devolve SOMENTE os escopos liberados no link.
 // POST { action: 'view' }                          → dados do projeto
 // POST { action: 'decide', approval_id, decision, comment?, name } → resposta de aprovação
+// Escopo "requests" (O que precisamos de você): request_answer, request_upload_url,
+// request_upload_done, briefing_save, gallery_select — ver _shared/client_actions.ts.
+import { buildClientActions, handleClientAction } from "../_shared/client_actions.ts";
 import { adminClient, handler, HttpError, isUuid, json, sha256 } from "../_shared/http.ts";
 
 Deno.serve(handler(async (req) => {
@@ -35,6 +38,13 @@ Deno.serve(handler(async (req) => {
     return json(req, 200, { ok: true });
   }
 
+  if (typeof body.action === "string" && body.action !== "view" && body.action !== "decide") {
+    if (!scopes.has("requests")) throw new HttpError(403, "requests_not_allowed");
+    const result = await handleClientAction(admin, link, body);
+    if (result === null) throw new HttpError(400, "invalid_action");
+    return json(req, 200, result);
+  }
+
   if (body.action !== "view") throw new HttpError(400, "invalid_action");
   await admin.from("share_links").update({ last_used_at: new Date().toISOString(), use_count: link.use_count + 1 }).eq("id", link.id);
 
@@ -63,6 +73,9 @@ Deno.serve(handler(async (req) => {
       .eq("project_id", link.project_id).neq("status", "cancelled").order("created_at", { ascending: false });
     out.approvals = approvals ?? [];
     out.allow_approvals = link.allow_approvals;
+  }
+  if (scopes.has("requests")) {
+    out.client_actions = await buildClientActions(admin, link, { approvals: scopes.has("approvals") && link.allow_approvals });
   }
   return json(req, 200, out);
 }));

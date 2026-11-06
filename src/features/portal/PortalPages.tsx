@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { categoryLabel, errorMessage, projectStatusLabel, projectStatusTone, taskStatusLabel, type ProjectCategory, type ProjectStatus, type TaskStatus } from "@/lib/domain";
 import { date, dateTime, money } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
+import { ClientActionsSection, type ClientActionsData } from "./ClientActions";
 
 /* Portal externo: layout próprio, sem nada do painel interno.
    Dados vêm só das views portal_* (RLS + colunas seguras) ou da Edge Function `portal`. */
@@ -178,7 +179,7 @@ export function PortalHome() {
 /* --------------------------------------- Acesso por link seguro (sem conta) */
 type LinkData = { project: { name: string; category: ProjectCategory; status: ProjectStatus; start_date: string | null; due_date: string | null; description: string | null; organizations: { name: string } | null };
   scopes: string[]; progress?: number; tasks?: { id: string; title: string; status: string; due_date: string | null }[];
-  files?: { id: string; name: string; url: string | null; created_at: string }[]; approvals?: PortalApproval[]; allow_approvals?: boolean };
+  files?: { id: string; name: string; url: string | null; created_at: string }[]; approvals?: PortalApproval[]; allow_approvals?: boolean; client_actions?: ClientActionsData };
 
 export function PortalLinkPage() {
   const toast = useToast();
@@ -205,8 +206,9 @@ export function PortalLinkPage() {
         <Card><div className="flex flex-wrap items-center gap-2"><h1 className="text-xl font-semibold">{d.project.name}</h1><Badge tone={projectStatusTone[d.project.status]} dot>{projectStatusLabel[d.project.status]}</Badge></div>
           <p className="mt-1 text-sm text-fg-3">{categoryLabel[d.project.category]} · {date(d.project.start_date)} → {date(d.project.due_date)}</p>
           {d.progress != null && <div className="mt-3 flex items-center gap-3"><Progress value={d.progress} /><span className="text-sm tabular">{d.progress}%</span></div>}</Card>
+        {d.client_actions && <ClientActionsSection data={d.client_actions} call={call} onChanged={() => q.refetch()} approvalsArea={d.approvals ? "aprovacoes" : undefined} />}
         {d.approvals && (
-          <Card><CardHeader title="Aprovações" />
+          <Card><div id="aprovacoes" className="scroll-mt-4" /><CardHeader title="Aprovações" />
             {d.allow_approvals && d.approvals.some((a) => a.status === "pending") && (
               <Field label="Seu nome (registrado junto com a resposta)" htmlFor="pl-name" className="mb-3"><Input id="pl-name" value={name} onChange={(e) => setName(e.target.value)} /></Field>)}
             {d.approvals.length ? <ul className="grid gap-3">{d.approvals.map((a) => <ApprovalCard key={a.id} a={a} onDecide={d.allow_approvals ? async (decision, comment) => {

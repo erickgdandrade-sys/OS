@@ -67,6 +67,12 @@ Legenda: ✅ feito e testado · 🟡 banco pronto, telas pendentes · ⏳ penden
 
 Branding (briefing interno e formulário público para o cliente), pesquisa competitiva, naming com matriz de pontuação configurável e etapa de validação de disponibilidade (o sistema nunca declara disponibilidade jurídica sem registro de pesquisa — reforçado por constraint), moodboards em canvas (Konva), social media (calendário editorial, banco de legendas/hashtags, aprovação do cliente; publicação automática só com API conectada 🔌), biblioteca de ativos com tags/pastas e pré-visualização, audiovisual (shot list, cronograma, galeria de seleção de fotos). Todas as tabelas e políticas já existem 🟡.
 
+**Entregue na Fase 4 até agora ✅**
+- **Briefings** (`/briefings`): 13 modelos padrão (um por serviço), editor de modelos, briefing por cliente/projeto, link avulso com validade (`/briefing#token`, Edge Function `briefing-public`) ou resposta dentro do link do projeto. O cliente salva rascunho e envia; a equipe é avisada e marca como revisado.
+- **O que precisamos de você** (link do projeto, escopo `requests`): reúne tudo que depende do cliente — pedidos (referências, conteúdo, documentos, acessos, informações) com resposta em texto, links e upload de arquivos (até 50 MB, URL assinada; arquivo fica ligado ao pedido e ao link usado), briefings abertos, aprovações pendentes e seleção de fotos da galeria. Pedidos de acesso orientam o cliente a não enviar senhas.
+- **Pedidos ao cliente** (aba do projeto): sugestão automática por tipo de projeto (`suggest_client_requests`), criação/edição, concluir, pedir de novo, download do que o cliente enviou.
+- Banco: naming com nota ponderada e registro obrigatório da pesquisa de disponibilidade; aprovação de posts sincronizada com o status; publicação só com link do post; galeria de seleção no portal.
+
 ## Fase 5 — Inteligência
 
 Assistente de IA com contexto autorizado (Edge Function usa o JWT do usuário; nunca a service role para ler dados), automações configuráveis (tabela `automations` 🟡), integrações Meta/LinkedIn 🔌, relatórios avançados.

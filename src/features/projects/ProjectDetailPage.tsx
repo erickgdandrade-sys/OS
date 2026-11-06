@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { useBreadcrumbs } from "@/components/layout/AppShell";
 import { Avatar, Badge, Button, Card, CardHeader, ConfirmDialog, EmptyState, ErrorState, Field, Input, Modal, PageHeader, Progress, Select, Spinner, Tabs, Textarea, useToast } from "@/components/ui";
 import { useOrg } from "@/features/auth/AuthProvider";
+import { ClientRequestsPanel, useOpenClientRequests } from "./ClientRequestsPanel";
 import { clientName } from "@/features/clients/ClientsPages";
 import { fetchProfiles, ProjectTasks, type Member } from "@/features/tasks/TaskViews";
 import { categoryLabel, errorMessage, priorityLabel, projectStatusLabel, projectStatusTone, type Priority, type Project, type ProjectStatus } from "@/lib/domain";
@@ -13,7 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { DueLabel, progressOf } from "./ProjectsPages";
 import { PortalSharing } from "./PortalSharing";
 
-type Tab = "tasks" | "overview" | "team" | "files" | "comments" | "time" | "portal" | "history";
+type Tab = "requests" | "tasks" | "overview" | "team" | "files" | "comments" | "time" | "portal" | "history";
 
 export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const { orgId, userId, can } = useOrg();
@@ -40,6 +41,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       return rows.map((r) => ({ ...r, profiles: names[r.user_id] ?? null })) as (Member & { role: string })[];
     },
   });
+  const openReqs = useOpenClientRequests(projectId);
   const canEdit = !!project && (can("projects.write") || project.owner_id === userId || members.data?.some((m) => m.user_id === userId && m.role === "lead"));
 
   const patch = useMutation({
@@ -79,12 +81,14 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       <Tabs value={tab} onChange={setTab} items={[
         { value: "tasks", label: "Tarefas", count: project.tasks.filter((t) => !t.parent_id).length },
+        { value: "requests" as const, label: "Pedidos ao cliente", count: openReqs.data || undefined },
         { value: "overview", label: "Visão geral" }, { value: "team", label: "Equipe", count: members.data?.length },
         { value: "files", label: "Arquivos" }, { value: "comments", label: "Comentários" }, { value: "time", label: "Horas" },
         ...(can("portal.share") ? [{ value: "portal" as const, label: "Portal do cliente" }] : []), { value: "history", label: "Histórico" },
       ]} />
       <div className="pt-4">
         {tab === "tasks" && <ProjectTasks projectId={projectId} members={members.data ?? []} canEdit={!!canEdit} />}
+        {tab === "requests" && <ClientRequestsPanel projectId={projectId} orgId={orgId} clientId={project.client_id} category={project.category} canEdit={!!canEdit} />}
         {tab === "overview" && <Overview project={project} />}
         {tab === "team" && <Team projectId={projectId} orgId={orgId} members={members.data ?? []} canEdit={!!canEdit} ownerId={project.owner_id} onChange={() => members.refetch()} />}
         {tab === "files" && <Files projectId={projectId} orgId={orgId} />}

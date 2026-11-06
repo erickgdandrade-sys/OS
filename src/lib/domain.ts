@@ -103,6 +103,18 @@ export function errorMessage(e: unknown): string {
     "new row violates row-level security": "Você não tem permissão para esta ação.",
     "duplicate key value violates unique constraint \"organizations_slug_key\"": "Este endereço já está em uso.",
     "Failed to fetch": "Sem conexão com o servidor. Verifique sua internet.",
+    file_too_large: "Arquivo maior que 50 MB. Envie um link (Drive, WeTransfer) no campo de links.",
+    file_type_not_allowed: "Tipo de arquivo não aceito. Envie imagens, PDF, vídeos, AI/EPS/SVG, ZIP ou documentos.",
+    response_empty: "Escreva uma resposta, cole um link ou anexe um arquivo.",
+    invalid_link: "Os links precisam começar com http:// ou https://.",
+    name_required: "Informe seu nome completo.",
+    request_closed: "Este pedido já foi concluído pelo estúdio.",
+    briefing_not_open: "Este briefing não está aberto para respostas.",
+    briefing_already_answered: "Este briefing já foi respondido.",
+    briefing_without_project: "Vincule o briefing a um projeto para mostrá-lo no link do cliente.",
+    approval_already_pending: "Já existe uma aprovação pendente para este item.",
+    requests_not_allowed: "Este link não permite enviar respostas. Peça um novo link ao estúdio.",
+    invalid_days: "Escolha uma validade entre 1 e 60 dias.",
   };
   for (const [k, v] of Object.entries(map)) if (raw.includes(k)) return v;
   return raw || "Algo deu errado. Tente novamente.";

@@ -46,6 +46,9 @@ verify_jwt = false                     # acesso por token de link; a função va
 [functions.proposal-public]
 verify_jwt = false                     # link público de proposta; a função valida o token
 import_map = "./functions/deno.json"
+[functions.briefing-public]
+verify_jwt = false                     # link avulso de briefing; a função valida o token
+
 [functions.document-pdf]
 verify_jwt = true
 import_map = "./functions/deno.json"

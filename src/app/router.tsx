@@ -59,6 +59,9 @@ const ContractsPage = page(() => import("@/features/commercial/ContractsPages"),
 const ContractDetailPage = page(() => import("@/features/commercial/ContractsPages"), "ContractDetailPage");
 const ContractPrintPage = page(() => import("@/features/commercial/ContractsPages"), "ContractPrintPage");
 const ContractWizardPage = page(() => import("@/features/commercial/ContractWizard"), "ContractWizardPage");
+const BriefingsPage = page(() => import("@/features/briefings/BriefingsPages"), "BriefingsPage");
+const BriefingDetailPage = page(() => import("@/features/briefings/BriefingsPages"), "BriefingDetailPage");
+const PublicBriefingPage = page(() => import("@/features/briefings/BriefingsPages"), "PublicBriefingPage");
 const FinancePage = page(() => import("@/features/finance/FinancePage"), "FinancePage");
 const CalendarPage = page(() => import("@/features/calendar/CalendarPage"), "CalendarPage");
 import type { Permission } from "@/lib/domain";
@@ -159,10 +162,13 @@ const contractPrint = createRoute({ getParentRoute: () => bare, path: "/contrato
 
 const finance = createRoute({ getParentRoute: () => app, path: "/financeiro", component: () => <RequirePerm perm="finance.read"><FinancePage /></RequirePerm> });
 const calendar = createRoute({ getParentRoute: () => app, path: "/calendario", component: CalendarPage });
+const briefings = createRoute({ getParentRoute: () => app, path: "/briefings", component: () => <RequirePerm perm="clients.read"><BriefingsPage /></RequirePerm> });
+const briefing = createRoute({ getParentRoute: () => app, path: "/briefings/$briefingId", component: () => <RequirePerm perm="clients.read"><BriefingDetailPage /></RequirePerm> });
+const publicBriefing = createRoute({ getParentRoute: () => root, path: "/briefing", component: PublicBriefingPage });
 
 const routeTree = root.addChildren([
-  login, forgot, createPassword, reset, invite, signout, firstAccess, portal, portalLink, publicProposal,
-  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar]),
+  login, forgot, createPassword, reset, invite, signout, firstAccess, portal, portalLink, publicProposal, publicBriefing,
+  app.addChildren([dashboard, myTasks, clients, client, projects, project, team, settings, crm, proposals, proposal, contracts, contractNew, contract, finance, calendar, briefings, briefing]),
   bare.addChildren([proposalPrint, contractPrint]),
 ]);
 

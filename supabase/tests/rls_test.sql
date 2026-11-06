@@ -363,6 +363,90 @@ select pg_temp.ok((public.contract_variables(:'ctr2') ->> 'multa_atraso') = '2',
 select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
 select pg_temp.ok(pg_temp.fails(format($$select public.generate_contract(%L, null, 'x', repeat('<p>texto</p>', 40), '{}')$$, :'client2')), 'colaborador não gera contrato');
 
+-- ===== Fase 4: briefings, naming, social e galeria ==========================
+reset role; set role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.ok((select count(*) from public.briefing_templates where organization_id = :'org_a' and is_default) = 13, 'modelos de briefing para os 13 serviços');
+select id as btpl from public.briefing_templates where organization_id = :'org_a' and category = 'photography' \gset
+insert into public.briefings (organization_id, client_id, template_id, title, category, sections)
+select :'org_a', :'client2', id, 'Briefing — Fotos de catálogo', category, sections from public.briefing_templates where id = :'btpl' returning id as brief1 \gset
+select public.create_briefing_link(:'brief1', 14) as btoken \gset
+select pg_temp.ok((select status = 'sent' and token_hash = digest(:'btoken', 'sha256') from public.briefings where id = :'brief1'), 'briefing enviado com token guardado só como hash');
+select pg_temp.ok(pg_temp.fails(format($$select public.submit_briefing_answers(%L, '{}', true, 'Ana')$$, :'brief1')), 'resposta só pela Edge Function');
+reset role; set role service_role; select pg_temp.as_user(null);
+select public.submit_briefing_answers(:'brief1', '{"empresa_nome":"Lume Ótica"}', false);
+select pg_temp.ok((select status from public.briefings where id = :'brief1') = 'in_progress', 'cliente pode salvar e continuar depois');
+select pg_temp.ok(pg_temp.fails(format($$select public.submit_briefing_answers(%L, '{}', true, null)$$, :'brief1')), 'envio final exige o nome de quem respondeu');
+select public.submit_briefing_answers(:'brief1', '{"quantidade":"40"}', true, 'Ana Ribeiro');
+select pg_temp.ok((select status = 'answered' and token_hash is null and answers ->> 'empresa_nome' = 'Lume Ótica' and answers ->> 'quantidade' = '40' from public.briefings where id = :'brief1'), 'respostas somadas e link encerrado após o envio');
+select pg_temp.ok((select count(*) from public.notifications where kind = 'briefing_answered') = 1, 'equipe é avisada do briefing respondido');
+reset role; set role authenticated;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000d');
+select pg_temp.ok((select count(*) from public.briefings) = 0 and (select count(*) from public.briefing_templates) = 13, 'outro estúdio não vê os briefings de A (só os próprios modelos)');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+select pg_temp.ok((select count(*) from public.briefings) = 0, 'cliente não lê briefings pela API');
+
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.seed_naming_criteria(:'proj1');
+insert into public.naming_candidates (organization_id, project_id, name) values (:'org_a', :'proj1', 'Aruá') returning id as nc1 \gset
+insert into public.naming_scores (organization_id, candidate_id, criterion_id, scorer_id, score)
+select :'org_a', :'nc1', id, '00000000-0000-0000-0000-00000000000a', case when name = 'Adequação estratégica' then 10 else 6 end from public.naming_criteria where project_id = :'proj1';
+select pg_temp.ok((select weighted_score from public.naming_ranking where candidate_id = :'nc1') = 7.20, 'nota ponderada pelos pesos dos critérios');
+select pg_temp.ok(pg_temp.fails(format($$update public.naming_candidates set availability_status = 'cleared_by_legal' where id = %L$$, :'nc1')), 'validação de disponibilidade exige registro da pesquisa');
+update public.naming_candidates set availability_status = 'preliminary_search_done', availability_notes = 'Sem conflitos na busca INPI classe 30' where id = :'nc1';
+select pg_temp.ok((select availability_checked_by = '00000000-0000-0000-0000-00000000000a' from public.naming_candidates where id = :'nc1'), 'quem fez a verificação fica registrado');
+
+insert into public.social_posts (organization_id, client_id, project_id, theme, caption, scheduled_for) values (:'org_a', :'client1', :'proj1', 'Lançamento', 'Novo blend!', now() + interval '3 days') returning id as post1 \gset
+select public.request_post_approval(:'post1') as pappr \gset
+select pg_temp.ok((select status from public.social_posts where id = :'post1') = 'awaiting_client', 'post aguardando aprovação do cliente');
+select pg_temp.ok(pg_temp.fails(format($$update public.social_posts set status = 'published' where id = %L$$, :'post1')), 'publicação só é registrada com o link do post');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+insert into public.approval_events (organization_id, approval_id, decision, actor_user_id) values (:'org_a', :'pappr', 'approved', '00000000-0000-0000-0000-00000000000e');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select pg_temp.ok((select status from public.social_posts where id = :'post1') = 'approved', 'aprovação do cliente atualiza o post');
+
+insert into public.media_productions (organization_id, project_id, kind, title, gallery_selection_enabled) values (:'org_a', :'proj1', 'photoshoot', 'Ensaio de produtos', true) returning id as prod1 \gset
+insert into public.files (organization_id, project_id, storage_path, name, client_visible, uploaded_by) values (:'org_a', :'proj1', :'org_a' || '/g/foto1.jpg', 'foto1.jpg', true, '00000000-0000-0000-0000-00000000000a') returning id as gf1 \gset
+insert into public.media_assets (organization_id, production_id, file_id) values (:'org_a', :'prod1', :'gf1') returning id as asset1 \gset
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+select pg_temp.ok((select count(*) from public.portal_gallery(:'prod1')) = 1, 'cliente vê a galeria do seu projeto');
+select public.portal_select_asset(:'asset1', true);
+select pg_temp.ok((select client_selected from public.portal_gallery(:'prod1')), 'cliente seleciona a foto favorita');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000f');
+select pg_temp.ok((select count(*) from public.portal_gallery(:'prod1')) = 0 and pg_temp.fails(format($$select public.portal_select_asset(%L, false)$$, :'asset1')), 'outro cliente não vê nem seleciona fotos alheias');
+
+-- ----- O que precisamos de você (pedidos ao cliente)
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.suggest_client_requests(:'proj1') as nsug \gset
+select pg_temp.ok(:nsug = 4 and (select count(*) from public.client_requests where project_id = :'proj1' and kind = 'reference') = 1, 'sugestões de pedidos conforme o tipo do projeto (branding)');
+select pg_temp.ok(public.suggest_client_requests(:'proj1') = 0, 'sugerir de novo não duplica os pedidos');
+select pg_temp.ok(public.suggest_client_requests(:'proj2') = 4, 'campanha recebe a lista de campanha');
+select id as creq1 from public.client_requests where project_id = :'proj1' and title = 'Referências visuais' \gset
+select pg_temp.ok(pg_temp.fails(format($$select public.answer_client_request(%L, 'x', '{}', 'Ana')$$, :'creq1')), 'resposta de pedido só pela Edge Function');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+select pg_temp.ok((select count(*) from public.client_requests where project_id = :'proj1') = 4, 'cliente vê os pedidos do próprio projeto');
+select pg_temp.ok(pg_temp.fails(format($$update public.client_requests set status = 'done' where id = %L returning 1$$, :'creq1')) or (select status from public.client_requests where id = :'creq1') = 'open', 'cliente não altera pedidos pela API');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000f');
+select pg_temp.ok((select count(*) from public.client_requests where project_id = :'proj1') = 0, 'outro cliente não vê pedidos alheios');
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000d');
+select pg_temp.ok((select count(*) from public.client_requests) = 0, 'outro estúdio não vê pedidos de A');
+reset role; set role service_role; select pg_temp.as_user(null);
+select pg_temp.ok(pg_temp.fails(format($$select public.answer_client_request(%L, '', '{}', 'Ana')$$, :'creq1')), 'resposta vazia é recusada');
+select pg_temp.ok(pg_temp.fails(format($$select public.answer_client_request(%L, 'ok', array['javascript:alert(1)'], 'Ana')$$, :'creq1')), 'links precisam ser http(s)');
+select public.answer_client_request(:'creq1', 'Gosto da Aesop e da Granado', array['https://aesop.com'], 'Ana Ribeiro');
+select pg_temp.ok((select status = 'answered' and responded_label = 'Ana Ribeiro' and response_links = array['https://aesop.com'] from public.client_requests where id = :'creq1'), 'resposta do cliente registrada com nome e links');
+select pg_temp.ok((select count(*) from public.notifications where kind = 'client_request_answered') = 1, 'responsável é avisado da resposta');
+insert into public.briefings (organization_id, client_id, project_id, template_id, title, category, sections)
+select :'org_a', :'client1', :'proj1', id, 'Briefing de marca', category, sections from public.briefing_templates where organization_id = :'org_a' and category = 'branding' returning id as brief2 \gset
+select pg_temp.ok(pg_temp.fails(format($$select public.save_briefing_answers(%L, '{}', false)$$, :'brief2')), 'briefing em rascunho não aceita respostas');
+reset role; set role authenticated; select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
+select public.share_briefing_in_portal(:'brief2');
+reset role; set role service_role; select pg_temp.as_user(null);
+select public.save_briefing_answers(:'brief2', '{"empresa_nome":"Arara"}', true, 'Ana Ribeiro');
+select pg_temp.ok((select status from public.briefings where id = :'brief2') = 'answered', 'briefing respondido pelo link do projeto');
+reset role; set role authenticated;
+select pg_temp.ok(pg_temp.fails($$insert into public.share_links (organization_id, project_id, token_hash, scopes) values ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'x', array['hack'])$$), 'escopo desconhecido é recusado');
+
 -- ===== Anônimo ==============================================================
 reset role; set role anon; select pg_temp.as_user(null);
 select pg_temp.ok(pg_temp.empty_or_denied('select * from public.clients'), 'anônimo não lê clientes');

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
+import { ClipboardList,
   Bell, BriefcaseBusiness, Building2, CalendarDays, ChevronRight, CircleDollarSign, FileSignature, FileText, FolderKanban,
   Image, LayoutDashboard, ListChecks, LogOut, Menu, Moon, Palette, Search, Settings, Sparkles, Sun, Users, X,
   type LucideIcon,
@@ -53,6 +53,7 @@ const nav: { section: string; items: NavItem[] }[] = [
     { label: "Financeiro", to: "/financeiro", icon: CircleDollarSign, perm: "finance.read" },
   ] },
   { section: "Criação", items: [
+    { label: "Briefings", to: "/briefings", icon: ClipboardList, perm: "clients.read" },
     { label: "Branding e naming", icon: Palette, phase: 4 },
     { label: "Social media", icon: Image, phase: 4 },
     { label: "Assistente IA", icon: Sparkles, perm: "ai.use", phase: 5 },
